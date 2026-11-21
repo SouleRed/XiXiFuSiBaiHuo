@@ -176,7 +176,6 @@ namespace 裁缝之王
 
         private const int PinHeight = PassiveAbility_7XiaoErJian_CFK.PinHeight;
         private static readonly int[] SummonUnitIds = { 2, 2, 3 };
-        private static readonly FieldInfo OwnerSephirahField = AccessTools.Field(typeof(UnitDataModel), "_ownerSephirah");
         private static readonly MethodInfo CreateLibrarianUnitMethod = AccessTools.Method(
             typeof(StageController), "CreateLibrarianUnit",
             new[] { typeof(SephirahType), typeof(UnitBattleDataModel), typeof(int) });
@@ -217,7 +216,7 @@ namespace 裁缝之王
                     var sephirah = stage.GetCurrentStageFloorModel().Sephirah;
                     var data = UnitBattleDataModel.CreateUnitBattleDataByEnemyUnitId(stage.GetStageModel(), unitId);
                     data.unitData.customizeData.height = PinHeight;
-                    OwnerSephirahField?.SetValue(data.unitData, sephirah);
+                    data.unitData._ownerSephirah = sephirah;
                     BattleObjectManager.instance.UnregisterUnitByIndex(faction, nextSlot);
                     summoned = (BattleUnitModel)CreateLibrarianUnitMethod.Invoke(stage,
                         new object[] { sephirah, data, nextSlot });
