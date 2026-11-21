@@ -1,5 +1,4 @@
 using BaseMod;
-using LOR_DiceSystem;
 
 namespace 裁缝之王
 {
@@ -11,7 +10,7 @@ namespace 裁缝之王
             BattleUnitBuf_BF_ZhenDing testBuf = target.bufListDetail.FindBuf<BattleUnitBuf_BF_ZhenDing>(BufReadyType.ThisRound);
             if (testBuf != null)
             {
-                target.bufListDetail.AddKeywordBufThisRoundByEtc(KeywordBuf.Bleeding, 1, this.owner);
+                target.bufListDetail.AddKeywordBufThisRoundByEtc(KeywordBuf.Bleeding, 1, owner);
             }
             base.OnSucceedAttack(behavior);
         }
