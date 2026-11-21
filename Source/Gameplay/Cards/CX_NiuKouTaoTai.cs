@@ -1,4 +1,3 @@
-﻿using BaseMod;
 using LOR_DiceSystem;
 using System;
 using System.Collections;
@@ -6,9 +5,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Y_LimbusBuff.Method;
-using static UnityEngine.GraphicsBuffer;
-
 namespace  裁缝之王
 {
     public class DiceCardSelfAbility_CX_NiuKouTaoTai : DiceCardSelfAbilityBase

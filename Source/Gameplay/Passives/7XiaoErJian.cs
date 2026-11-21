@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using LOR_DiceSystem;
 using BaseMod;
-using System.Threading.Tasks;
+using LOR_DiceSystem;
 
 namespace 裁缝之王
 {

@@ -1,5 +1,4 @@
 using AutoKeywordUtil;
-using BaseMod;
 using LOR_DiceSystem;
 using System;
 using System.Collections.Generic;
@@ -7,10 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using Y_LimbusBuff.Buff.OptimizeBuff;
-using Y_LimbusBuff.Method;
-using static UnityEngine.GraphicsBuffer;
-
 namespace 裁缝之王
 {
     internal class BattleUnitBuf_BF_ZhuiJi : BattleUnitBuf, IAutoKeywordBuf

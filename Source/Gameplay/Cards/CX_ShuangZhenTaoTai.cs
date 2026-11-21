@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using LOR_DiceSystem;
 using System;
-using Y_LimbusBuff.Method;
-
 namespace 裁缝之王
 {
     public class DiceCardSelfAbility_CX_ShuangZhenTaoTai : DiceCardSelfAbilityBase

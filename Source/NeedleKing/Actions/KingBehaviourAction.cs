@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using HarmonyLib;
 using LOR_DiceSystem;
 using 裁缝之王.Presentation.CustomCombat;
 using 裁缝之王.Presentation.Effects;
@@ -119,46 +118,5 @@ internal static class KingContinuation
     {
         pending = null;
         RestoreDelay();
-    }
-
-    [HarmonyPatch(typeof(RencounterManager), "CheckMovingStateBeforeRoll")]
-    internal static class NativePreparation
-    {
-        [HarmonyPrefix]
-        private static bool Prefix(RencounterManager __instance, BattleUnitView ____enemy, BattleUnitView ____librarian,
-            BattleCardBehaviourResult ____currentEnemyBehaviourResult, BattleCardBehaviourResult ____currentLibrarianBehaviourResult)
-        {
-            RestoreDelay();
-            return !Prepare(____enemy, ____librarian, ____currentEnemyBehaviourResult, ____currentLibrarianBehaviourResult,
-                __instance.playAuto && !__instance.forbidAutoPlay, __instance._bNoDelay, __instance.SetNodelay);
-        }
-    }
-}
-
-[HarmonyPatch(typeof(RencounterManager), nameof(RencounterManager.EndRencounterForcely))]
-internal static class KingActionInterrupt
-{
-    [HarmonyPrefix]
-    private static void Prefix(RencounterManager __instance)
-        => RencounterEffects.CancelActive(__instance, stopAllEffects: true);
-}
-
-[HarmonyPatch(typeof(TimeManager), nameof(TimeManager.SlowMotion))]
-internal static class KingDisableSlowZoom
-{
-    [HarmonyPrefix]
-    private static bool Prefix()
-    {
-        if (CustomCombatRuntime.IsRunning)
-        {
-            var custom = CustomCombatRuntime.Playback;
-            return !custom._actionAfterBehaviourIsRunning
-                || (!KingBehaviourAction.IsNativeWinningAction(custom._librarian, custom._currentLibrarianBehaviourResult)
-                    && !KingBehaviourAction.IsNativeWinningAction(custom._enemy, custom._currentEnemyBehaviourResult));
-        }
-        var manager = SingletonBehavior<RencounterManager>.Instance;
-        if (!manager || !manager.IsRunning || !manager._actionAfterBehaviourIsRunning) return true;
-        return !KingBehaviourAction.IsNativeWinningAction(manager._librarian, manager._currentLibrarianBehaviourResult)
-            && !KingBehaviourAction.IsNativeWinningAction(manager._enemy, manager._currentEnemyBehaviourResult);
     }
 }

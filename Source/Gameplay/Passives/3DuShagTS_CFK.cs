@@ -1,19 +1,14 @@
-﻿using BaseMod;
+using BaseMod;
 using LOR_DiceSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
 using HarmonyLib;
 using UI;
-using Y_LimbusBuff.Buff.OptimizeBuff;
 using LOR_XML;
+using Y_LimbusBuff.Buff.OptimizeBuff;
 using Y_LimbusBuff.Method;
-using static UnityEngine.GraphicsBuffer;
-using static Y_LimbusBuff.Buff.BattleUnitBuf_Tremor;
-
 namespace 裁缝之王
 {
     public class PassiveAbility_3DuShagTS_CFK : PassiveAbilityBase

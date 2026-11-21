@@ -1,8 +1,6 @@
 using 裁缝之王.Presentation.CustomCombat;
 using LOR_DiceSystem;
 using System;
-using Y_LimbusBuff.Method;
-
 namespace 裁缝之王
 {
     public class DiceCardSelfAbility_CX_20YiShang : DiceCardSelfAbilityBase

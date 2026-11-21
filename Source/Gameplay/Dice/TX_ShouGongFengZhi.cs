@@ -1,9 +1,5 @@
-﻿using BaseMod;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using 裁缝之王.Shared.Tool;
 
 namespace 裁缝之王
 {
@@ -13,32 +9,24 @@ namespace 裁缝之王
         public override void OnSucceedAttack()
         {
             BattleUnitModel target = base.card.target;
-            if (target == null || target.faction != base.owner.faction)
+            if (target == null || target.faction != base.owner.faction) return;
+
+            int maxCost = 0;
+            foreach (BattleDiceCardModel card in target.allyCardDetail.GetAllDeck())
             {
-                return;
+                if (card.GetCost() > maxCost) maxCost = card.GetCost();
             }
-            int CardCost = 0;
-            foreach (BattleDiceCardModel battleDiceCardModel in target.allyCardDetail.GetAllDeck())
+
+            List<BattleDiceCardModel> candidates = target.allyCardDetail.GetAllDeck().FindAll(x => x.GetCost() == maxCost);
+            if (candidates.Count == 0) return;
+
+            BattleDiceCardModel chosen = RandomUtil.SelectOne(candidates);
+            if (chosen == null) return;
+
+            foreach (BattleUnitModel enemy in BattleObjectManager.instance.GetAliveList_random(base.owner.faction == Faction.Enemy ? Faction.Player : Faction.Enemy, 1))
             {
-                if (battleDiceCardModel.GetCost() > CardCost)
-                {
-                    CardCost = battleDiceCardModel.GetCost();
-                }
-            }
-            List<BattleDiceCardModel> list = new List<BattleDiceCardModel>();
-            list.AddRange(target.allyCardDetail.GetAllDeck().FindAll((BattleDiceCardModel X) => X.GetCost() == CardCost));
-            if (list.Count > 0)
-            {
-                BattleDiceCardModel battleDiceCardModel2 = RandomUtil.SelectOne<BattleDiceCardModel>(list);
-                if (battleDiceCardModel2 != null)
-                {
-                    foreach (BattleUnitModel battleUnitModel in BattleObjectManager.instance.GetAliveList_random((base.owner.faction == Faction.Enemy) ? Faction.Player : Faction.Enemy, 1))
-                    {
-                        ExtraTools.AddCardAttack(target, battleUnitModel, battleDiceCardModel2.GetID());
-                    }
-                }
+                BattleTools.AddCardAttack(target, enemy, chosen.GetID());
             }
         }
-
     }
 }

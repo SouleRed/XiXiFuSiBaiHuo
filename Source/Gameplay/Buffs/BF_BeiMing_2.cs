@@ -1,14 +1,10 @@
 using AutoKeywordUtil;
-using BaseMod;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using UnityEngine;
-using Y_LimbusBuff.Buff.OptimizeBuff;
-using Y_LimbusBuff.Method;
-using static UnityEngine.GraphicsBuffer;
 using LOR_DiceSystem;
 
 namespace 裁缝之王
