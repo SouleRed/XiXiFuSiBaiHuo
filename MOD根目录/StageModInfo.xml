@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NormalInvitation xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Version>1.1</Version>
+  <Workshop>
+    <ID>CaiFengZhiKing</ID>
+    <Title>裁缝之王</Title>
+    <Description>一本杂志的书</Description>
+    <Tag/>
+    <PreviewImage/>
+  </Workshop>
+  <InvitationFile/>
+</NormalInvitation>

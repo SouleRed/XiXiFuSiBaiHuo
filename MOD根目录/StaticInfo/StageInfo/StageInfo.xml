@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<StageXmlRoot xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Stage id="1">
+    <FloorNum>1</FloorNum>
+    <Chapter>7</Chapter>
+    <StoryType>BF_BeiMing_1</StoryType>
+    <Invitation Combine="BookValue">
+      <Value>7</Value>
+      <Num>1</Num>
+    </Invitation>
+    <Wave>
+      <Formation>41</Formation>
+      <AvailableUnit>5</AvailableUnit>
+      <Unit>1</Unit>
+      <FormationType>Default</FormationType>
+      <emotionCardList/>
+    </Wave>
+    <MapInfo>CaiFengZhiWang</MapInfo>
+    <Name>裁缝之王</Name>
+    <StageType>Invitation</StageType>
+    <Condition>
+      <Level>0</Level>
+    </Condition>
+    <Story Condition="Start"/>
+    <Story Condition="End"/>
+    <IsChapterLast>false</IsChapterLast>
+    <invitationtype>false</invitationtype>
+  </Stage>
+</StageXmlRoot>

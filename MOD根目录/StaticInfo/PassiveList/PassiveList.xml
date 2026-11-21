@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PassiveXmlRoot xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Passive ID="1">
+    <Cost>1</Cost>
+    <Rarity>Unique</Rarity>
+    <CanGivePassive>true</CanGivePassive>
+    <Script>0LiZhi_CFK</Script>
+    <Negative>false</Negative>
+    <IsHide>false</IsHide>
+    <Lock>false</Lock>
+    <CanReceivePassive>false</CanReceivePassive>
+    <InnerType>-1</InnerType>
+    <Name>理智系统-胡乱缝纫</Name>
+    <Desc>自身最大理智值为45点最低为-45点
+自身理智值越高则自身越容易掷出最大值
+自身理智值越低则自身越容易掷出最小值
+若自身理智值过低则触发士气低落与陷入恐慌效果
+士气低落-使自身获得1层"虚弱"与2层守护"
+陷入恐慌-使自身获得2层"虚弱"与4层守护"
+若自身陷入恐慌则下一幕开始时使自身理智值恢复为0点
+自身的恐慌类型无法改变</Desc>
+  </Passive>
+  <Passive ID="2">
+    <Cost>1</Cost>
+    <Rarity>Unique</Rarity>
+    <CanGivePassive>true</CanGivePassive>
+    <Script>1CaiFengK_CFK</Script>
+    <Negative>false</Negative>
+    <IsHide>false</IsHide>
+    <Lock>false</Lock>
+    <CanReceivePassive>false</CanReceivePassive>
+    <InnerType>-1</InnerType>
+    <Name>裁缝之王</Name>
+    <Desc>若场上存在其他友方角色则使自身受到的伤害-50%
+免疫"封印""眩晕"且负面效果对自身造成的伤害-50%
+自身不会因外部效果而改变伤害抗性</Desc>
+  </Passive>
+  <Passive ID="3">
+    <Cost>1</Cost>
+    <Rarity>Unique</Rarity>
+    <CanGivePassive>true</CanGivePassive>
+    <Script>2ShouGongF_CFK</Script>
+    <Negative>false</Negative>
+    <IsHide>false</IsHide>
+    <Lock>false</Lock>
+    <CanReceivePassive>false</CanReceivePassive>
+    <InnerType>-1</InnerType>
+    <Name>手工制作</Name>
+    <Desc>场上除自身外每有一名友方角色则使自身所有骰子威力+1
+若有敌方角色"针钉"层数不低于5层则使用"你说我故意把挑针缝得很显眼?!那就给你也缝成一样的!"
+若有敌方角色带有"标本化"则使用"只要吃...就好了!!!"
+(针钉:受到突刺伤害时使自身获得1层"流血"并使层数-1 每一幕结束时使自身获得1层"流血"并层数-1)
+(标本化:无法行动 受到攻击时获得3层"流血" 每一幕结束时使自身受到体力上限20%的伤害并层数-1 解除本效果时移除自身的"针钉")</Desc>
+  </Passive>
+  <Passive ID="4">
+    <Cost>1</Cost>
+    <Rarity>Unique</Rarity>
+    <CanGivePassive>true</CanGivePassive>
+    <Script>3DuShagTS_CFK</Script>
+    <Negative>false</Negative>
+    <IsHide>false</IsHide>
+    <Lock>false</Lock>
+    <CanReceivePassive>false</CanReceivePassive>
+    <InnerType>-1</InnerType>
+    <Name>堵上耳朵也能听见的投诉</Name>
+    <Desc>从图书馆的光芒中传来了悲鸣
+体力无法低于65%体力不高于65%时进入下一阶段
+进入下一阶段时立刻召唤一批全新的针族
+每到3幕就会听到茧的悲鸣
+进入第二阶段时茧的悲鸣将不会停止
+听到茧的悲鸣时
+-使自身获得"茧的悲鸣-微弱"若为第二阶段则改为"茧的悲鸣-恶性"
+-免疫混乱状态
+(悲鸣-微弱:偶尔，会听见茧的悲鸣。 使自身所有骰子威力+2)
+(悲鸣-恶性:茧的悲鸣不会停下。 使自身所有骰子威力+3)</Desc>
+  </Passive>
+  <Passive ID="5">
+    <Cost>1</Cost>
+    <Rarity>Unique</Rarity>
+    <CanGivePassive>true</CanGivePassive>
+    <Script>4CaiFengKai_CFK</Script>
+    <Negative>false</Negative>
+    <IsHide>false</IsHide>
+    <Lock>false</Lock>
+    <CanReceivePassive>false</CanReceivePassive>
+    <InnerType>-1</InnerType>
+    <Name>缝制开始</Name>
+    <Desc>每一幕开始时随机对两名敌方角色施加"刺舌之针"
+(刺舌之针:持续一幕 这一幕结束时若自身未使用进攻型骰子则使自身的"针钉"层数-1 否则对自身施加3层"针钉")</Desc>
+  </Passive>
+  <Passive ID="6">
+    <Cost>1</Cost>
+    <Rarity>Unique</Rarity>
+    <CanGivePassive>true</CanGivePassive>
+    <Script>5YangGuang_CFK</Script>
+    <Negative>false</Negative>
+    <IsHide>false</IsHide>
+    <Lock>false</Lock>
+    <CanReceivePassive>false</CanReceivePassive>
+    <InnerType>-1</InnerType>
+    <Name>沐浴着温暖的光芒</Name>
+    <Desc>使所有司书体力上限/混乱抗性上限增加30/20
+受到图书馆光芒的影响每一幕开始时自身恢复20点理智值
+开启舞台时使自身获得"沐浴着温暖的光芒[裁缝之王]"
+(沐浴着最初的光芒[裁缝之王]:目标每带有2层"针钉"则使自身所有骰子威力+1)</Desc>
+  </Passive>
+  <Passive ID="7">
+    <Cost>1</Cost>
+    <Rarity>Rare</Rarity>
+    <CanGivePassive>true</CanGivePassive>
+    <Script>6FengRen_CFK</Script>
+    <Negative>false</Negative>
+    <IsHide>false</IsHide>
+    <Lock>false</Lock>
+    <CanReceivePassive>false</CanReceivePassive>
+    <InnerType>-1</InnerType>
+    <Name>缝纫</Name>
+    <Desc>使用突刺骰子命中目标时对目标施加1层"针钉"(每一幕至多3次)</Desc>
+  </Passive>
+  <Passive ID="8">
+    <Cost>1</Cost>
+    <Rarity>Rare</Rarity>
+    <CanGivePassive>true</CanGivePassive>
+    <Script>7XiaoErJian_CFK</Script>
+    <Negative>false</Negative>
+    <IsHide>false</IsHide>
+    <Lock>false</Lock>
+    <CanReceivePassive>false</CanReceivePassive>
+    <InnerType>-1</InnerType>
+    <Name>小而尖的钉子</Name>
+    <Desc>命中带有"针钉"的目标时使自身施加的"流血"层数+(目标"针钉"层数)层数</Desc>
+  </Passive>
+</PassiveXmlRoot>

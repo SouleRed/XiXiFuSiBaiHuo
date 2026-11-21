@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<BookUseXmlRoot xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Version>1.1</Version>
+  <BookUse ID="1">
+    <Name>裁缝之王之书</Name>
+    <TextId />
+    <BookIcon>BF_BeiMing_1</BookIcon>
+    <Chapter>7</Chapter>
+    <BookValue>0</BookValue>
+    <DropItem Type="Equip">1</DropItem>
+  </BookUse>
+</BookUseXmlRoot>

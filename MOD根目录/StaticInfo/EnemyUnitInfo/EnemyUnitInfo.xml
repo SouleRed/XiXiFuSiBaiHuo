@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<EnemyUnitClassRoot xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Enemy ID="1">
+    <NameID>-1</NameID>
+    <MinHeight>370</MinHeight>
+    <MaxHeight>370</MaxHeight>
+    <Retreat>false</Retreat>
+    <Gender>F</Gender>
+    <FaceType>Skin</FaceType>
+    <BookId>1</BookId>
+    <DropTable Level="0">
+      <DropItem Prob="1">1</DropItem>
+    </DropTable>
+    <Name>裁缝之王</Name>
+    <Unknown>false</Unknown>
+    <BodyId>0</BodyId>
+    <Exp>0</Exp>
+    <DropBonus>0</DropBonus>
+    <AiScript/>
+  </Enemy>
+  <Enemy ID="2">
+    <NameID>2</NameID>
+    <MinHeight>110</MinHeight>
+    <MaxHeight>110</MaxHeight>
+    <Retreat>false</Retreat>
+    <BookId>2</BookId>
+    <DropTable Level="0"/>
+  </Enemy>
+  <Enemy ID="3">
+    <NameID>3</NameID>
+    <MinHeight>110</MinHeight>
+    <MaxHeight>110</MaxHeight>
+    <Retreat>false</Retreat>
+    <BookId>3</BookId>
+    <DropTable Level="0"/>
+  </Enemy>
+</EnemyUnitClassRoot>

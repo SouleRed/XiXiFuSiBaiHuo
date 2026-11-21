@@ -1,0 +1,59 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<BattleCardDescRoot>
+  <cardDescList>
+    <BattleCardDesc ID="1">
+      <LocalizedName>经纱要如何</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="2">
+      <LocalizedName>纬纱就这样</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="3">
+      <LocalizedName>针数!针数!针数!</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="4">
+      <LocalizedName>每英寸的针数要在20以上!!!</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="5">
+      <LocalizedName>你说线太整齐了?你说不是手工缝制?集合!!!</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="6">
+      <LocalizedName>给我手工缝制!!!</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="7">
+      <LocalizedName>侧缝外侧能看到两根缝线的话就是双针.淘汰!</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="8">
+      <LocalizedName>没把纽扣缝成十字.淘汰!</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="9">
+      <LocalizedName>只要吃...就好了！</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="10">
+      <LocalizedName>你说我故意把挑针缝得很显眼?!那就给你也缝成一样的!</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="11">
+      <LocalizedName>平针缝-经线</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="12">
+      <LocalizedName>疏缝-经线</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="13">
+      <LocalizedName>回针缝-经线</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="14">
+      <LocalizedName>暗缝-经线</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="15">
+      <LocalizedName>平针缝-纬线</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="16">
+      <LocalizedName>疏缝-纬线</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="17">
+      <LocalizedName>回针缝-纬线</LocalizedName>
+    </BattleCardDesc>
+    <BattleCardDesc ID="18">
+      <LocalizedName>暗缝-纬线</LocalizedName>
+    </BattleCardDesc>
+  </cardDescList>
+</BattleCardDescRoot>

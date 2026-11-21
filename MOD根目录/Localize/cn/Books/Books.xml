@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<BookDescRoot>
+  <bookDescList>
+    <BookDesc BookID="-1" Pid="CaiFengZhiKing">
+      <BookName>裁缝之王之页</BookName>
+    </BookDesc>
+    <BookDesc BookID="2" Pid="CaiFengZhiKing">
+      <BookName>经线之针族之页</BookName>
+    </BookDesc>
+    <BookDesc BookID="3" Pid="CaiFengZhiKing">
+      <BookName>纬线之针族之页</BookName>
+    </BookDesc>
+  </bookDescList>
+</BookDescRoot>

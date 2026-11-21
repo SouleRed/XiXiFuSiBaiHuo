@@ -1,0 +1,330 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<DiceCardXmlRoot xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Card ID="1">
+    <Rarity>Uncommon</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>300</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" EmotionLimit="0" />
+    <Script>CX_4Liu20Shang</Script>
+    <Artwork>149601.png</Artwork>
+    <Category>None</Category>
+    <SkinChangeType>EGO</SkinChangeType>
+    <BehaviourList>
+      <Behaviour Min="4" Dice="7" Type="Atk" Detail="Penetrate" Motion="J" Script="bleeding1atk" MotionDefault="N" EffectRes="" Desc="" ActionScript="CFK_S1_Coin1" />
+      <Behaviour Min="5" Dice="7" Type="Atk" Detail="Penetrate" Motion="Z" Script="bleeding2atk" MotionDefault="N" EffectRes="" Desc="" ActionScript="CFK_S1_Coin2" />
+    </BehaviourList>
+    <Name>经纱要如何</Name>
+    <TextId>-1</TextId>
+    <ScriptDesc />
+    <SpecialEffect />
+    <SkinChange />
+    <SkinHeight>0</SkinHeight>
+    <MapChange />
+    <PriorityScript />
+    <MaxCooltimeForEgo>9</MaxCooltimeForEgo>
+    <MaxNum>150</MaxNum>
+  </Card>
+  <Card ID="2">
+    <Rarity>Uncommon</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>350</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" EmotionLimit="0" />
+    <Script>CX_WeiShaJiu</Script>
+    <Artwork>149602.png</Artwork>
+    <Category>None</Category>
+    <SkinChangeType>EGO</SkinChangeType>
+    <BehaviourList>
+      <Behaviour Min="4" Dice="8" Type="Atk" Detail="Penetrate" Motion="J" Script="bleeding1atk" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin1" />
+      <Behaviour Min="4" Dice="8" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_1ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin2" />
+      <Behaviour Min="5" Dice="8" Type="Atk" Detail="Penetrate" Motion="H" Script="TX_2ZhenLiuQ" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin3" />
+    </BehaviourList>
+    <Name>纬纱就这样</Name>
+    <TextId>-1</TextId>
+    <ScriptDesc />
+    <SpecialEffect />
+    <SkinChange />
+    <SkinHeight>0</SkinHeight>
+    <MapChange />
+    <PriorityScript />
+    <MaxCooltimeForEgo>9</MaxCooltimeForEgo>
+    <MaxNum>150</MaxNum>
+  </Card>
+  <Card ID="3">
+    <Rarity>Common</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>400</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" EmotionLimit="0" />
+    <Script>CX_6Liu20Shang</Script>
+    <Artwork>149603.png</Artwork>
+    <Category>None</Category>
+    <SkinChangeType>EGO</SkinChangeType>
+    <BehaviourList>
+      <Behaviour Min="3" Dice="6" Type="Atk" Detail="Penetrate" Motion="J" Script="forbidReuseDice" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S3_Coin1" />
+      <Behaviour Min="3" Dice="6" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_1ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S3_Coin2" />
+      <Behaviour Min="3" Dice="6" Type="Atk" Detail="Penetrate" Motion="H" Script="TX_1ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S3_Coin3" />
+      <Behaviour Min="4" Dice="7" Type="Atk" Detail="Penetrate" Motion="H" Script="TX_2ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S3_Coin4" />
+    </BehaviourList>
+    <Name>针数!针数!针数!</Name>
+    <TextId>-1</TextId>
+    <ScriptDesc />
+    <SpecialEffect />
+    <SkinChange />
+    <SkinHeight>0</SkinHeight>
+    <MapChange />
+    <PriorityScript />
+    <MaxCooltimeForEgo>9</MaxCooltimeForEgo>
+    <MaxNum>150</MaxNum>
+  </Card>
+  <Card ID="4">
+    <Rarity>Special</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>450</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" EmotionLimit="0" />
+    <Script>CX_20YiShang</Script>
+    <Artwork>149604.png</Artwork>
+    <Category>None</Category>
+    <SkinChangeType>EGO</SkinChangeType>
+    <BehaviourList>
+      <Behaviour Min="8" Dice="16" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_1Zhen" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S4_Coin1" />
+    </BehaviourList>
+    <Name>每英寸的针数要在20以上!!!</Name>
+    <TextId>-1</TextId>
+    <ScriptDesc />
+    <SpecialEffect />
+    <SkinChange />
+    <SkinHeight>0</SkinHeight>
+    <MapChange />
+    <PriorityScript />
+    <MaxCooltimeForEgo>9</MaxCooltimeForEgo>
+    <MaxNum>150</MaxNum>
+  </Card>
+  <Card ID="5">
+    <Rarity>Unique</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>25</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" EmotionLimit="0" />
+    <Script>CX_ZhaoHuan</Script>
+    <Artwork>149605.png</Artwork>
+    <Category>None</Category>
+    <SkinChangeType>EGO</SkinChangeType>
+    <BehaviourList>
+      <Behaviour Min="6" Dice="12" Type="Standby" Detail="Guard" Motion="G" MotionDefault="N" EffectRes="" Script="" Desc="" />
+    </BehaviourList>
+    <Name>你说线太整齐了?你说不是手工缝制?集合!!!</Name>
+    <TextId>-1</TextId>
+    <ScriptDesc />
+    <SpecialEffect />
+    <SkinChange />
+    <SkinHeight>0</SkinHeight>
+    <MapChange />
+    <PriorityScript />
+    <MaxCooltimeForEgo>9</MaxCooltimeForEgo>
+    <MaxNum>150</MaxNum>
+  </Card>
+  <Card ID="6">
+    <Rarity>Unique</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>100</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" EmotionLimit="0" />
+    <Script>CX_ShouGongFengZhi</Script>
+    <Artwork>149606.png</Artwork>
+    <Category>None</Category>
+    <SkinChangeType>EGO</SkinChangeType>
+    <BehaviourList>
+      <Behaviour Min="8" Dice="10" Type="Atk" Detail="Penetrate" Motion="J" Script="TX_ShouGongFengZhi" MotionDefault="N" EffectRes="" Desc="" ActionScript="CFK_S6_Coin1" />
+    </BehaviourList>
+    <Name>给我手工缝制!!!</Name>
+    <TextId>-1</TextId>
+    <ScriptDesc />
+    <SpecialEffect />
+    <SkinChange />
+    <SkinHeight>0</SkinHeight>
+    <MapChange />
+    <PriorityScript />
+    <MaxCooltimeForEgo>9</MaxCooltimeForEgo>
+    <MaxNum>150</MaxNum>
+  </Card>
+  <Card ID="7">
+    <Rarity>Unique</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>500</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" EmotionLimit="0" />
+    <Script>CX_ShuangZhenTaoTai</Script>
+    <Artwork>149607.png</Artwork>
+    <Category>None</Category>
+    <SkinChangeType>EGO</SkinChangeType>
+    <BehaviourList>
+      <Behaviour Min="10" Dice="16" Type="Atk" Detail="Penetrate" Motion="J" Script="TX_ShuangZhenTaoTai" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S7_Coin1" />
+    </BehaviourList>
+    <Name>侧缝外侧能看到两根缝线的话就是双针.淘汰!</Name>
+    <TextId>-1</TextId>
+    <ScriptDesc />
+    <SpecialEffect />
+    <SkinChange />
+    <SkinHeight>0</SkinHeight>
+    <MapChange />
+    <PriorityScript />
+    <MaxCooltimeForEgo>9</MaxCooltimeForEgo>
+    <MaxNum>150</MaxNum>
+  </Card>
+  <Card ID="8">
+    <Rarity>Unique</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>50</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" EmotionLimit="0" />
+    <Script>CX_NiuKouTaoTai</Script>
+    <Artwork>149608.png</Artwork>
+    <Category>None</Category>
+    <SkinChangeType>EGO</SkinChangeType>
+    <BehaviourList>
+      <Behaviour Min="4" Dice="7" Type="Atk" Detail="Penetrate" Motion="J" Script="TX_NiuKouTaoTai" MotionDefault="N" EffectRes="" Desc="" ActionScript="CFK_S8_Coin1" />
+      <Behaviour Min="5" Dice="7" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_NiuKouTaoTai" MotionDefault="N" EffectRes="" Desc="" ActionScript="CFK_S8_Coin2" />
+    </BehaviourList>
+    <Name>没把纽扣缝成十字.淘汰!</Name>
+    <TextId>-1</TextId>
+    <ScriptDesc />
+    <SpecialEffect />
+    <SkinChange />
+    <SkinHeight>0</SkinHeight>
+    <MapChange />
+    <PriorityScript />
+    <MaxCooltimeForEgo>9</MaxCooltimeForEgo>
+    <MaxNum>150</MaxNum>
+  </Card>
+  <Card ID="9">
+    <Rarity>Common</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>0</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" EmotionLimit="0" />
+    <Script>CX_JiaoJiaoJiao</Script>
+    <Artwork>149610.png</Artwork>
+    <Category>None</Category>
+    <SkinChangeType>EGO</SkinChangeType>
+    <BehaviourList>
+      <Behaviour Min="12" Dice="18" Type="Atk" Detail="Penetrate" Motion="J" Script="TX_JiaoJiaoJiao" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S10_Coin1" />
+    </BehaviourList>
+    <Name>只要吃...就好了！</Name>
+    <TextId>-1</TextId>
+    <ScriptDesc />
+    <SpecialEffect />
+    <SkinChange />
+    <SkinHeight>0</SkinHeight>
+    <MapChange />
+    <PriorityScript />
+    <MaxCooltimeForEgo>9</MaxCooltimeForEgo>
+    <MaxNum>150</MaxNum>
+  </Card>
+  <Card ID="10">
+    <Rarity>Uncommon</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>0</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" EmotionLimit="0" />
+    <Script>CX_BiaoBenHua</Script>
+    <Artwork>149609.png</Artwork>
+    <Category>None</Category>
+    <SkinChangeType>EGO</SkinChangeType>
+    <BehaviourList>
+      <Behaviour Min="50" Dice="50" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_BiaoBenHua" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S9_Coin1" />
+    </BehaviourList>
+    <Name>你说我故意把挑针缝得很显眼?!那就给你也缝成一样的!</Name>
+    <TextId>-1</TextId>
+    <ScriptDesc />
+    <SpecialEffect />
+    <SkinChange />
+    <SkinHeight>0</SkinHeight>
+    <MapChange />
+    <PriorityScript />
+    <MaxCooltimeForEgo>9</MaxCooltimeForEgo>
+    <MaxNum>150</MaxNum>
+  </Card>
+  <Card ID="11">
+    <Rarity>Rare</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>0</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" />
+    <Script>CX_4Liu1WLi</Script>
+    <Artwork>9106301.png</Artwork>
+    <BehaviourList>
+      <Behaviour Min="4" Dice="10" Type="Atk" Detail="Penetrate" Motion="Z" Script="bleeding2atk" Desc="RedDice/NoPoDicePenetrate/RedDice" ActionScript="NeedleClan_S1" />
+    </BehaviourList>
+  </Card>
+  <Card ID="12">
+    <Rarity>Rare</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>0</Priority>
+    <Spec Cost="1" Range="Near" Affection="One" />
+    <Script>CX_4Liu1WLi</Script>
+    <Artwork>9106302.png</Artwork>
+    <BehaviourList>
+      <Behaviour Min="5" Dice="7" Type="Atk" Detail="Penetrate" Motion="Z" Script="bleeding2atk" ActionScript="NeedleClan_S2_Coin1" />
+      <Behaviour Min="4" Dice="7" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_1Zhen_X" ActionScript="NeedleClan_S2_Coin2" />
+    </BehaviourList>
+  </Card>
+  <Card ID="13">
+    <Rarity>Common</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>500</Priority>
+    <Spec Cost="3" Range="Near" Affection="One" />
+    <Script>CX_XiaoDaZhao</Script>
+    <Artwork>9106303.png</Artwork>
+    <BehaviourList>
+      <Behaviour Min="5" Dice="11" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_XiaoDaZhao" Desc="RedDice/NoPoDicePenetrate/RedDice" ActionScript="NeedleClan_S3" />
+    </BehaviourList>
+  </Card>
+  <Card ID="14">
+    <Rarity>Unique</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>5</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" />
+    <Script>strength1</Script>
+    <Artwork>9106304.png</Artwork>
+    <BehaviourList>
+      <Behaviour Min="6" Dice="10" Type="Standby" Detail="Guard" Motion="G" />
+    </BehaviourList>
+  </Card>
+  <Card ID="15">
+    <Rarity>Rare</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>0</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" />
+    <Script>CX_4Liu1WLi</Script>
+    <Artwork>9106301.png</Artwork>
+    <BehaviourList>
+      <Behaviour Min="4" Dice="10" Type="Atk" Detail="Penetrate" Motion="Z" Script="bleeding2atk" Desc="RedDice/NoPoDicePenetrate/RedDice" ActionScript="NeedleClan_S1" />
+    </BehaviourList>
+  </Card>
+  <Card ID="16">
+    <Rarity>Rare</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>0</Priority>
+    <Spec Cost="1" Range="Near" Affection="One" />
+    <Script>CX_4Liu1WLi</Script>
+    <Artwork>9106302.png</Artwork>
+    <BehaviourList>
+      <Behaviour Min="5" Dice="7" Type="Atk" Detail="Penetrate" Motion="Z" Script="bleeding2atk" ActionScript="NeedleClan_S2_Coin1" />
+      <Behaviour Min="4" Dice="7" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_1Zhen_X" ActionScript="NeedleClan_S2_Coin2" />
+    </BehaviourList>
+  </Card>
+  <Card ID="17">
+    <Rarity>Common</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>500</Priority>
+    <Spec Cost="3" Range="Near" Affection="One" />
+    <Script>CX_XiaoDaZhao</Script>
+    <Artwork>9106303.png</Artwork>
+    <BehaviourList>
+      <Behaviour Min="5" Dice="11" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_XiaoDaZhao" Desc="RedDice/NoPoDicePenetrate/RedDice" ActionScript="NeedleClan_S3" />
+    </BehaviourList>
+  </Card>
+  <Card ID="18">
+    <Rarity>Unique</Rarity>
+    <Chapter>7</Chapter>
+    <Priority>5</Priority>
+    <Spec Cost="0" Range="Near" Affection="One" />
+    <Script>strength1</Script>
+    <Artwork>9106304.png</Artwork>
+    <BehaviourList>
+      <Behaviour Min="6" Dice="10" Type="Standby" Detail="Guard" Motion="G" />
+    </BehaviourList>
+  </Card>
+</DiceCardXmlRoot>

@@ -1,0 +1,34 @@
+# Visual Studio / VS Code caches
+.vs/
+.vscode/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.code-workspace
+
+# Build outputs
+bin/
+obj/
+TestResults/
+*.pdb
+
+# Restored tools and packages
+packages/
+.dotnet/
+
+# Local logs and temporary files
+*.log
+Error.txt
+*.tmp
+*.cache
+desktop.ini
+Thumbs.db
+
+# Generated project DLL (rebuilt from source)
+MOD根目录/Assemblies/裁缝之王.dll
+
+# Iterated Unity AssetBundles (built from Unity project)
+MOD根目录/Assemblies/AB/needlekingenemy1496_skin
+MOD根目录/Assemblies/AB/needleclan1498_skin
+MOD根目录/Assemblies/AB/needleclan1499_skin
