@@ -20,16 +20,16 @@
   </Enemy>
   <Enemy ID="2">
     <NameID>2</NameID>
-    <MinHeight>110</MinHeight>
-    <MaxHeight>110</MaxHeight>
+    <MinHeight>90</MinHeight>
+    <MaxHeight>90</MaxHeight>
     <Retreat>false</Retreat>
     <BookId>2</BookId>
     <DropTable Level="0"/>
   </Enemy>
   <Enemy ID="3">
     <NameID>3</NameID>
-    <MinHeight>110</MinHeight>
-    <MaxHeight>110</MaxHeight>
+    <MinHeight>90</MinHeight>
+    <MaxHeight>90</MaxHeight>
     <Retreat>false</Retreat>
     <BookId>3</BookId>
     <DropTable Level="0"/>

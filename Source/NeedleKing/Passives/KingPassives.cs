@@ -174,6 +174,7 @@ namespace 裁缝之王
             return _dmgReduction;
         }
 
+        private const int PinHeight = 90;
         private static readonly int[] SummonUnitIds = { 2, 2, 3 };
         private static readonly MethodInfo CreateLibrarianUnitMethod = AccessTools.Method(
             typeof(StageController), "CreateLibrarianUnit",
@@ -208,12 +209,12 @@ namespace 裁缝之王
                 BattleUnitModel summoned;
                 if (faction == Faction.Enemy)
                 {
-                    summoned = stage.AddNewUnit(faction, unitId, nextSlot, 110);
+                    summoned = stage.AddNewUnit(faction, unitId, nextSlot, PinHeight);
                 }
                 else
                 {
                     var data = UnitBattleDataModel.CreateUnitBattleDataByEnemyUnitId(stage.GetStageModel(), unitId);
-                    data.unitData.customizeData.height = 110;
+                    data.unitData.customizeData.height = PinHeight;
                     BattleObjectManager.instance.UnregisterUnitByIndex(faction, nextSlot);
                     summoned = (BattleUnitModel)CreateLibrarianUnitMethod.Invoke(stage,
                         new object[] { stage.GetCurrentStageFloorModel().Sephirah, data, nextSlot });
