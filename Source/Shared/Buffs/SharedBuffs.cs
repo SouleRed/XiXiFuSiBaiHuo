@@ -32,24 +32,55 @@ namespace 裁缝之王
         public const string BF_ZhuiJiName = "BF_ZhuiJi";
     }
 
-    internal class BattleUnitBuf_BF_ZhenDing : BattleUnitBuf, IAutoKeywordBuf
+    internal abstract class NeedleModBuf : BattleUnitBuf, IAutoKeywordBuf
     {
-        public string KeywordBufName => KeywordHao.BF_ZhenDingName;
-        public override KeywordBuf bufType => KeywordHao.BF_ZhenDing;
-        public override string keywordId => "BF_ZhenDing";
-        public override string keywordIconId => "BF_ZhenDing";
+        public abstract string KeywordBufName { get; }
+        public override string keywordId => KeywordBufName;
+        public override string keywordIconId => KeywordBufName;
         public override bool independentBufIcon => false;
 
-        public BattleUnitBuf_BF_ZhenDing()
+        protected virtual int MaxStack => 1;
+        protected virtual int MaxSetValue => 1;
+        protected virtual bool TrackVisuals => false;
+
+        protected NeedleModBuf() => stack = 0;
+
+        public override void Init(BattleUnitModel owner)
         {
-            stack = 0;
+            base.Init(owner);
+            if (TrackVisuals) Presentation.Effects.KingBuffVisuals.Track(owner);
         }
+
+        public void Add(int add) => stack = Math.Max(0, Math.Min(9999, stack + add));
+
+        public override void OnAddBuf(int addedStack)
+        {
+            if (stack > MaxStack) stack = MaxStack;
+        }
+
+        public void SetMax() => stack = MaxSetValue;
+
+        public void XiaoStack(int add)
+        {
+            stack -= add;
+            if (stack <= 0) Destroy();
+        }
+
+        public static int GetBuf<T>(BattleUnitModel model) where T : BattleUnitBuf
+            => (model?.bufListDetail.GetActivatedBufList().Find(x => x is T) as T)?.stack ?? 0;
+    }
+
+    internal class BattleUnitBuf_BF_ZhenDing : NeedleModBuf
+    {
+        public override string KeywordBufName => KeywordHao.BF_ZhenDingName;
+        public override KeywordBuf bufType => KeywordHao.BF_ZhenDing;
+        protected override int MaxStack => 99;
+        protected override int MaxSetValue => 99;
 
         public override void OnRoundEnd()
         {
             _owner.bufListDetail.AddKeywordBufByEtc(KeywordBuf.Bleeding, stack, _owner);
-            stack--;
-            if (stack <= 0) Destroy();
+            XiaoStack(1);
         }
 
         public override void OnTakeDamageByAttack(BattleDiceBehavior atkDice, int dmg)
@@ -57,55 +88,19 @@ namespace 裁缝之王
             if (atkDice.Detail == BehaviourDetail.Penetrate)
             {
                 _owner.bufListDetail.AddKeywordBufThisRoundByEtc(KeywordBuf.Bleeding, 1, _owner);
-                stack--;
-                if (stack <= 0) Destroy();
+                XiaoStack(1);
             }
             base.OnTakeDamageByAttack(atkDice, dmg);
         }
-
-        public static int GetBuf(BattleUnitModel model)
-        {
-            var buf = model.bufListDetail.GetActivatedBufList().Find(x => x is BattleUnitBuf_BF_ZhenDing) as BattleUnitBuf_BF_ZhenDing;
-            return buf?.stack ?? 0;
-        }
-
-        public void Add(int add) => stack = Math.Max(0, Math.Min(9999, stack + add));
-
-        public override void OnAddBuf(int addedStack)
-        {
-            if (stack > 99) stack = 99;
-        }
-
-        public void SetMax() => stack = 99;
-
-        public void XiaoStack(int add)
-        {
-            stack -= add;
-            if (stack <= 0) Destroy();
-        }
     }
 
-    internal class BattleUnitBuf_BF_CiSheZ : BattleUnitBuf, IAutoKeywordBuf
+    internal class BattleUnitBuf_BF_CiSheZ : NeedleModBuf
     {
-        public string KeywordBufName => KeywordHao.BF_CiSheZName;
+        public override string KeywordBufName => KeywordHao.BF_CiSheZName;
         public override KeywordBuf bufType => KeywordHao.BF_CiSheZ;
-        public override string keywordId => "BF_CiSheZ";
-        public override string keywordIconId => "BF_CiSheZ";
-        public override bool independentBufIcon => false;
+        protected override bool TrackVisuals => true;
 
         private bool yes;
-
-        public override void Init(BattleUnitModel owner)
-        {
-            base.Init(owner);
-            Presentation.Effects.KingBuffVisuals.Track(owner);
-        }
-
-        public BattleUnitBuf_BF_CiSheZ()
-        {
-            stack = 0;
-            yes = false;
-        }
 
         public override void OnRollDice(BattleDiceBehavior behavior)
         {
@@ -119,40 +114,11 @@ namespace 裁缝之王
             {
                 _owner.bufListDetail.AddKeywordBufThisRoundByEtc(KeywordHao.BF_ZhenDing, 3, _owner);
             }
-            else
-            {
-                BanAddZhen();
-            }
-            Destroy();
-        }
-
-        private void BanAddZhen()
-        {
-            if (_owner.bufListDetail.GetActivatedBuf(KeywordHao.BF_ZhenDing) is BattleUnitBuf_BF_ZhenDing zhenDing && zhenDing.stack > 0)
+            else if (_owner.bufListDetail.GetActivatedBuf(KeywordHao.BF_ZhenDing) is BattleUnitBuf_BF_ZhenDing zhenDing && zhenDing.stack > 0)
             {
                 zhenDing.XiaoStack((stack + 1) / 2);
             }
-        }
-
-        public static int GetBuf(BattleUnitModel model)
-        {
-            var buf = model.bufListDetail.GetActivatedBufList().Find(x => x is BattleUnitBuf_BF_CiSheZ) as BattleUnitBuf_BF_CiSheZ;
-            return buf?.stack ?? 0;
-        }
-
-        public void Add(int add) => stack = Math.Max(0, Math.Min(9999, stack + add));
-
-        public override void OnAddBuf(int addedStack)
-        {
-            if (stack > 1) stack = 1;
-        }
-
-        public void SetMax() => stack = 1;
-
-        public void XiaoStack(int add)
-        {
-            stack -= add;
-            if (stack <= 0) Destroy();
+            Destroy();
         }
     }
 }

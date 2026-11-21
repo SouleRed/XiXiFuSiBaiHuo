@@ -1,118 +1,79 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections;
 using UnityEngine;
 
 namespace 裁缝之王
 {
     public class CoroutineRunner : MonoBehaviour
     {
+        private static readonly object lockObject = new();
+        private static CoroutineRunner instance;
+        private static bool isApplicationQuitting;
+
         private static CoroutineRunner Instance
         {
             get
             {
-                if (CoroutineRunner.isApplicationQuitting)
+                if (isApplicationQuitting)
                 {
                     Debug.LogWarning("Application is quitting, cannot create CoroutineRunner");
                     return null;
                 }
-                object obj = CoroutineRunner.lockObject;
-                CoroutineRunner result;
-                lock (obj)
+
+                lock (lockObject)
                 {
-                    if (CoroutineRunner.instance != null)
-                    {
-                        result = CoroutineRunner.instance;
-                    }
-                    else
-                    {
-                        CoroutineRunner.instance = UnityEngine.Object.FindObjectOfType<CoroutineRunner>();
-                        if (CoroutineRunner.instance != null)
-                        {
-                            result = CoroutineRunner.instance;
-                        }
-                        else
-                        {
-                            GameObject gameObject = new GameObject("CoroutineRunner");
-                            CoroutineRunner.instance = gameObject.AddComponent<CoroutineRunner>();
-                            UnityEngine.Object.DontDestroyOnLoad(gameObject);
-                            gameObject.hideFlags = HideFlags.HideInHierarchy;
-                            result = CoroutineRunner.instance;
-                        }
-                    }
+                    if (instance) return instance;
+
+                    instance = FindObjectOfType<CoroutineRunner>();
+                    if (instance) return instance;
+
+                    var gameObject = new GameObject("CoroutineRunner");
+                    instance = gameObject.AddComponent<CoroutineRunner>();
+                    DontDestroyOnLoad(gameObject);
+                    gameObject.hideFlags = HideFlags.HideInHierarchy;
+                    return instance;
                 }
-                return result;
             }
         }
 
         private void Awake()
         {
-            if (CoroutineRunner.instance != null && CoroutineRunner.instance != this)
+            if (instance && instance != this)
             {
-                UnityEngine.Object.Destroy(base.gameObject);
+                Destroy(gameObject);
                 return;
             }
-            object obj = CoroutineRunner.lockObject;
-            lock (obj)
+
+            lock (lockObject)
             {
-                if (!(CoroutineRunner.instance != null))
+                if (!instance)
                 {
-                    CoroutineRunner.instance = this;
-                    base.hideFlags = HideFlags.HideInHierarchy;
+                    instance = this;
+                    hideFlags = HideFlags.HideInHierarchy;
                 }
             }
         }
 
         private void OnDestroy()
         {
-            if (CoroutineRunner.instance == this)
-            {
-                CoroutineRunner.instance = null;
-            }
+            if (instance == this) instance = null;
         }
 
-        private void OnApplicationQuit()
-        {
-            CoroutineRunner.isApplicationQuitting = true;
-        }
+        private void OnApplicationQuit() => isApplicationQuitting = true;
 
         public static new Coroutine StartCoroutine(IEnumerator routine)
         {
-            CoroutineRunner coroutineRunner = CoroutineRunner.Instance;
-            if (!(coroutineRunner != null))
-            {
-                return null;
-            }
-            return coroutineRunner.StartCoroutineInternal(routine);
+            CoroutineRunner runner = Instance;
+            return runner ? runner.StartCoroutineInternal(routine) : null;
         }
 
         public static new void StopCoroutine(Coroutine routine)
         {
-            CoroutineRunner coroutineRunner = CoroutineRunner.Instance;
-            if (coroutineRunner == null)
-            {
-                return;
-            }
-            coroutineRunner.StopCoroutineInternal(routine);
+            CoroutineRunner runner = Instance;
+            if (runner) runner.StopCoroutineInternal(routine);
         }
 
-        private Coroutine StartCoroutineInternal(IEnumerator routine)
-        {
-            return base.StartCoroutine(routine);
-        }
+        private Coroutine StartCoroutineInternal(IEnumerator routine) => base.StartCoroutine(routine);
 
-        private void StopCoroutineInternal(Coroutine routine)
-        {
-            base.StopCoroutine(routine);
-        }
-
-        private static CoroutineRunner instance;
-
-        private static readonly object lockObject = new object();
-
-        private static bool isApplicationQuitting;
+        private void StopCoroutineInternal(Coroutine routine) => base.StopCoroutine(routine);
     }
 }

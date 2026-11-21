@@ -308,37 +308,29 @@ namespace 裁缝之王
             }
             _BHMC++;
             owner.allyCardDetail.ExhaustAllCards();
+            void AddCards(params int[] ids)
+            {
+                foreach (int id in ids) owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", id), false);
+            }
+
             if (_JD == 1)
             {
                 if (_BHMC == 1)
                 {
                     _TZ = 5;
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 3), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 2), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 1), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 1), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 1), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 5), false);
+                    AddCards(3, 2, 1, 1, 1, 5);
                 }
                 else if (_BHMC == 2)
                 {
                     _TZ = 4;
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 4), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 3), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 6), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 6), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 6), false);
+                    AddCards(4, 3, 6, 6, 6);
                 }
                 else if (_BHMC == 3)
                 {
                     BeiMing();
                     _BHMC = 0;
                     _TZ = 4;
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 7), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 4), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 2), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 8), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 8), false);
+                    AddCards(7, 4, 2, 8, 8);
                 }
             }
             else if (_JD == 2)
@@ -347,23 +339,13 @@ namespace 裁缝之王
                 if (_BHMC == 1)
                 {
                     _TZ = 5;
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 3), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 3), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 1), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 1), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 2), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 2), false);
+                    AddCards(3, 3, 1, 1, 2, 2);
                 }
                 else if (_BHMC == 2)
                 {
                     _BHMC = 0;
                     _TZ = 5;
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 4), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 3), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 1), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 2), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 8), false);
-                    owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 8), false);
+                    AddCards(4, 3, 1, 2, 8, 8);
                 }
             }
 
@@ -379,12 +361,12 @@ namespace 裁缝之王
             if (zhenDing >= 5)
             {
                 _TZ++;
-                owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 10), false);
+                AddCards(10);
             }
             if (biaoBen > 0)
             {
                 _TZ++;
-                owner.allyCardDetail.AddNewCard(new LorId("CaiFengZhiKing", 9), false);
+                AddCards(9);
             }
             foreach (BattleDiceCardModel card in owner.allyCardDetail.GetHand())
             {
@@ -394,30 +376,18 @@ namespace 裁缝之王
 
         public override BattleUnitModel ChangeAttackTarget(BattleDiceCardModel card, int idx)
         {
-            if (card == null || card.owner == null) return base.ChangeAttackTarget(card, idx);
+            if (card?.owner == null || card.GetID() != new LorId("CaiFengZhiKing", 9))
+                return base.ChangeAttackTarget(card, idx);
 
-            LorId cardId = card.GetID();
-            if (!cardId.Equals(new LorId("CaiFengZhiKing", 9))) return base.ChangeAttackTarget(card, idx);
-
-            List<BattleUnitModel> candidates = new List<BattleUnitModel>();
+            List<BattleUnitModel> candidates = new();
             foreach (BattleUnitModel u in BattleObjectManager.instance.GetAliveList(Faction.Player))
             {
-                if (u?.bufListDetail == null) continue;
-                if (u.bufListDetail.GetActivatedBufList().Exists(x => x.bufType == KeywordHao.BF_BiaoBenHua))
+                if (u?.bufListDetail?.GetActivatedBufList().Exists(x => x.bufType == KeywordHao.BF_BiaoBenHua) == true)
                     candidates.Add(u);
             }
-            if (candidates.Count > 0)
-                return candidates[UnityEngine.Random.Range(0, candidates.Count)];
-
-            if (cardId == new LorId("CaiFengZhiKing", 6))
-            {
-                List<BattleUnitModel> allies = BattleObjectManager.instance.GetAliveList(owner.faction);
-                allies.Remove(owner);
-                allies.RemoveAll(x => !x.IsTargetable(owner));
-                if (allies.Count > 0) return RandomUtil.SelectOne(allies);
-            }
-
-            return base.ChangeAttackTarget(card, idx);
+            return candidates.Count > 0
+                ? candidates[UnityEngine.Random.Range(0, candidates.Count)]
+                : base.ChangeAttackTarget(card, idx);
         }
     }
 

@@ -209,9 +209,8 @@ namespace 裁缝之王
 
         public override bool IsTargetChangable(BattleUnitModel attacker)
         {
-            BattleUnitModel target = card.target;
-            int add = target.bufListDetail.GetKewordBufStack(KeywordHao.BF_ZhenDing);
-            return add >= 5 && target != null;
+            BattleUnitModel target = card?.target;
+            return target != null && target.bufListDetail.GetKewordBufStack(KeywordHao.BF_ZhenDing) >= 5;
         }
     }
 
