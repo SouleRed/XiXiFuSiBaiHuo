@@ -27,7 +27,7 @@ try {
     if (!(Test-Path -LiteralPath $modTarget -PathType Container)) {
         New-Item -ItemType Directory -Path $modTarget -Force | Out-Null
     }
-    Copy-Item -LiteralPath (Join-Path $modSource '*') -Destination $modTarget -Recurse -Force
+    Get-ChildItem -LiteralPath $modSource | Copy-Item -Destination $modTarget -Recurse -Force
     Write-Output "DEPLOY OK: $modTarget"
 }
 finally {
