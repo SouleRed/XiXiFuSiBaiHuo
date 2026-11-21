@@ -10,7 +10,7 @@ namespace 裁缝之王
 
         public override void OnRoundEnd()
         {
-            Presentation.Actions.ActionAudio.Play("10SV-092");
+            Presentation.Actions.ActionAudio.PlayVoice("10SV-092");
             stack = 0;
             Destroy();
         }

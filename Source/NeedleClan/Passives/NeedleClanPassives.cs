@@ -4,6 +4,14 @@ namespace 裁缝之王
 {
     public class PassiveAbility_7XiaoErJian_CFK : PassiveAbilityBase
     {
+        internal const int PinHeight = 150;
+
+        public override void OnWaveStart()
+        {
+            base.OnWaveStart();
+            owner?.view?.ChangeHeight(PinHeight);
+        }
+
         public override void OnSucceedAttack(BattleDiceBehavior behavior)
         {
             BattleUnitModel target = behavior.card.target;

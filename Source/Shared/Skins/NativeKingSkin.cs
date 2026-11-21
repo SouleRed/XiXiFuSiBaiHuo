@@ -102,6 +102,11 @@ namespace 裁缝之王
                     height = PassiveAbility_3DuShagTS_CFK.KingHeight;
                     return;
                 }
+                if (p is PassiveAbility_7XiaoErJian_CFK)
+                {
+                    height = PassiveAbility_7XiaoErJian_CFK.PinHeight;
+                    return;
+                }
             }
         }
 

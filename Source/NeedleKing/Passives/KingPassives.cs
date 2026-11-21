@@ -130,7 +130,7 @@ namespace 裁缝之王
         public override void OnWaveStart()
         {
             owner?.view?.ChangeHeight(KingHeight);
-            Presentation.Actions.ActionAudio.Play("10SV-090");
+            Presentation.Actions.ActionAudio.PlayVoice("10SV-090");
             _BHMC = 0;
             _TZ = 0;
             _JD = 1;
@@ -174,7 +174,7 @@ namespace 裁缝之王
             return _dmgReduction;
         }
 
-        private const int PinHeight = 90;
+        private const int PinHeight = PassiveAbility_7XiaoErJian_CFK.PinHeight;
         private static readonly int[] SummonUnitIds = { 2, 2, 3 };
         private static readonly MethodInfo CreateLibrarianUnitMethod = AccessTools.Method(
             typeof(StageController), "CreateLibrarianUnit",
@@ -182,7 +182,7 @@ namespace 裁缝之王
 
         private void ZhaoHuan()
         {
-            Presentation.Actions.ActionAudio.Play("10SV-096");
+            Presentation.Actions.ActionAudio.PlayVoice("10SV-096");
             SummonPins();
         }
 
@@ -245,7 +245,7 @@ namespace 裁缝之王
             }
             if (JD == 1)
             {
-                Presentation.Actions.ActionAudio.Play("10SV-091");
+                Presentation.Actions.ActionAudio.PlayVoice("10SV-091");
                 owner.bufListDetail.AddKeywordBufByEtc(KeywordHao.BF_BeiMing_1, 1, owner);
             }
             else if (JD >= 2)
@@ -256,14 +256,14 @@ namespace 裁缝之王
 
         public override void OnDie()
         {
-            Presentation.Actions.ActionAudio.Play("10SV-099");
+            Presentation.Actions.ActionAudio.PlayVoice("10SV-099");
             base.OnDie();
         }
 
         private void ZhuanJie()
         {
             SummonPins();
-            Presentation.Actions.ActionAudio.Play("10SV-093");
+            Presentation.Actions.ActionAudio.PlayVoice("10SV-093");
             SetSp(30);
             owner.bufListDetail.RemoveBufAll(BufPositiveType.Negative);
             if (owner.IsBreakLifeZero())

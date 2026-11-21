@@ -2,8 +2,8 @@
 <EnemyUnitClassRoot xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Enemy ID="1">
     <NameID>-1</NameID>
-    <MinHeight>370</MinHeight>
-    <MaxHeight>370</MaxHeight>
+    <MinHeight>170</MinHeight>
+    <MaxHeight>170</MaxHeight>
     <Retreat>false</Retreat>
     <Gender>F</Gender>
     <FaceType>Skin</FaceType>
@@ -20,16 +20,16 @@
   </Enemy>
   <Enemy ID="2">
     <NameID>2</NameID>
-    <MinHeight>90</MinHeight>
-    <MaxHeight>90</MaxHeight>
+    <MinHeight>170</MinHeight>
+    <MaxHeight>170</MaxHeight>
     <Retreat>false</Retreat>
     <BookId>2</BookId>
     <DropTable Level="0"/>
   </Enemy>
   <Enemy ID="3">
     <NameID>3</NameID>
-    <MinHeight>90</MinHeight>
-    <MaxHeight>90</MaxHeight>
+    <MinHeight>170</MinHeight>
+    <MaxHeight>170</MaxHeight>
     <Retreat>false</Retreat>
     <BookId>3</BookId>
     <DropTable Level="0"/>

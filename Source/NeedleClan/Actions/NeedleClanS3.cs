@@ -35,7 +35,7 @@ public sealed class BehaviourAction_NeedleClan_S3 : NeedleClanBehaviourAction
         var timeline = play.CreateTimeline(play.Sample, end);
         timeline.Section(0.7f, ActionDetail.Standing, opponent.data.actionDetail, new[]
         {
-            CoinTimeline.At(1f / 30f, _ => ActionAudio.Play(OpeningVoices[VoiceRandom.Next(OpeningVoices.Length)])),
+            CoinTimeline.At(1f / 30f, _ => ActionAudio.PlayVoice(OpeningVoices[VoiceRandom.Next(OpeningVoices.Length)])),
             play.MoveAt(new KingMove(0.15f, 0.066f, 1, false, true, true, 4, false, Vector3.zero, 1.5f, false, false)),
             pins.Effect(play, (pins.IsWeft ? 0.183333f : 0.166667f), NeedleClanSkin.PierceCombo, (pins.IsWeft ? 0.216667f : 0.233333f)),
             CoinTimeline.PlaySound(0.183333f, "minineedle_1_1", 1f),
