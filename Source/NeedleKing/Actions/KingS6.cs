@@ -19,7 +19,7 @@ public sealed class BehaviourAction_CFK_S6_Coin1 : KingBehaviourAction
     {
         var progress = CommandVoices.GetValue(actor, _ => new CommandVoiceProgress());
         if (progress.NextLine < CommandLines.Length)
-            YinXiao.Play(CommandLines[progress.NextLine++]);
+            ActionAudio.Play(CommandLines[progress.NextLine++]);
     }
 
     protected override List<RencounterManager.MovingAction> BuildAction(

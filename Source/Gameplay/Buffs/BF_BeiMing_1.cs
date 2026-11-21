@@ -66,7 +66,7 @@ namespace 裁缝之王
         {
             //SingletonBehavior<BattleManagerUI>.Instance.ui_unitListInfoSummary.DisplayDlg(CaiFengKing_Initializer.GetBattleDlg(DialogType.DEATH, "CaiFengKing_1"),
                 //base._owner, false, MentalState.Positive);
-            YinXiao.Play("10SV-092", 1f, loop: false);
+            Presentation.Actions.ActionAudio.Play("10SV-092");
             this.stack = 0;
             this.Destroy();
         }

@@ -6,7 +6,7 @@ internal static class ActionAudio
 {
     internal static BattleEffectSound Play(string key, float volume = 1f)
     {
-        if (!YinXiao.TryGetAudioClip(key, out var clip)) return null;
+        if (!CaiFengKing_Initializer.AudioClips.TryGetValue(key, out var clip)) return null;
         var manager = SingletonBehavior<BattleSoundManager>.Instance;
         if (!clip || !manager || !manager.effectSoundPrefab) return null;
         var sound = Object.Instantiate(manager.effectSoundPrefab, manager.transform);

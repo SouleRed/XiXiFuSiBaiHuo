@@ -94,5 +94,5 @@ internal sealed class CoinTimeline
         => At(sourceTime, _ => ActionAudio.Play(clip, volume));
 
     internal static Cue PlayVoice(float sourceTime, string clip)
-        => At(sourceTime, _ => YinXiao.Play(clip));
+        => At(sourceTime, _ => ActionAudio.Play(clip));
 }

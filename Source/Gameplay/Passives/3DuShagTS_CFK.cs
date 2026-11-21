@@ -41,7 +41,7 @@ namespace 裁缝之王
         public override void OnWaveStart()
         {
             owner?.view?.ChangeHeight(KingHeight);
-            YinXiao.Play("10SV-090", 1f, loop: false);
+            Presentation.Actions.ActionAudio.Play("10SV-090");
             _BHMC = 0;
             _TZ = 0;
             _JD = 1;
@@ -100,7 +100,7 @@ namespace 裁缝之王
 
         private void ZhaoHuan()
         {
-            YinXiao.Play("10SV-096", 1f, loop: false);
+            Presentation.Actions.ActionAudio.Play("10SV-096");
             SummonPins();
         }
 
@@ -163,7 +163,7 @@ namespace 裁缝之王
             }
             if (JD == 1)
             {
-                YinXiao.Play("10SV-091", 1f, loop: false);
+                Presentation.Actions.ActionAudio.Play("10SV-091");
                 owner.bufListDetail.AddKeywordBufByEtc(KeywordHao.BF_BeiMing_1, 1, this.owner);
             }
             else if (JD >= 2)
@@ -173,14 +173,14 @@ namespace 裁缝之王
         }
         public override void OnDie()
         {
-            YinXiao.Play("10SV-099", 1f, loop: false);
+            Presentation.Actions.ActionAudio.Play("10SV-099");
             base.OnDie();
         }
 
         private void ZhuanJie()
         {
             SummonPins();
-            YinXiao.Play("10SV-093", 1f, loop: false);
+            Presentation.Actions.ActionAudio.Play("10SV-093");
             this.SetSp(30);
             this.owner.bufListDetail.RemoveBufAll(BufPositiveType.Negative);
             if (this.owner.IsBreakLifeZero())
