@@ -119,12 +119,15 @@ internal sealed partial class KingPlayback : PlaybackState
         var relative = move.ToTarget ? other : unit;
         float scale = ActionMotion.MoveScale(Actor, relative);
         Vector3 offset = move.Offset;
-        offset.x = (offset.x + (move.ToTarget ? move.Radius : 0f)) * sign * (move.ToTarget ? -1f : 1f);
+        offset.x *= sign * (move.ToTarget ? -1f : 1f);
         Vector3 end = relative.WorldPosition + offset * scale;
         if (move.ToTarget)
         {
-            if (move.ActorRadius) end.x -= sign * 2.5f * ActionMotion.Scale(unit);
-            if (move.TargetRadius) end.x -= sign * 2.5f * ActionMotion.Scale(other, capTargetHeight: true);
+            float arriveScale = Mathf.Max(ActionMotion.Scale(unit), ActionMotion.Scale(other, capTargetHeight: true));
+            float clearance = (move.ActorRadius ? 2.5f * ActionMotion.Scale(unit) : 0f)
+                + (move.TargetRadius ? 2.5f * ActionMotion.Scale(other, capTargetHeight: true) : 0f)
+                + move.Radius * arriveScale;
+            end.x -= sign * clearance;
             if (!move.ChaseY) end.y = 0f;
         }
         tracks[side]?.Stop();
