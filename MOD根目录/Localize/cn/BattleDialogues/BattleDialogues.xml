@@ -22,16 +22,14 @@
       <BattleDialog ID="SPECIAL_EVENT_0">给我...拿来...!</BattleDialog>
     </Type>
   </Character>
-  <Character ID="1">
+  <Character ID="1496">
     <Type ID="START_BATTLE">
-      <BattleDialog ID="0">鲜活的...哭声...!我的...晚...餐!</BattleDialog>
       <BattleDialog ID="START_BATTLE_0">以王...之?名...!</BattleDialog>
     </Type>
     <Type ID="BATTLE_VICTORY">
       <BattleDialog ID="BATTLE_VICTORY_0">咕啊啊啊!!古,老的...回,响...我的...!黄金...?</BattleDialog>
     </Type>
     <Type ID="DEATH">
-      <BattleDialog ID="0">呃啊...啊...啊.啊.啊.</BattleDialog>
       <BattleDialog ID="DEATH_0">呼吸弱去的...声音...不行...!心跳...!不能...停止,的!</BattleDialog>
     </Type>
     <Type ID="COLLEAGUE_DEATH">
