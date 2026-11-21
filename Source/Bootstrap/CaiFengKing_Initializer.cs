@@ -35,7 +35,6 @@ namespace 裁缝之王
             NativeKingSkin.Register(harmony, path);
             Presentation.CustomCombat.CombatHostPatches.Install(harmony);
             Presentation.CustomCombat.CustomCombatRuntime.Register();
-            this.LoadAudioClip(Path.Combine(CaiFengKing_Initializer.path, "BGM"));
             YInitializer.ActivateMods.Add("CaiFengKing");
             AutoKeywordUtils.RegisterKeywordsFromAssembly(Assembly.GetExecutingAssembly());
         }
@@ -63,28 +62,6 @@ namespace 裁缝之王
             return result;
         }
 
-        private void LoadAudioClip(string path)
-        {
-            if (Directory.Exists(path))
-            {
-                DirectoryInfo directoryInfo = new DirectoryInfo(path);
-                foreach (DirectoryInfo directoryInfo2 in directoryInfo.GetDirectories())
-                {
-                    this.LoadAudioClip(directoryInfo2.FullName);
-                }
-                foreach (FileInfo fileInfo in directoryInfo.GetFiles())
-                {
-                    AudioClip audioClip;
-                    bool flag2 = ExtraTools.TryGetAudioClip(fileInfo.FullName, out audioClip);
-                    if (flag2)
-                    {
-                        CaiFengKing_Initializer.AudioClip[audioClip.name] = audioClip;
-                    }
-                }
-            }
-        }
-        public static readonly Dictionary<string, AudioClip> AudioClip = new Dictionary<string, AudioClip>();
-
         public static string packageId = "CaiFengKing";
 
         public static string _packageId = "CaiFengKing";
@@ -92,7 +69,5 @@ namespace 裁缝之王
         public static string currentID = "CaiFengKing";
 
         public static string path = Path.GetDirectoryName(Uri.UnescapeDataString(new UriBuilder(Assembly.GetExecutingAssembly().CodeBase).Path));
-
-        public static Dictionary<string, AudioClip> CustomSound;
     }
 }
