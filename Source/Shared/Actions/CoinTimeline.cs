@@ -93,6 +93,6 @@ internal sealed class CoinTimeline
     internal static Cue PlaySound(float sourceTime, string clip, float volume)
         => At(sourceTime, _ => ActionAudio.Play(clip, volume));
 
-    internal static Cue PlayVoice(float sourceTime, string clip)
-        => At(sourceTime, _ => ActionAudio.Play(clip));
+    internal static Cue PlayVoice(float sourceTime, string clip, float volume = 2f)
+        => At(sourceTime, _ => ActionAudio.PlayVoice(clip, volume));
 }
