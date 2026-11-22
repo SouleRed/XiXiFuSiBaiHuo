@@ -23,10 +23,26 @@ internal static class ActionAudio
         if (!CaiFengKing_Initializer.AudioClips.TryGetValue(key, out var clip)) return null;
         if (!clip || !manager.effectSoundPrefab) return null;
         var sound = Object.Instantiate(manager.effectSoundPrefab, manager.transform);
-        sound.Init(clip, finalVolume);
+        sound.Init(clip, Mathf.Clamp01(finalVolume));
         sound.enabled = false;
         sound.gameObject.AddComponent<KingAudioLifetime>().Source = sound.GetComponent<AudioSource>();
+        sound.gameObject.AddComponent<KingAudioGain>().Gain = finalVolume > 1f ? finalVolume : 1f;
         return sound;
+    }
+}
+
+internal sealed class KingAudioGain : MonoBehaviour
+{
+    internal float Gain = 1f;
+
+    private void OnAudioFilterRead(float[] data, int channels)
+    {
+        if (Gain == 1f) return;
+
+        for (int i = 0; i < data.Length; i++)
+        {
+            data[i] *= Gain;
+        }
     }
 }
 

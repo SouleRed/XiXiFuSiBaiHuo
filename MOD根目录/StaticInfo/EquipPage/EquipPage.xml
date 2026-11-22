@@ -11,16 +11,16 @@
     <Chapter>7</Chapter>
     <Name>裁缝之王之页</Name>
     <EquipEffect>
-      <HP>1812</HP>
+      <HP>1612</HP>
       <HpReduction>0</HpReduction>
-      <Break>500</Break>
+      <Break>400</Break>
       <SpeedMin>2</SpeedMin>
       <Speed>6</Speed>
       <StartPlayPoint>4</StartPlayPoint>
       <MaxPlayPoint>4</MaxPlayPoint>
       <SResist>Endure</SResist>
       <PResist>Normal</PResist>
-      <HResist>Resist</HResist>
+      <HResist>Endure</HResist>
       <SBResist>Resist</SBResist>
       <PBResist>Endure</PBResist>
       <HBResist>Normal</HBResist>
@@ -53,10 +53,10 @@
     <Chapter>7</Chapter>
     <Name>经线之针族之页</Name>
     <EquipEffect>
-      <HP>114</HP>
+      <HP>104</HP>
       <HpReduction>0</HpReduction>
       <Break>45</Break>
-      <SpeedMin>2</SpeedMin>
+      <SpeedMin>1</SpeedMin>
       <Speed>3</Speed>
       <StartPlayPoint>3</StartPlayPoint>
       <MaxPlayPoint>3</MaxPlayPoint>
@@ -81,10 +81,10 @@
     <Chapter>7</Chapter>
     <Name>纬线之针族之页</Name>
     <EquipEffect>
-      <HP>114</HP>
+      <HP>104</HP>
       <HpReduction>0</HpReduction>
       <Break>45</Break>
-      <SpeedMin>2</SpeedMin>
+      <SpeedMin>1</SpeedMin>
       <Speed>3</Speed>
       <StartPlayPoint>3</StartPlayPoint>
       <MaxPlayPoint>3</MaxPlayPoint>

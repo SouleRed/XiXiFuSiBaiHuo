@@ -57,7 +57,7 @@ namespace 裁缝之王
             owner.bufListDetail.RemoveBufAll(typeof(EmotionCardAbility_freischutz3.BattleUnitBuf_Emotion_Fruischutz_Flame));
             owner.Book.SetResistHP(BehaviourDetail.Slash, AtkResist.Endure);
             owner.Book.SetResistHP(BehaviourDetail.Penetrate, AtkResist.Normal);
-            owner.Book.SetResistHP(BehaviourDetail.Hit, AtkResist.Resist);
+            owner.Book.SetResistHP(BehaviourDetail.Hit, AtkResist.Endure);
             owner.Book.SetResistBP(BehaviourDetail.Slash, AtkResist.Resist);
             owner.Book.SetResistBP(BehaviourDetail.Penetrate, AtkResist.Endure);
             owner.Book.SetResistBP(BehaviourDetail.Hit, AtkResist.Normal);
@@ -130,7 +130,7 @@ namespace 裁缝之王
         public override void OnWaveStart()
         {
             owner?.view?.ChangeHeight(KingHeight);
-            Presentation.Actions.ActionAudio.PlayVoice("10SV-090");
+            Presentation.Actions.ActionAudio.PlayVoice("10SV-090", 2);
             _BHMC = 0;
             _TZ = 0;
             _JD = 1;
@@ -143,6 +143,15 @@ namespace 裁缝之王
 
         public override void OnRoundEnd()
         {
+            if (owner.IsBreakLifeZero())
+            {
+                if(_JD == 2 || _BHMC == 2 && _JD == 1)
+                {
+                    owner.breakDetail.RecoverBreakLife(owner.MaxBreakLife, false);
+                    owner.breakDetail.nextTurnBreak = false;
+                    owner.breakDetail.RecoverBreak(owner.breakDetail.GetDefaultBreakGauge());
+                }
+            }
             BattleUnitBuf_BF_Zhaohuan testBuf = owner.bufListDetail.FindBuf<BattleUnitBuf_BF_Zhaohuan>(BufReadyType.ThisRound);
             if (testBuf != null) ZhaoHuan();
         }
@@ -182,7 +191,7 @@ namespace 裁缝之王
 
         private void ZhaoHuan()
         {
-            Presentation.Actions.ActionAudio.PlayVoice("10SV-096");
+            Presentation.Actions.ActionAudio.PlayVoice("10SV-096", 2);
             SummonPins();
         }
 
@@ -239,15 +248,10 @@ namespace 裁缝之王
 
         private void BeiMing()
         {
-            if (owner.IsBreakLifeZero())
-            {
-                owner.breakDetail.RecoverBreakLife(owner.MaxBreakLife, false);
-                owner.breakDetail.nextTurnBreak = false;
-                owner.breakDetail.RecoverBreak(owner.breakDetail.GetDefaultBreakGauge());
-            }
+            
             if (JD == 1)
             {
-                Presentation.Actions.ActionAudio.PlayVoice("10SV-091");
+                Presentation.Actions.ActionAudio.PlayVoice("10SV-091", 2);
                 owner.bufListDetail.AddKeywordBufByEtc(KeywordHao.BF_BeiMing_1, 1, owner);
             }
             else if (JD >= 2)
@@ -258,14 +262,14 @@ namespace 裁缝之王
 
         public override void OnDie()
         {
-            Presentation.Actions.ActionAudio.PlayVoice("10SV-099");
+            Presentation.Actions.ActionAudio.PlayVoice("10SV-099",2);
             base.OnDie();
         }
 
         private void ZhuanJie()
         {
             SummonPins();
-            Presentation.Actions.ActionAudio.PlayVoice("10SV-093");
+            Presentation.Actions.ActionAudio.PlayVoice("10SV-093",2);
             SetSp(30);
             owner.bufListDetail.RemoveBufAll(BufPositiveType.Negative);
             if (owner.IsBreakLifeZero())
@@ -304,7 +308,7 @@ namespace 裁缝之王
 
         public override void OnRoundStart()
         {
-            if (owner.faction != Faction.Player)
+            if (owner.faction == Faction.Enemy)
             {
                 int emotionTotalCoinNumber = Singleton<StageController>.Instance.GetCurrentStageFloorModel().team.emotionTotalCoinNumber;
                 Singleton<StageController>.Instance.GetCurrentWaveModel().team.emotionTotalBonus = emotionTotalCoinNumber + 1;
@@ -353,15 +357,18 @@ namespace 裁缝之王
             }
 
             List<BattleUnitModel> aliveList = BattleObjectManager.instance.GetAliveList(owner.faction == Faction.Player ? Faction.Enemy : Faction.Player);
-            int zhenDing = 0;
+            bool hasZhenDing = false;
             int biaoBen = 0;
             foreach (BattleUnitModel unit in aliveList)
             {
                 if (unit == null) continue;
-                zhenDing += unit.bufListDetail.GetKewordBufStack(KeywordHao.BF_ZhenDing);
+                if (unit.bufListDetail.GetKewordBufStack(KeywordHao.BF_ZhenDing) >= 5)
+                {
+                    hasZhenDing = true;
+                }
                 biaoBen += unit.bufListDetail.GetKewordBufStack(KeywordHao.BF_BiaoBenHua);
             }
-            if (zhenDing >= 5)
+            if (hasZhenDing)
             {
                 _TZ++;
                 AddCards(10);
@@ -410,20 +417,22 @@ namespace 裁缝之王
         public override void OnWaveStart()
         {
             owner.bufListDetail.AddKeywordBufThisRoundByEtc(KeywordHao.BF_YangGuang_CFK, 1, owner);
-            if (owner.faction == Faction.Player) return;
-
-            Singleton<StageController>.Instance.GetStageModel().SetCurrentMapInfo(0);
-            int emotionTotalCoinNumber = Singleton<StageController>.Instance.GetCurrentStageFloorModel().team.emotionTotalCoinNumber;
-            Singleton<StageController>.Instance.GetCurrentWaveModel().team.emotionTotalBonus = emotionTotalCoinNumber + 1;
-            foreach (BattleUnitModel unit in BattleObjectManager.instance.GetAliveList(Faction.Player))
+            if (owner.faction == Faction.Enemy)
             {
-                unit.bufListDetail.AddBuf(new BattleUnitBuf_battle123
+                Singleton<StageController>.Instance.GetStageModel().SetCurrentMapInfo(0);
+                int emotionTotalCoinNumber = Singleton<StageController>.Instance.GetCurrentStageFloorModel().team.emotionTotalCoinNumber;
+                Singleton<StageController>.Instance.GetCurrentWaveModel().team.emotionTotalBonus = emotionTotalCoinNumber + 1;
+
+                foreach (BattleUnitModel unit in BattleObjectManager.instance.GetAliveList(Faction.Player))
                 {
-                    hpAdder = 50,
-                    breakGageAdder = 30
-                });
-                unit.SetHp(unit.MaxHp);
-                unit.breakDetail.breakGauge = unit.breakDetail.GetDefaultBreakGauge();
+                    unit.bufListDetail.AddBuf(new BattleUnitBuf_battle123
+                    {
+                        hpAdder = 50,
+                        breakGageAdder = 30
+                    });
+                    unit.SetHp(unit.MaxHp);
+                    unit.breakDetail.breakGauge = unit.breakDetail.GetDefaultBreakGauge();
+                }
             }
         }
 

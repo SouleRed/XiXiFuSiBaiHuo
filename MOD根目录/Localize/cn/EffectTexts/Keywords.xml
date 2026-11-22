@@ -31,7 +31,7 @@
     </BattleEffectText>
     <BattleEffectText ID="BF_YangGuang_CFK">
       <Name>沐浴着温暖的光芒[裁缝之王]</Name>
-      <Desc>目标每带有2层"针钉"则使自身所有骰子威力+1</Desc>
+      <Desc>目标每带有3层"针钉"则使自身所有骰子威力+1</Desc>
     </BattleEffectText>
   </effectTextList>
 </BattleEffectTextRoot>

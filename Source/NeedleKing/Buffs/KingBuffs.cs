@@ -10,7 +10,7 @@ namespace 裁缝之王
 
         public override void OnRoundEnd()
         {
-            Presentation.Actions.ActionAudio.PlayVoice("10SV-092");
+            Presentation.Actions.ActionAudio.PlayVoice("10SV-092", 2);
             stack = 0;
             Destroy();
         }
@@ -84,7 +84,7 @@ namespace 裁缝之王
             int add = target.bufListDetail.GetKewordBufStack(KeywordHao.BF_ZhenDing);
             if (add > 0)
             {
-                behavior.ApplyDiceStatBonus(new DiceStatBonus { max = Math.Min(add / 3, 99) });
+                behavior.ApplyDiceStatBonus(new DiceStatBonus { power = Math.Min(add / 3, 99) });
             }
         }
     }

@@ -34,8 +34,8 @@
     <Category>None</Category>
     <SkinChangeType>EGO</SkinChangeType>
     <BehaviourList>
-      <Behaviour Min="4" Dice="8" Type="Atk" Detail="Penetrate" Motion="J" Script="bleeding1atk" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin1" />
-      <Behaviour Min="4" Dice="8" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_1ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin2" />
+      <Behaviour Min="4" Dice="7" Type="Atk" Detail="Penetrate" Motion="J" Script="bleeding1atk" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin1" />
+      <Behaviour Min="4" Dice="7" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_1ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin2" />
       <Behaviour Min="5" Dice="8" Type="Atk" Detail="Penetrate" Motion="H" Script="TX_2ZhenLiuQ" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin3" />
     </BehaviourList>
     <Name>纬纱就这样</Name>
@@ -59,9 +59,9 @@
     <Category>None</Category>
     <SkinChangeType>EGO</SkinChangeType>
     <BehaviourList>
-      <Behaviour Min="3" Dice="6" Type="Atk" Detail="Penetrate" Motion="J" Script="forbidReuseDice" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S3_Coin1" />
-      <Behaviour Min="3" Dice="6" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_1ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S3_Coin2" />
-      <Behaviour Min="3" Dice="6" Type="Atk" Detail="Penetrate" Motion="H" Script="TX_1ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S3_Coin3" />
+      <Behaviour Min="3" Dice="5" Type="Atk" Detail="Penetrate" Motion="J" Script="forbidReuseDice" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S3_Coin1" />
+      <Behaviour Min="3" Dice="5" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_1ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S3_Coin2" />
+      <Behaviour Min="3" Dice="5" Type="Atk" Detail="Penetrate" Motion="H" Script="TX_1ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S3_Coin3" />
       <Behaviour Min="4" Dice="7" Type="Atk" Detail="Penetrate" Motion="H" Script="TX_2ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S3_Coin4" />
     </BehaviourList>
     <Name>针数!针数!针数!</Name>
@@ -131,7 +131,7 @@
     <Category>None</Category>
     <SkinChangeType>EGO</SkinChangeType>
     <BehaviourList>
-      <Behaviour Min="8" Dice="10" Type="Atk" Detail="Penetrate" Motion="J" Script="TX_ShouGongFengZhi" MotionDefault="N" EffectRes="" Desc="" ActionScript="CFK_S6_Coin1" />
+      <Behaviour Min="6" Dice="10" Type="Atk" Detail="Penetrate" Motion="J" Script="TX_ShouGongFengZhi" MotionDefault="N" EffectRes="" Desc="" ActionScript="CFK_S6_Coin1" />
     </BehaviourList>
     <Name>给我手工缝制!!!</Name>
     <TextId>-1</TextId>
@@ -147,7 +147,7 @@
   <Card ID="7">
     <Rarity>Unique</Rarity>
     <Chapter>7</Chapter>
-    <Priority>500</Priority>
+    <Priority>10</Priority>
     <Spec Cost="0" Range="Near" Affection="One" EmotionLimit="0" />
     <Script>CX_ShuangZhenTaoTai</Script>
     <Artwork>149607.png</Artwork>
@@ -194,7 +194,7 @@
   <Card ID="9">
     <Rarity>Common</Rarity>
     <Chapter>7</Chapter>
-    <Priority>0</Priority>
+    <Priority>5</Priority>
     <Spec Cost="0" Range="Near" Affection="One" EmotionLimit="0" />
     <Script>CX_JiaoJiaoJiao</Script>
     <Artwork>149610.png</Artwork>

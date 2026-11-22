@@ -98,6 +98,16 @@ namespace 裁缝之王
 
     public class DiceCardSelfAbility_CX_ShouGongFengZhi : DiceCardSelfAbilityBase
     {
+        public override bool IsValidTarget(BattleUnitModel unit, BattleDiceCardModel self, BattleUnitModel targetUnit)
+        {
+            return targetUnit != null && targetUnit.faction == unit.faction;
+        }
+
+        public override bool IsOnlyAllyUnit()
+        {
+            return true;
+        }
+
         public static string Desc = "[优先指定友方单位] [不对友方单位造成伤害与混乱伤害] [战斗开始]若目标为友方单位则使其这一幕与下一幕获得1层[强壮]";
 
         public override void BeforeRollDice(BattleDiceBehavior behavior)

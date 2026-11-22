@@ -4,13 +4,13 @@
   <GroupName>CaiFengZhiKing</GroupName> 
     <Character ID="CaiFengKing_1">
     <Type ID="START_BATTLE">
-      <BattleDialog ID="START_BATTLE_0">以王...之?名...!</BattleDialog>
+      <BattleDialog ID="START_BATTLE_0">生动的...哭泣声!...我的...晚餐...?</BattleDialog>
     </Type>
     <Type ID="BATTLE_VICTORY">
       <BattleDialog ID="BATTLE_VICTORY_0">咕啊啊啊!!古,老的...回,响...我的...!黄金...?</BattleDialog>
     </Type>
     <Type ID="DEATH">
-      <BattleDialog ID="DEATH_0">呼吸弱去的...声音...不行...!心跳...!不能...停止,的!</BattleDialog>
+      <BattleDialog ID="DEATH_0">啊...啊...啊啊啊...</BattleDialog>
     </Type>
     <Type ID="COLLEAGUE_DEATH">
       <BattleDialog ID="COLLEAGUE_DEATH_0">我...已经!不能...忍受...了!饥饿...干渴...!</BattleDialog>
@@ -24,13 +24,13 @@
   </Character>
   <Character ID="1496">
     <Type ID="START_BATTLE">
-      <BattleDialog ID="START_BATTLE_0">以王...之?名...!</BattleDialog>
+      <BattleDialog ID="START_BATTLE_0">生动的...哭泣声!...我的...晚餐...?</BattleDialog>
     </Type>
     <Type ID="BATTLE_VICTORY">
       <BattleDialog ID="BATTLE_VICTORY_0">咕啊啊啊!!古,老的...回,响...我的...!黄金...?</BattleDialog>
     </Type>
     <Type ID="DEATH">
-      <BattleDialog ID="DEATH_0">呼吸弱去的...声音...不行...!心跳...!不能...停止,的!</BattleDialog>
+      <BattleDialog ID="DEATH_0">啊...啊...啊啊啊...</BattleDialog>
     </Type>
     <Type ID="COLLEAGUE_DEATH">
       <BattleDialog ID="COLLEAGUE_DEATH_0">我...已经!不能...忍受...了!饥饿...干渴...!</BattleDialog>

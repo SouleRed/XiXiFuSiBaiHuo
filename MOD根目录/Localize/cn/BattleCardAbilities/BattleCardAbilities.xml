@@ -52,14 +52,16 @@
     <Desc>[命中时]追加目标[针钉]层数的伤害</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="CX_JiaoJiaoJiao">
-    <Desc>[优先指定标本化的目标] [钉层数低于5的单位无法改变本书页的攻击目标]</Desc>
+    <Desc>[优先指定标本化的目标]</Desc>
+	<Desc>[钉层数低于5的单位无法改变本书页的攻击目标]</Desc>
     <Desc>[使用时]目标每带有1层[针钉]使本书页造成的伤害+10%(至多50%)</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="TX_JiaoJiaoJiao">
     <Desc>[命中时]若目标带有[标本化]则击杀目标并恢复体力上限5%的体力</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="CX_BiaoBenHua">
-    <Desc>[攻击容量5] [本书页不造成伤害与混乱伤害]</Desc>
+    <Desc>[攻击容量5]</Desc>
+	<Desc>[本书页不造成伤害与混乱伤害]</Desc>
     <Desc>[使用时]摧毁目标当前书页所有骰子</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="TX_BiaoBenHua">
