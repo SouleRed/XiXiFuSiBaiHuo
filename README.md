@@ -5,7 +5,7 @@
 ## 目录结构
 
 - `Source/`：MOD C# 源码（引导、玩法被动/卡牌/BUFF、原生皮肤、演出动作、镜头与特效）。
-- `MOD根目录/`：工坊 MOD 静态配置、本地化、音频与运行时依赖（编译产物 `XiXiFuSiBaiHuo.dll` 与 Unity `AB/*_skin` 由 `.gitignore` 忽略）。
+- `MOD根目录/`：工坊 MOD 静态配置、本地化、音频、Unity `AB/*_skin` 资源包与运行时依赖（仅编译产物 `XiXiFuSiBaiHuo.dll` 由 `.gitignore` 忽略）。
 - `XiXiFuSiBaiHuo.csproj` / `XiXiFuSiBaiHuo.slnx` / `packages.config`：工程文件。
 - `BuildAndDeploy.ps1`：一键编译并部署到 Steam 工坊目录（支持 `-BuildOnly` 仅编译）。
 
