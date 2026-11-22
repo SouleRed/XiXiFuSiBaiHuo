@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>裁缝之王</RootNamespace>
-    <AssemblyName>裁缝之王</AssemblyName>
+    <AssemblyName>XiXiFuSiBaiHuo</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <LangVersion>10.0</LangVersion>
     <FileAlignment>512</FileAlignment>
