@@ -10,7 +10,7 @@ $repoRoot = [IO.Path]::GetFullPath((Split-Path -Parent $PSCommandPath)).TrimEnd(
 $projectPath = Join-Path $repoRoot 'XiXiFuSiBaiHuo.csproj'
 $dllSource = Join-Path $repoRoot 'bin\Debug\XiXiFuSiBaiHuo.dll'
 $modSource = Join-Path $repoRoot 'MOD根目录'
-$modTarget = Join-Path $WorkshopRoot '裁缝之王'
+$modTarget = Join-Path $WorkshopRoot 'XiXiFuSiBaiHuo'
 
 Push-Location -LiteralPath $repoRoot
 try {
