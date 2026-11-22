@@ -17,8 +17,10 @@ public sealed class KingBuffVisuals : MonoBehaviour
     private readonly BuffVisual cocoon = new("031_fx_mon_cp10_needleking_buff_howling_hear.prefab");
     private readonly BuffVisual cocoonField1 = new("033_fx_mon_cp10_needleking_buff_cocooncrying_2.prefab");
     private readonly BuffVisual cocoonField2 = new("034_fx_mon_cp10_needleking_buff_cocooncrying_3.prefab");
+    private static KingBuffVisuals leftFieldOwner, rightFieldOwner;
     private BattleUnitView view;
     private CharacterAppearance appearance;
+    private int activeHowlingTier;
 
     internal static void Track(BattleUnitModel owner)
     {
@@ -67,28 +69,51 @@ public sealed class KingBuffVisuals : MonoBehaviour
         sunlight.Sync(golden, parent, rotation, sourceUnits * NativeKingSkin.SunlightSourceHeight * SunlightHeightFactor, layer);
         cocoon.Sync(howlingTier > 0, parent, rotation, 1f, layer);
 
-        var sceneRoot = SingletonBehavior<BattleSceneRoot>.Instance;
-        var fieldParent = sceneRoot ? sceneRoot.transform : null;
-        bool onRight = model.faction == Faction.Enemy;
-        SyncField(cocoonField1, howlingTier == 1 && fieldParent, fieldParent, onRight);
-        SyncField(cocoonField2, howlingTier == 2 && fieldParent, fieldParent, onRight);
-    }
+        activeHowlingTier = howlingTier;
+        var fieldParent = SingletonBehavior<BattleSceneRoot>.Instance ? SingletonBehavior<BattleSceneRoot>.Instance.transform : null;
+        if (howlingTier <= 0 || !fieldParent)
+        {
+            ReleaseFieldSlots();
+            cocoonField1.Clear();
+            cocoonField2.Clear();
+            return;
+        }
 
-    private static void SyncField(BuffVisual field, bool visible, Transform parent, bool onRight)
-    {
-        bool created = field.Sync(visible, parent, Quaternion.identity, CocoonFieldScale);
-        if (!created || !field.Instance) return;
+        bool onRight = model.faction == Faction.Enemy;
+        ref var slot = ref (onRight ? ref rightFieldOwner : ref leftFieldOwner);
+        if (!slot || !slot.isActiveAndEnabled || slot.activeHowlingTier <= 0 || howlingTier > slot.activeHowlingTier)
+            slot = this;
+
+        var activeField = howlingTier == 2 ? cocoonField2 : cocoonField1;
+        (howlingTier == 2 ? cocoonField1 : cocoonField2).Clear();
+        if (slot != this)
+        {
+            activeField.Clear();
+            return;
+        }
+
+        Quaternion rot = onRight ? Quaternion.Euler(0f, 180f, 0f) : Quaternion.identity;
+        if (!activeField.Sync(true, fieldParent, rot, CocoonFieldScale) || !activeField.Instance) return;
+
         var map = SingletonBehavior<HexagonalMapManager>.Instance;
         float left = map ? map.GetCurrentBorderPos(HexagonalMapManager.WallDirection.LEFT) : -56f;
         float right = map ? map.GetCurrentBorderPos(HexagonalMapManager.WallDirection.RIGHT) : 56f;
         float up = map ? map.GetCurrentBorderPos(HexagonalMapManager.WallDirection.UP) : 34.64f;
         float down = map ? map.GetCurrentBorderPos(HexagonalMapManager.WallDirection.DOWN) : -51.96f;
         Vector3 desiredCenter = new(onRight ? right + CocoonFieldOffscreenX : left - CocoonFieldOffscreenX, CocoonFieldHeight, (up + down) * .5f);
-        field.Instance.transform.position = desiredCenter - CocoonRippleChildOffset * CocoonFieldScale;
+        activeField.Instance.transform.position = desiredCenter - (rot * CocoonRippleChildOffset) * CocoonFieldScale;
+    }
+
+    private void ReleaseFieldSlots()
+    {
+        if (leftFieldOwner == this) leftFieldOwner = null;
+        if (rightFieldOwner == this) rightFieldOwner = null;
     }
 
     private void Clear()
     {
+        activeHowlingTier = 0;
+        ReleaseFieldSlots();
         needle.Clear();
         sunlight.Clear();
         cocoon.Clear();

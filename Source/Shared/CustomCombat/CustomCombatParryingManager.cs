@@ -2,6 +2,7 @@ using LOR_DiceSystem;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using 裁缝之王.Shared.Interop;
 using Battle.BufEffect;
 using Battle.CreatureEffect;
 using Battle.DiceAttackEffect;
@@ -560,8 +561,29 @@ internal sealed class CustomCombatParryingManager
         return ParryingDecisionResult.Draw;
     }
 
+    private void TryRequeueRedDice()
+    {
+        var checkParryingEnd = RedDiceInterop.CheckParryingEnd;
+        if (checkParryingEnd == null || _teamEnemy.DiceExists() || _teamLibrarian.DiceExists()) return;
+
+        var enemy = new BattleParryingManager.ParryingTeam
+        {
+            unit = _teamEnemy.unit,
+            playingCard = _teamEnemy.playingCard,
+            isKeepedCard = _teamEnemy.isKeepedCard
+        };
+        var librarian = new BattleParryingManager.ParryingTeam
+        {
+            unit = _teamLibrarian.unit,
+            playingCard = _teamLibrarian.playingCard,
+            isKeepedCard = _teamLibrarian.isKeepedCard
+        };
+        checkParryingEnd(enemy, librarian);
+    }
+
     private void CheckParryingEnd()
     {
+        TryRequeueRedDice();
         if (_teamEnemy.unit.IsDead() || _teamLibrarian.unit.IsDead() || (!_teamEnemy.DiceExists() && !_teamLibrarian.DiceExists()) || _teamEnemy.unit.IsExtinction() || _teamLibrarian.unit.IsExtinction()) EndParrying();
         else if (_teamEnemy.playingCard.isKeepedCard && _teamEnemy.DiceExists() && !_teamLibrarian.DiceExists())
         {

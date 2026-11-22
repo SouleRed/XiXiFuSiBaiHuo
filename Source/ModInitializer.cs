@@ -8,6 +8,7 @@ using System.Reflection;
 using UnityEngine;
 using Y_LimbusBuff.Method;
 using 裁缝之王.Presentation.CustomCombat;
+using 裁缝之王.Shared.Interop;
 
 namespace 裁缝之王;
 
@@ -27,6 +28,7 @@ public class CaiFengKing_Initializer : global::ModInitializer
     public override void OnInitializeMod()
     {
         NativeKingSkin.LoadSkins(path);
+        RedDiceInterop.Initialize();
         CustomCombatRuntime.Register();
         AddAudioClips(new DirectoryInfo(Path.Combine(path, "BGM")));
         YInitializer.ActivateMods.Add("CaiFengKing");

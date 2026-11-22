@@ -254,11 +254,11 @@ namespace 裁缝之王
             if (JD == 1)
             {
                 Presentation.Actions.ActionAudio.PlayVoice("10SV-091", 2);
-                owner.bufListDetail.AddKeywordBufByEtc(KeywordHao.BF_BeiMing_1, 1, owner);
+                owner.bufListDetail.AddKeywordBufThisRoundByEtc(KeywordHao.BF_BeiMing_1, 1, owner);
             }
             else if (JD >= 2)
             {
-                owner.bufListDetail.AddKeywordBufByEtc(KeywordHao.BF_BeiMing_2, 2, owner);
+                owner.bufListDetail.AddKeywordBufThisRoundByEtc(KeywordHao.BF_BeiMing_2, 2, owner);
             }
         }
 
@@ -274,6 +274,7 @@ namespace 裁缝之王
             Presentation.Actions.ActionAudio.PlayVoice("10SV-093",2);
             SetSp(30);
             owner.bufListDetail.RemoveBufAll(BufPositiveType.Negative);
+            owner.bufListDetail.RemoveBufAll(KeywordHao.BF_BeiMing_1);
             if (owner.IsBreakLifeZero())
             {
                 owner.breakDetail.RecoverBreakLife(owner.MaxBreakLife, false);
@@ -284,12 +285,7 @@ namespace 裁缝之王
             _BHMC = 0;
         }
 
-        public override bool OnBreakGageZero()
-        {
-            BattleUnitBuf_BF_BeiMing_1 testBuf = owner.bufListDetail.FindBuf<BattleUnitBuf_BF_BeiMing_1>(BufReadyType.ThisRound);
-            BattleUnitBuf_BF_BeiMing_2 testBuf2 = owner.bufListDetail.FindBuf<BattleUnitBuf_BF_BeiMing_2>(BufReadyType.ThisRound);
-            return testBuf != null || testBuf2 != null;
-        }
+        public override bool OnBreakGageZero() => BeiMingBuffBase.HasActive(owner);
 
         private void SetSp(int add)
         {
@@ -349,7 +345,7 @@ namespace 裁缝之王
             }
             else if (_JD == 2)
             {
-                BeiMing();
+                if (owner.bufListDetail.GetActivatedBuf(KeywordHao.BF_BeiMing_2) == null) BeiMing();
                 if (_BHMC == 1)
                 {
                     _TZ = 5;

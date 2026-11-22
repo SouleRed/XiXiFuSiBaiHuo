@@ -2,41 +2,78 @@ using System;
 
 namespace 裁缝之王
 {
-    internal class BattleUnitBuf_BF_BeiMing_1 : NeedleModBuf
+    internal abstract class BeiMingBuffBase : NeedleModBuf
+    {
+        protected override bool TrackVisuals => true;
+        protected abstract int PowerBonus { get; }
+
+        public override void Init(BattleUnitModel owner)
+        {
+            base.Init(owner);
+            ReleaseBreak();
+        }
+
+        public override void OnBreakState() => ReleaseBreak();
+
+        public override bool IsImmune(KeywordBuf buf) => buf == KeywordBuf.NullifyPower;
+
+        public override void BeforeRollDice(BattleDiceBehavior behavior)
+            => behavior.ApplyDiceStatBonus(new DiceStatBonus { power = PowerBonus });
+
+        public override void OnRoundEnd()
+        {
+            stack = 0;
+            Destroy();
+        }
+
+        internal static bool HasActive(BattleUnitModel unit) => unit?.bufListDetail != null &&
+            (unit.bufListDetail.GetActivatedBuf(KeywordHao.BF_BeiMing_1) != null ||
+             unit.bufListDetail.GetActivatedBuf(KeywordHao.BF_BeiMing_2) != null);
+
+        private void ReleaseBreak()
+        {
+            if (_owner == null) return;
+            var detail = _owner.breakDetail;
+            if (!_owner.IsBreakLifeZero() && !detail.nextTurnBreak && _owner.turnState != BattleUnitTurnState.BREAK) return;
+
+            detail.RecoverBreakLife(_owner.MaxBreakLife, ignore: true);
+            detail.nextTurnBreak = false;
+            detail.ResetGauge();
+            if (_owner.turnState == BattleUnitTurnState.BREAK) _owner.turnState = BattleUnitTurnState.WAIT_CARD;
+            _owner.OnReleaseBreak();
+
+            if (Singleton<StageController>.Instance.IsLogState())
+            {
+                _owner.battleCardResultLog?.SetBreakState(false);
+                _owner.battleCardResultLog?.SetCurrentBreakGauge(detail.breakGauge);
+            }
+            else
+            {
+                SingletonBehavior<BattleManagerUI>.Instance?.ui_unitListInfoSummary?.UpdateCharacterProfile(_owner, _owner.faction, _owner.hp, detail.breakGauge);
+            }
+        }
+    }
+
+    internal class BattleUnitBuf_BF_BeiMing_1 : BeiMingBuffBase
     {
         public override string KeywordBufName => KeywordHao.BF_BeiMing_1Name;
         public override KeywordBuf bufType => KeywordHao.BF_BeiMing_1;
-        protected override bool TrackVisuals => true;
+        protected override int PowerBonus => 2;
 
         public override void OnRoundEnd()
         {
             Presentation.Actions.ActionAudio.PlayVoice("10SV-092", 2);
-            stack = 0;
-            Destroy();
+            base.OnRoundEnd();
         }
-
-        public override bool IsImmune(KeywordBuf buf) => buf == KeywordBuf.NullifyPower;
-
-        public override void BeforeRollDice(BattleDiceBehavior behavior)
-            => behavior.ApplyDiceStatBonus(new DiceStatBonus { power = 2 });
     }
 
-    internal class BattleUnitBuf_BF_BeiMing_2 : NeedleModBuf
+    internal class BattleUnitBuf_BF_BeiMing_2 : BeiMingBuffBase
     {
         public override string KeywordBufName => KeywordHao.BF_BeiMing_2Name;
         public override KeywordBuf bufType => KeywordHao.BF_BeiMing_2;
-        protected override bool TrackVisuals => true;
+        protected override int PowerBonus => 3;
 
-        public override void OnRoundEnd()
-        {
-            stack = 0;
-            Destroy();
-        }
-
-        public override bool IsImmune(KeywordBuf buf) => buf == KeywordBuf.NullifyPower;
-
-        public override void BeforeRollDice(BattleDiceBehavior behavior)
-            => behavior.ApplyDiceStatBonus(new DiceStatBonus { power = 3 });
+        public override void OnRoundEnd() { }
     }
 
     internal class BattleUnitBuf_BF_BiaoBenHua : NeedleModBuf
