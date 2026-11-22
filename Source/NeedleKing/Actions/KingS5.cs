@@ -29,6 +29,9 @@ internal static class KingSummonPresentation
         try
         {
             while (stage.Phase == StageController.StagePhase.ActivateStartBattleEffect) yield return null;
+            // 等待更早注册的开战演出（含其他 MOD）完全结束并归还相机，避免并发抢占渲染与聚焦状态。
+            while (stage.Phase == StageController.StagePhase.WaitStartBattleEffect && stage._startBattleEffectList.IndexOf(wait) > 0)
+                yield return null;
             while (stage.Phase == StageController.StagePhase.WaitStartBattleEffect && Pages.Count > 0)
             {
                 var card = Pages.Dequeue();
