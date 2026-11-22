@@ -18,7 +18,7 @@ namespace 裁缝之王
         public override bool IsImmune(KeywordBuf buf) => buf == KeywordBuf.NullifyPower;
 
         public override void BeforeRollDice(BattleDiceBehavior behavior)
-            => behavior.ApplyDiceStatBonus(new DiceStatBonus { max = 2 });
+            => behavior.ApplyDiceStatBonus(new DiceStatBonus { power = 2 });
     }
 
     internal class BattleUnitBuf_BF_BeiMing_2 : NeedleModBuf
@@ -36,7 +36,7 @@ namespace 裁缝之王
         public override bool IsImmune(KeywordBuf buf) => buf == KeywordBuf.NullifyPower;
 
         public override void BeforeRollDice(BattleDiceBehavior behavior)
-            => behavior.ApplyDiceStatBonus(new DiceStatBonus { max = 3 });
+            => behavior.ApplyDiceStatBonus(new DiceStatBonus { power = 3 });
     }
 
     internal class BattleUnitBuf_BF_BiaoBenHua : NeedleModBuf
