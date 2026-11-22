@@ -55,10 +55,10 @@ namespace 裁缝之王
         private void KangXingSet()
         {
             owner.bufListDetail.RemoveBufAll(typeof(EmotionCardAbility_freischutz3.BattleUnitBuf_Emotion_Fruischutz_Flame));
-            owner.Book.SetResistHP(BehaviourDetail.Slash, AtkResist.Endure);
+            owner.Book.SetResistHP(BehaviourDetail.Slash, AtkResist.Resist);
             owner.Book.SetResistHP(BehaviourDetail.Penetrate, AtkResist.Normal);
             owner.Book.SetResistHP(BehaviourDetail.Hit, AtkResist.Endure);
-            owner.Book.SetResistBP(BehaviourDetail.Slash, AtkResist.Resist);
+            owner.Book.SetResistBP(BehaviourDetail.Slash, AtkResist.Endure);
             owner.Book.SetResistBP(BehaviourDetail.Penetrate, AtkResist.Endure);
             owner.Book.SetResistBP(BehaviourDetail.Hit, AtkResist.Normal);
         }
@@ -111,6 +111,8 @@ namespace 裁缝之王
         private static int _BHMC;
         private static int _JD;
         private bool _transformed;
+
+        private bool _one;
         private int _dmgReduction;
 
         public static int BHMC
@@ -130,7 +132,7 @@ namespace 裁缝之王
         public override void OnWaveStart()
         {
             owner?.view?.ChangeHeight(KingHeight);
-            Presentation.Actions.ActionAudio.PlayVoice("10SV-090", 2);
+            _one = true;
             _BHMC = 0;
             _TZ = 0;
             _JD = 1;
@@ -324,6 +326,11 @@ namespace 裁缝之王
             {
                 if (_BHMC == 1)
                 {
+                    if(_one)
+                    {
+                        Presentation.Actions.ActionAudio.PlayVoice("10SV-090", 2);
+                        _one = false;
+                    }
                     _TZ = 5;
                     AddCards(3, 2, 1, 1, 1, 5);
                 }
