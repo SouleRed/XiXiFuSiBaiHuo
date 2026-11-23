@@ -144,7 +144,7 @@ namespace 裁缝之王
             bool flag = !BattleTools.GetStageData<AudioClip>("CFK_BGM", out audioClip);
             if (flag)
             {
-                string path = Path.Combine(CaiFengKing_Initializer.path, "BGM", "BGM1.mp3");
+                string path = Path.Combine(CaiFengKing_Initializer.path, "BGM", "BGM1.wav");
                 AudioClip value;
                 bool flag2 = BattleTools.TryGetAudioClip(path, out value);
                 if (flag2)

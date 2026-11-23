@@ -328,9 +328,9 @@
     </BehaviourList>
   </Card>
   <Card ID="19">
-    <Name>我的天啊赖着不死大人</Name>
+    <Name>BGM展开[裁缝之王]</Name>
 	<TextId>-1</TextId>
-    <Artwork>149605</Artwork>
+    <Artwork>149605.png</Artwork>
     <Rarity>Unique</Rarity>
 	<Option>Personal</Option>
     <Spec Range="Instance" Cost="0" />

@@ -55,5 +55,8 @@
     <BattleCardDesc ID="18">
       <LocalizedName>暗缝-纬线</LocalizedName>
     </BattleCardDesc>
+	<BattleCardDesc ID="19">
+      <LocalizedName>BGM展开[裁缝之王]</LocalizedName>
+    </BattleCardDesc>
   </cardDescList>
 </BattleCardDescRoot>
