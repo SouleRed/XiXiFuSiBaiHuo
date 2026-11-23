@@ -34,8 +34,8 @@
     <Category>None</Category>
     <SkinChangeType>EGO</SkinChangeType>
     <BehaviourList>
-      <Behaviour Min="4" Dice="7" Type="Atk" Detail="Penetrate" Motion="J" Script="bleeding1atk" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin1" />
-      <Behaviour Min="4" Dice="7" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_1ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin2" />
+      <Behaviour Min="4" Dice="8" Type="Atk" Detail="Penetrate" Motion="J" Script="bleeding1atk" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin1" />
+      <Behaviour Min="4" Dice="8" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_1ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin2" />
       <Behaviour Min="5" Dice="8" Type="Atk" Detail="Penetrate" Motion="H" Script="TX_2ZhenLiuQ" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin3" />
     </BehaviourList>
     <Name>纬纱就这样</Name>
@@ -245,7 +245,7 @@
     <Script>CX_4Liu1WLi</Script>
     <Artwork>9106301.png</Artwork>
     <BehaviourList>
-      <Behaviour Min="4" Dice="10" Type="Atk" Detail="Penetrate" Motion="Z" Script="bleeding2atk" Desc="RedDice/NoPoDicePenetrate/RedDice" ActionScript="NeedleClan_S1" />
+      <Behaviour Min="4" Dice="10" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_2Liu_X" Desc="RedDice/NoPoDicePenetrate/RedDice" ActionScript="NeedleClan_S1" />
     </BehaviourList>
   </Card>
   <Card ID="12">
@@ -290,7 +290,7 @@
     <Script>CX_4Liu1WLi</Script>
     <Artwork>9106301.png</Artwork>
     <BehaviourList>
-      <Behaviour Min="4" Dice="10" Type="Atk" Detail="Penetrate" Motion="Z" Script="bleeding2atk" Desc="RedDice/NoPoDicePenetrate/RedDice" ActionScript="NeedleClan_S1" />
+      <Behaviour Min="4" Dice="10" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_2Liu_X" Desc="RedDice/NoPoDicePenetrate/RedDice" ActionScript="NeedleClan_S1" />
     </BehaviourList>
   </Card>
   <Card ID="16">

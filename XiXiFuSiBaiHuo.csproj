@@ -60,6 +60,9 @@
     <Reference Include="NAudio">
       <HintPath>$(MSBuildProjectDirectory)\必要程序集\NAudio.dll</HintPath>
     </Reference>
+    <Reference Include="RedDice">
+      <HintPath>D:\APP\Steam\steamapps\workshop\content\1256670\3621729921\Assemblies\RedDice.dll</HintPath>
+    </Reference>
     <Reference Include="Soule.MotionCamera.Runtime">
       <HintPath>$(MSBuildProjectDirectory)\必要程序集\Soule.MotionCamera.Runtime.dll</HintPath>
     </Reference>

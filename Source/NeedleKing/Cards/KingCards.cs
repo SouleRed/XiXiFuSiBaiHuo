@@ -1,4 +1,5 @@
 using LOR_DiceSystem;
+using RedDice;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -68,8 +69,13 @@ namespace 裁缝之王
         }
     }
 
-    public class DiceCardSelfAbility_CX_WeiShaJiu : DiceCardSelfAbilityBase
+    public class DiceCardSelfAbility_CX_WeiShaJiu : RedDiceCardSelfAbilityBase
     {
+        public override bool RedDice(bool RedDice)
+        {
+            return true;
+        }
+
         public static string Desc = "[攻击容量2] [使用时]目标每带有1层[针钉]使本书页造成的伤害+5%(至多25%)";
 
         public override void OnApplyCard()
@@ -107,8 +113,13 @@ namespace 裁缝之王
         }
     }
 
-    public class DiceCardSelfAbility_CX_20YiShang : DiceCardSelfAbilityBase
+    public class DiceCardSelfAbility_CX_20YiShang : RedDiceCardSelfAbilityBase
     {
+        public override bool RedDice(bool RedDice)
+        {
+            return true;
+        }
+
         public static string Desc = "[攻击容量5] [使用时]目标每带有1层[针钉]使本书页造成的伤害+10%(至多50%)";
 
         public override void OnApplyCard()
@@ -177,8 +188,13 @@ namespace 裁缝之王
         }
     }
 
-    public class DiceCardSelfAbility_CX_ShuangZhenTaoTai : DiceCardSelfAbilityBase
+    public class DiceCardSelfAbility_CX_ShuangZhenTaoTai : RedDiceCardSelfAbilityBase
     {
+        public override bool RedDice(bool RedDice)
+        {
+            return true;
+        }
+
         public static string Desc = "[攻击容量5] [使用时]除自身外每有一名友方角色则使本书页所有骰子造成的伤害+50%且威力+4 若场上不存在友方单位则摧毁本书页所有骰子 [攻击结束]移除所有针族并使自身下一幕获得移除的友方单位数的[强壮]";
 
         public override void OnApplyCard()
@@ -247,8 +263,13 @@ namespace 裁缝之王
         }
     }
 
-    public class DiceCardSelfAbility_CX_JiaoJiaoJiao : DiceCardSelfAbilityBase
+    public class DiceCardSelfAbility_CX_JiaoJiaoJiao : RedDiceCardSelfAbilityBase
     {
+        public override bool RedDice(bool RedDice)
+        {
+            return true;
+        }
+
         public static string Desc = "[优先指定标本化的目标] [钉层数低于5的单位无法改变本书页的攻击目标] [使用时]目标每带有1层[针钉]使本书页造成的伤害+10%(至多50%)";
 
         public override void BeforeGiveDamage(BattleDiceBehavior behavior)
@@ -269,8 +290,13 @@ namespace 裁缝之王
         }
     }
 
-    public class DiceCardSelfAbility_CX_BiaoBenHua : DiceCardSelfAbilityBase
+    public class DiceCardSelfAbility_CX_BiaoBenHua : RedDiceCardSelfAbilityBase
     {
+        public override bool RedDice(bool RedDice)
+        {
+            return true;
+        }
+
         public static string Desc = "[攻击容量5] [本书页不造成伤害与混乱伤害] [使用时]摧毁目标当前书页所有骰子";
 
         public override void OnApplyCard()

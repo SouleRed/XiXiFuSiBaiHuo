@@ -467,8 +467,8 @@ namespace 裁缝之王
                 {
                     unit.bufListDetail.AddBuf(new BattleUnitBuf_battle123
                     {
-                        hpAdder = 50,
-                        breakGageAdder = 30
+                        hpAdder = 30,
+                        breakGageAdder = 20
                     });
                     unit.SetHp(unit.MaxHp);
                     unit.breakDetail.breakGauge = unit.breakDetail.GetDefaultBreakGauge();

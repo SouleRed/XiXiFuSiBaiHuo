@@ -1,3 +1,4 @@
+using RedDice;
 using System.Collections.Generic;
 
 namespace 裁缝之王
@@ -16,11 +17,33 @@ namespace 裁缝之王
         }
     }
 
-    public class DiceCardAbility_TX_XiaoDaZhao : DiceCardAbilityBase
+    public class DiceCardAbility_TX_2Liu_X : RedDiceCardAbilityBase
+    {
+        public override bool RedDice(bool RedDice)
+        {
+            return true;
+        }
+
+        public static string Desc = "[命中时]下一幕对目标2层[流血]";
+
+        public override void OnSucceedAttack()
+        {
+            BattleUnitModel target = card.target;
+            if (target == null) return;
+
+            target.bufListDetail.AddKeywordBufByCard(KeywordBuf.Bleeding, 2, owner);
+        }
+    }
+
+    public class DiceCardAbility_TX_XiaoDaZhao : RedDiceCardAbilityBase
     {
         public static string Desc = "[命中时]重复投掷本骰子 [重复投掷命中时]追加目标[流血]层数的伤害";
 
         private int count;
+        public override bool RedDice(bool RedDice)
+        {
+            return true;
+        }
 
         public override void OnSucceedAttack()
         {
