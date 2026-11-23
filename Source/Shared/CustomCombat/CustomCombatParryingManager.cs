@@ -168,6 +168,10 @@ internal sealed class CustomCombatParryingManager
 
     private ParryingTeam _teamLibrarian = new();
 
+    private readonly BattleParryingManager.ParryingTeam _redDiceEnemy = new();
+
+    private readonly BattleParryingManager.ParryingTeam _redDiceLibrarian = new();
+
     private ParryingDecisionResult _decisionResult;
 
     private ParryingTeam _currentWinnerTeam;
@@ -200,6 +204,10 @@ internal sealed class CustomCombatParryingManager
         _teamLibrarian.Init(cardLibrarian.owner, cardLibrarian);
         _teamEnemy.SetOpponent(_teamLibrarian);
         _teamLibrarian.SetOpponent(_teamEnemy);
+        SyncToRedDiceTeam(_teamEnemy, _redDiceEnemy);
+        SyncToRedDiceTeam(_teamLibrarian, _redDiceLibrarian);
+        _redDiceEnemy.SetOpponent(_redDiceLibrarian);
+        _redDiceLibrarian.SetOpponent(_redDiceEnemy);
         cardEnemy.owner.cardHistory.AddCardHistory(cardEnemy, Singleton<StageController>.Instance.RoundTurn);
         cardLibrarian.owner.cardHistory.AddCardHistory(cardLibrarian, Singleton<StageController>.Instance.RoundTurn);
         cardEnemy.OnUseCard_before();
@@ -564,21 +572,26 @@ internal sealed class CustomCombatParryingManager
     private void TryRequeueRedDice()
     {
         var checkParryingEnd = RedDiceInterop.CheckParryingEnd;
-        if (checkParryingEnd == null || _teamEnemy.DiceExists() || _teamLibrarian.DiceExists()) return;
+        if (checkParryingEnd == null) return;
 
-        var enemy = new BattleParryingManager.ParryingTeam
-        {
-            unit = _teamEnemy.unit,
-            playingCard = _teamEnemy.playingCard,
-            isKeepedCard = _teamEnemy.isKeepedCard
-        };
-        var librarian = new BattleParryingManager.ParryingTeam
-        {
-            unit = _teamLibrarian.unit,
-            playingCard = _teamLibrarian.playingCard,
-            isKeepedCard = _teamLibrarian.isKeepedCard
-        };
-        checkParryingEnd(enemy, librarian);
+        SyncToRedDiceTeam(_teamEnemy, _redDiceEnemy);
+        SyncToRedDiceTeam(_teamLibrarian, _redDiceLibrarian);
+        checkParryingEnd(_redDiceEnemy, _redDiceLibrarian);
+        SyncFromRedDiceTeam(_redDiceEnemy, _teamEnemy);
+        SyncFromRedDiceTeam(_redDiceLibrarian, _teamLibrarian);
+    }
+
+    private static void SyncToRedDiceTeam(ParryingTeam source, BattleParryingManager.ParryingTeam target)
+    {
+        target.unit = source.unit;
+        target.playingCard = source.playingCard;
+        target.isKeepedCard = source.isKeepedCard;
+    }
+
+    private static void SyncFromRedDiceTeam(BattleParryingManager.ParryingTeam source, ParryingTeam target)
+    {
+        target.playingCard = source.playingCard;
+        target.isKeepedCard = source.isKeepedCard;
     }
 
     private void CheckParryingEnd()
