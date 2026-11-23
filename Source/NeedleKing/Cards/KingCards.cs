@@ -1,11 +1,56 @@
+using LOR_DiceSystem;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using LOR_DiceSystem;
+using UnityEngine;
 using 裁缝之王.Presentation.CustomCombat;
+using 裁缝之王.Shared.Tool;
 
 namespace 裁缝之王
 {
+    public class DiceCardSelfAbility_CX_CFK_BGM : DiceCardSelfAbilityBase//展开拉取的bgm
+    {
+        public static string Desc = "[装备时]改变背景音乐";
+        public override void OnUseInstance(BattleUnitModel unit, BattleDiceCardModel self, BattleUnitModel targetUnit)
+        {
+            SingletonBehavior<BattleManagerUI>.Instance.ui_unitListInfoSummary.UpdateCharacterProfileAll();
+            AudioClip clip;
+            bool stageData = BattleTools.GetStageData<AudioClip>("CFK_BGM", out clip);
+            if (stageData)
+            {
+                unit.bufListDetail.AddBuf(new DiceCardSelfAbility_CX_CFK_BGM.ChangeBGM(clip));
+            }
+        }
+
+        public class ChangeBGM : BattleUnitBuf
+        {
+            public ChangeBGM(AudioClip clip)
+            {
+                this.array[0] = clip;
+                this.array[1] = clip;
+                this.array[2] = clip;
+            }
+
+            public override void Init(BattleUnitModel owner)
+            {
+                base.Init(owner);
+                int emotionTotalCoinNumber = Singleton<StageController>.Instance.GetCurrentStageFloorModel().team.emotionTotalCoinNumber;
+                Singleton<StageController>.Instance.GetCurrentWaveModel().team.emotionTotalBonus = emotionTotalCoinNumber + 3;
+                SingletonBehavior<BattleSoundManager>.Instance.SetEnemyTheme(this.array);
+                SingletonBehavior<BattleSoundManager>.Instance.ChangeEnemyTheme(0);
+            }
+
+            public override void OnRoundStart()
+            {
+                int emotionTotalCoinNumber = Singleton<StageController>.Instance.GetCurrentStageFloorModel().team.emotionTotalCoinNumber;
+                Singleton<StageController>.Instance.GetCurrentWaveModel().team.emotionTotalBonus = emotionTotalCoinNumber + 3;
+            }
+
+            private readonly AudioClip[] array = new AudioClip[3];
+        }
+    }
+
+
     public class DiceCardSelfAbility_CX_4Liu20Shang : DiceCardSelfAbilityBase
     {
         public static string Desc = "[使用时]若目标至少带有4层[流血]则使本书页造成的伤害+20%";

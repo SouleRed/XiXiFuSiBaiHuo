@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <BattleCardAbilityDescRoot>
+  <BattleCardAbility ID="CX_CFK_BGM">
+    <Desc>[装备时]展开BGM</Desc></Desc>
+  </BattleCardAbility>
   <BattleCardAbility ID="CX_4Liu20Shang">
     <Desc>[使用时]若目标至少带有4层[流血]则使本书页造成的伤害+20%</Desc>
   </BattleCardAbility>

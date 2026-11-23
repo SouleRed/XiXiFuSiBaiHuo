@@ -327,4 +327,18 @@
       <Behaviour Min="6" Dice="10" Type="Standby" Detail="Guard" Motion="G" />
     </BehaviourList>
   </Card>
+  <Card ID="19">
+    <Name>我的天啊赖着不死大人</Name>
+	<TextId>-1</TextId>
+    <Artwork>149605</Artwork>
+    <Rarity>Unique</Rarity>
+	<Option>Personal</Option>
+    <Spec Range="Instance" Cost="0" />
+    <Script>CX_CFK_BGM</Script>
+    <ScriptDesc></ScriptDesc>
+    <BehaviourList>
+    </BehaviourList>
+    <Chapter>7</Chapter>
+    <Priority>0</Priority>
+  </Card>
 </DiceCardXmlRoot>

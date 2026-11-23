@@ -1,12 +1,16 @@
-using System.Collections.Generic;
-using System.Reflection;
 using BaseMod;
 using HarmonyLib;
 using LOR_DiceSystem;
+using System.Collections.Generic;
+using System.IO;
+using System.Reflection;
 using UI;
+using UnityEngine;
 using Y_LimbusBuff.Buff.OptimizeBuff;
 using Y_LimbusBuff.Method;
 using Y_LimbusBuff.Quote;
+using 裁缝之王.Shared.Tool;
+using static UnityEngine.UI.CanvasScaler;
 
 namespace 裁缝之王
 {
@@ -31,6 +35,11 @@ namespace 裁缝之王
 
     public class PassiveAbility_1CaiFengK_CFK : PassiveAbilityBase
     {
+        public override int SpeedDiceBreakedAdder()
+        {
+            return -999;
+        }
+
         public override bool IsImmune(KeywordBuf buf)
             => buf == KeywordBuf.Stun || buf == KeywordBuf.SealKeyword || buf == KeywordBuf.Seal;
 
@@ -52,7 +61,7 @@ namespace 裁缝之王
             base.OnRoundStart();
         }
 
-        private void KangXingSet()
+        private void KangXingSet()//重置伤害抗性
         {
             owner.bufListDetail.RemoveBufAll(typeof(EmotionCardAbility_freischutz3.BattleUnitBuf_Emotion_Fruischutz_Flame));
             owner.Book.SetResistHP(BehaviourDetail.Slash, AtkResist.Resist);
@@ -129,10 +138,28 @@ namespace 裁缝之王
 
         internal const int KingHeight = 370;
 
+        protected void InitPlayerBGM()//拉取bgm
+        {
+            AudioClip audioClip;
+            bool flag = !BattleTools.GetStageData<AudioClip>("CFK_BGM", out audioClip);
+            if (flag)
+            {
+                string path = Path.Combine(CaiFengKing_Initializer.path, "BGM", "BGM1.mp3");
+                AudioClip value;
+                bool flag2 = BattleTools.TryGetAudioClip(path, out value);
+                if (flag2)
+                {
+                    BattleTools.SetStageData("CFK_BGM", value);
+                }
+            }
+        }
+
         public override void OnWaveStart()
         {
             owner?.view?.ChangeHeight(KingHeight);
             _one = true;
+            InitPlayerBGM();//拉取bgm
+            this.owner.personalEgoDetail.AddCard(new LorId("CaiFengZhiKing", 19));//置入bgm展开书页到ego列表
             _BHMC = 0;
             _TZ = 0;
             _JD = 1;
@@ -271,7 +298,7 @@ namespace 裁缝之王
         private void ZhuanJie()
         {
             SummonPins();
-            Presentation.Actions.ActionAudio.PlayVoice("10SV-093",2);
+            Presentation.Actions.ActionAudio.PlayVoice("10SV-093", 2);
             SetSp(30);
             owner.bufListDetail.RemoveBufAll(BufPositiveType.Negative);
             owner.bufListDetail.RemoveBufAll(KeywordHao.BF_BeiMing_1);
@@ -283,6 +310,16 @@ namespace 裁缝之王
             }
             owner.breakDetail.RecoverBreak(500);
             _BHMC = 0;
+            if (owner.faction == Faction.Player)//如果是斗蛐蛐，二阶段自动切换bgm
+            {
+                SingletonBehavior<BattleManagerUI>.Instance.ui_unitListInfoSummary.UpdateCharacterProfileAll();
+                AudioClip clip;
+                bool stageData = BattleTools.GetStageData<AudioClip>("CFK_BGM", out clip);
+                if (stageData)
+                {
+                    owner.bufListDetail.AddBuf(new DiceCardSelfAbility_CX_CFK_BGM.ChangeBGM(clip));
+                }
+            }
         }
 
         public override bool OnBreakGageZero() => BeiMingBuffBase.HasActive(owner);
