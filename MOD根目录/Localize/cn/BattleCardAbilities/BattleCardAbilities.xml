@@ -60,7 +60,7 @@
     <Desc>[使用时]目标每带有1层[针钉]使本书页造成的伤害+10%(至多50%)</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="TX_JiaoJiaoJiao">
-    <Desc>[命中时]若目标带有[标本化]则击杀目标并恢复体力上限5%的体力</Desc>
+    <Desc>[命中时]若目标带有[标本化]则击杀目标并恢复体力上限8%的体力</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="CX_BiaoBenHua">
     <Desc>[攻击容量5]</Desc>

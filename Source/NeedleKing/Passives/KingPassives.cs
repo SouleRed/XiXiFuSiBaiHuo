@@ -202,6 +202,7 @@ namespace 裁缝之王
             {
                 _transformed = true;
                 _dmgReduction = (int)(owner.MaxHp * 0.65f - (owner.hp - dmg));
+                owner.SetHp((int)(owner.MaxHp * 0.65f));
             }
             return base.BeforeTakeDamage(attacker, dmg);
         }

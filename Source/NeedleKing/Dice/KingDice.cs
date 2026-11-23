@@ -119,7 +119,7 @@ namespace 裁缝之王
 
     public class DiceCardAbility_TX_JiaoJiaoJiao : DiceCardAbilityBase
     {
-        public static string Desc = "[命中时]若目标带有[标本化]则击杀目标并恢复体力上限5%的体力";
+        public static string Desc = "[命中时]若目标带有[标本化]则击杀目标并恢复体力上限8%的体力";
 
         public override void OnSucceedAttack()
         {
@@ -129,25 +129,37 @@ namespace 裁缝之王
             BattleUnitBuf buf = target.bufListDetail.GetActivatedBufList().Find(x => x.bufType == KeywordHao.BF_BiaoBenHua);
             if (buf != null)
             {
-                target.Die(null, true);
-                owner.RecoverHP((int)(owner.MaxHp * 0.05f));
+                target.Die(owner, true);
+                target.TakeDamage(target.MaxHp+1, DamageType.ETC, owner, KeywordBuf.None);
+                owner.RecoverHP((int)(owner.MaxHp * 0.08f));
             }
         }
     }
 
     public class DiceCardAbility_TX_BiaoBenHua : DiceCardAbilityBase
+{
+    public static string Desc = "[命中时]若目标[针钉]层数不低于5则对其施加2层[标本化]";
+
+    private int _zhenDingBeforeAttack;
+
+    public override void BeforeRollDice()
     {
-        public static string Desc = "[命中时]若目标[针钉]层数不低于5则对其施加2层[标本化]";
-
-        public override void OnSucceedAttack(BattleUnitModel target)
-        {
-            if (target == null) return;
-
-            if (target.bufListDetail.GetActivatedBuf(KeywordHao.BF_ZhenDing) is BattleUnitBuf_BF_ZhenDing zhenDing && zhenDing.stack >= 5)
-            {
-                target.bufListDetail.AddKeywordBufThisRoundByCard(KeywordHao.BF_BiaoBenHua, 2, owner);
-            }
-            base.OnSucceedAttack(target);
-        }
+        BattleUnitModel target = card?.target;
+        _zhenDingBeforeAttack =
+            target?.bufListDetail.GetKewordBufStack(KeywordHao.BF_ZhenDing) ?? 0;
     }
+
+    public override void OnSucceedAttack(BattleUnitModel target)
+    {
+        if (target == null) return;
+
+        if (_zhenDingBeforeAttack >= 5)
+        {
+            target.bufListDetail.AddKeywordBufThisRoundByCard(
+                KeywordHao.BF_BiaoBenHua, 2, owner);
+        }
+
+        base.OnSucceedAttack(target);
+    }
+}
 }
