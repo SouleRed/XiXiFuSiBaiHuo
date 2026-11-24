@@ -65,6 +65,22 @@ public static class ModPatches
 
     #region 原生皮肤与身高
 
+    private const float DiceActionUiOffsetX = 1.059f;
+    private const float DiceActionUiOffsetY = 0.398f;
+
+    private static void ApplyDiceActionUiOffset(BattleUnitView view, int height = 0)
+    {
+        var ui = view?.diceActionUI;
+        if (ui == null || !NativeKingSkin.IsNative(view)) return;
+
+        float followerScale = view.camRotationFollower != null ? Mathf.Abs(view.camRotationFollower.transform.localScale.y) : 0f;
+        float scale = height > 0
+            ? 170f / height
+            : (followerScale > Mathf.Epsilon ? 1f / followerScale : 1f);
+        float facingSign = view.model?.direction == Direction.RIGHT ? -1f : 1f;
+        ui.transform.localPosition = new Vector3(0f, 1.913f, 0f) + new Vector3(DiceActionUiOffsetX * facingSign, DiceActionUiOffsetY, 0f) * scale;
+    }
+
     [HarmonyPatch(typeof(BattleUnitView), nameof(BattleUnitView.ChangeHeight))]
     public static class BattleUnitView_ChangeHeight
     {
@@ -74,6 +90,24 @@ public static class ModPatches
         [HarmonyPrefix]
         private static void Prefix(BattleUnitView __instance, BattleUnitView.SkinInfo ____skinInfo, ref int height)
             => NativeKingSkin.TryOverrideHeight(__instance, ____skinInfo, ref height);
+
+        [HarmonyPostfix]
+        private static void Postfix(BattleUnitView __instance, int height)
+            => ApplyDiceActionUiOffset(__instance, height);
+    }
+
+    [HarmonyPatch(typeof(BattleUnitDiceActionUI), "Update")]
+    public static class BattleUnitDiceActionUI_MirrorOffset
+    {
+        [HarmonyPrepare]
+        private static bool Prepare() => NativeKingSkin.HasKingSkin;
+
+        [HarmonyPostfix]
+        private static void Postfix(BattleUnitDiceActionUI __instance)
+        {
+            if (__instance == null || !__instance.rootCanvas.enabled) return;
+            ApplyDiceActionUiOffset(__instance._unitView);
+        }
     }
 
     [HarmonyPatch(typeof(BookXmlInfo), nameof(BookXmlInfo.GetThumbSprite))]

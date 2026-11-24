@@ -43,16 +43,16 @@ public sealed class BehaviourAction_CFK_S1_Coin2 : KingBehaviourAction
     {
         var poses = new KingPose[]
         {
-            new(0f, ActionDetail.Hit),
+            new(0f, ActionDetail.Hit2),
             new(0.43333332f, ActionDetail.S7),
-            new(0.5f, ActionDetail.Hit2),
+            new(0.5f, ActionDetail.Hit),
         };
         var play = new KingPlayback(ref self, ref opponent, "S1", poses, pauses: new[] { new HitPause(0.43333334f, 0.2f) });
         const float feedback = 0.43333334f;
         float end = 0.9166667f;
         var timeline = play.CreateTimeline(play.Sample, completionSourceTime: end);
         var ready = opponent.data.actionDetail;
-        timeline.Section(feedback, ActionDetail.Hit, ready, new[]
+        timeline.Section(feedback, ActionDetail.Hit2, ready, new[]
         {
             CoinTimeline.PlaySound(0.4f, "magicwood_1_2_944a1b36", 1f),
             play.EffectAt(new KingEffect(0.41666666f, "assets/裁缝之王敌方1496还原/特效/prefabs/动作/004_fx_pierce.prefab", -1, 0.48333332f, 1f, false, false, Vector3.zero, Vector3.zero, Vector3.one)),

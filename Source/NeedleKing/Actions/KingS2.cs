@@ -72,16 +72,16 @@ public sealed class BehaviourAction_CFK_S2_Coin3 : KingBehaviourAction
     {
         var poses = new KingPose[]
         {
-            new(0f, ActionDetail.Hit),
+            new(0f, ActionDetail.Hit2),
             new(0.41666666f, ActionDetail.S7),
-            new(0.48333332f, ActionDetail.Hit2),
+            new(0.48333332f, ActionDetail.Hit),
         };
         var play = new KingPlayback(ref self, ref opponent, "S2", poses, pauses: new[] { new HitPause(0.41666666f, 0.3f) });
         const float feedback = 0.41666666f;
         float end = 1.4166666f;
         var timeline = play.CreateTimeline(play.Sample, completionSourceTime: end);
         var ready = opponent.data.actionDetail;
-        timeline.Section(feedback, ActionDetail.Hit, ready, new[]
+        timeline.Section(feedback, ActionDetail.Hit2, ready, new[]
         {
             play.MoveAt(new KingMove(0f, 0.066f, 6, false, false, true, 4, false, new Vector3(1f,0f,0f), 0f, false, false)),
             CoinTimeline.PlaySound(0.4f, "magicwood_1_2_944a1b36", 1f),
