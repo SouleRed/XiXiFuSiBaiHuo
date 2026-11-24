@@ -96,7 +96,7 @@ namespace 裁缝之王
             return LoadStem(Path.Combine(lbsRoot, mapName, "BGM"));
         }
 
-        /// <summary>用地图对象名去匹配 LbsMap 下的目录名（包含关系，优先长名）。</summary>
+        /// <summary>用地图对象名去匹配 LbsMap 下的目录名（包含关系，优先长名）。</summary>。。
         private static string FindMapFolderByContains(string lbsRoot, string objectName)
         {
             if (string.IsNullOrEmpty(objectName)) return null;

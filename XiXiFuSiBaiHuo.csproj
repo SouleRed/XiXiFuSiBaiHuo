@@ -106,7 +106,9 @@
   <ItemGroup>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Source\**\*.cs" />
+    <Compile Include="Source\**\*.cs" Exclude="Source\Shared\Tool\BgmProvider.cs" />
+    <!-- 显式列出：VS 对通配符外的外部新增文件常常不刷新，列出来 IntelliSense 才认得 -->
+    <Compile Include="Source\Shared\Tool\BgmProvider.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

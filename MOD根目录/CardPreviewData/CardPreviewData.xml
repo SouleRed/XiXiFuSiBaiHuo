@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<CardPreviewXmlRoot xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Version>1.1</Version>
+
+  <Card ID="3">
+    <Flavor Color="#D2A679">ui_cfk_flavor_3</Flavor>
+  </Card>
+
+  <Card ID="4">
+    <Flavor Color="#D2A679">ui_cfk_flavor_4</Flavor>
+  </Card>
+
+  <Card ID="5">
+    <Flavor Color="#D2A679">ui_cfk_flavor_5</Flavor>
+  </Card>
+
+  <Card ID="6">
+    <Flavor Color="#FFD700">ui_cfk_flavor_6</Flavor>
+  </Card>
+
+  <Card ID="7">
+    <Flavor Color="#D2A679">ui_cfk_flavor_7</Flavor>
+  </Card>
+
+  <Card ID="8">
+    <Flavor Color="#D2A679">ui_cfk_flavor_8</Flavor>
+  </Card>
+
+  <Card ID="9">
+    <Flavor Color="#FFD700">ui_cfk_flavor_9</Flavor>
+  </Card>
+
+  <Card ID="10">
+    <Flavor Color="#D2A679">ui_cfk_flavor_10</Flavor>
+  </Card>
+</CardPreviewXmlRoot>

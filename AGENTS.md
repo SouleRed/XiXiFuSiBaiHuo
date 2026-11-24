@@ -19,6 +19,10 @@
 - 部署脚本自动探测 Steam 库；`Tools\LbsMapPluginCompat\LbsMapPlugin.csproj` 里的 `GameManaged` 是硬编码路径
 - 产物：`bin\Debug\XiXiFuSiBaiHuo.dll`，同时拷贝到 `MOD根目录\Assemblies\`
 - 协作者用的 `BuildAndDeploy.ps1` 指向 `E:\GAME`（本机不存在，部署到创意工坊布局），**本机不要用**
+- **交付铁律：只要改了 `MOD根目录` 下的任何东西（XML / 图片 / 音频 / dll），都必须同步到游戏目录**，并在回复里明确说"已同步"。用户不希望自己手动复制。
+  - 改代码或引用变更 → `.\Deploy-Local.ps1`（会重编 + 全量同步）
+  - 只改 XML/资源 → 直接 `Copy-Item` 到游戏目录即可（不必重编）
+  - 游戏在运行时部署会被脚本拦住，此时先只改仓库，回复里注明"待游戏关闭后同步"
 
 ## 3. 目录要点
 
@@ -34,6 +38,8 @@
 - 图片比例：`BG` 2000×551、`Board` 2000×678，否则被拉伸
 - 插件 DLL 已被我们改造过（改为读 BaseMod 的 `StaticInfo` 布局），源码在 `Tools\LbsMapPluginCompat`
 - 插件报错写入 `Assemblies\LbsMap-error.txt`
+- 切图时机：原版在首个回合开始（`StageController.CheckMapChange`）才把插件地图设为当前地图，比 BGM 晚一拍；
+  `KingPassives.OnWaveStart`（接待站分支）里已手动提前调用 `BattleSceneRoot.ChangeToSpecialMap(mapName, false, false)`，让地图与 BGM 同时出现；后续回合开始的检查会因"已是当前地图"直接跳过
 
 ## 5. BGM 解析（BgmProvider）
 
@@ -59,6 +65,8 @@
 4. csproj 用 `Source\**\*.cs` 通配符，不要再对同一文件加显式 `<Compile Include>`（会 CS2002）
 5. 源码一律 UTF-8；不要用 shell 命令重写含中文的源文件（会乱码）
 6. Unity 原生崩溃时 Player.log 会丢尾巴；崩溃要看「事件查看器 → 应用程序」的 `出错模块`
+7. 新建 `.cs` 文件时，除了通配符还要在 csproj 里**显式加 `<Compile Include>`**（并从通配符 `Exclude`），否则 VS 的 IntelliSense 认不到，会一直报 CS0103（命令行编译却是通过的）
+8. **文本里不能用中文标点**（，。！？：；、"")，只能用半角 `, . ! ? : ;`——本地化与风味文本都适用；写文案后要扫一遍全角标点
 
 ## 7. 验证手段
 
@@ -81,3 +89,22 @@
 
 - 地图：`CFK`（主关）、`CFK_Test`（测试关，验证"地图自带 BGM"）；测试关 id=2，测完可整段删除
 - 未提交改动：见 `git status`；`Tools\` 与 `Assemblies\LbsMap\` 仍是未跟踪状态
+
+## 10. 书页风味文本 / 预览（LS_PreviewUtil）
+
+插件：`MOD根目录\Assemblies\1FrameworkAssemblies\LS_PreviewUtil.dll`（已装）。
+
+- 数据文件：`MOD根目录\CardPreviewData\*.xml`（任意文件名、可子文件夹递归；已有 `CardPreviewData.xml`，内含书页 3-10 的风味文本）
+  - 根节点 `CardPreviewXmlRoot`，每张书页一个 `<Card ID="书页ID">`，至少要有一个 `Preview` 或 `Flavor`
+  - `<Preview>书页ID</Preview>` 多个 = 多页（左右方向键翻页）；`Pid` **不继承** Card 的 `Pid`——原版必须显式 `Pid="@origin"`
+  - `<Flavor B/I/U/S/Color>文本ID</Flavor>` 一行一条；**值必须是文本 ID，不是正文**
+  - `Battle` 默认 true；`false` 只关闭"战斗中查看手牌"的预览
+- 文本 ID 定义在 `MOD根目录\Localize\cn\etc\*.xml`（BaseMod 读取 `localize/text` 写进 `TextDataModel.textDic`；插件本身不加载文本），统一前缀 `ui_cfk_`，目前放在 `FlavorTexts.xml`
+- 改完 CardPreviewData 或文本必须**完全重启游戏**才生效；排错搜 Player.log 的 `LS_PreviewUtil`、`Error while load preview datas`
+- 官方说明归档：`docs\LS_PreviewUtil使用说明.md`；细节：`docs\CardPreview.md`；作者样例：`docs\CardPreview.example.xml`、`docs\CardPreview.sample.xml`
+- 录入约定（用户会这样提需求）：`idN，文本` 或 `idN，金色色号，文本`
+  - 文本 ID 固定为 `ui_cfk_flavor_<书页ID>`
+  - 默认颜色 `#D2A679`（浅棕）；写了"金色色号"的用 `#FFD700`
+  - 原样其余属性（B/I/U/S）不动
+  - 中文标点一律转半角：`，→,` `。→.` `！→!` `？→?` `：→:` `；→;` `、→,` `。。。→...` `""→"`
+- 详细说明与作者示例：`docs\CardPreview.md`、`docs\CardPreview.example.xml`、`docs\CardPreview.sample.xml`

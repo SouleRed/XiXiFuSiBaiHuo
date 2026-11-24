@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<localize>
+
+  <text id="ui_story_clockren_greenblade">莲</text>
+
+  <text id="ui_clockren_criticaltext">暴击</text>
+
+  <text id="ui_clockren_flavortext_1">还未挥刀便已看见敌人被斩中的样子?小生拙劣的想象能力，还需锻炼。</text>
+
+  <text id="ui_clockren_flavortext_2">对过错超出限度的指责......那还能成为“礼”吗?</text>
+
+  <text id="ui_clockren_flavortext_3">将“智”全部奉献于艺术吗?小生不敢妄论...孰智孰愚。</text>
+
+  <text id="ui_clockren_flavortext_4">即便是主人的话语，小生也未皆听。小生的“信”恐难称坚定?</text>
+
+  <text id="ui_clockren_flavortext_5">刀刃的碰撞之下是无数被撕裂的空间。恍惚中的一瞥...便足满月......</text>
+
+  <text id="ui_clockren_flavortext_6">蜉蝣、飞蛾、昙花，残体难驱...下一次...必可活用......</text>
+
+</localize>
