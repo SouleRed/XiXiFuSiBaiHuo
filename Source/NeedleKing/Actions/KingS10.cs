@@ -53,6 +53,7 @@ internal sealed class KingGrabPresentation
     private readonly BattleUnitView actor, target;
     private readonly AnimationClip clip;
     private Transform sampler, point;
+    private bool active;
 
 
     internal KingGrabPresentation(BattleUnitView actor, BattleUnitView target)
@@ -68,6 +69,7 @@ internal sealed class KingGrabPresentation
         float local = .6f + Mathf.Clamp(time - .75f, 0f, 3.1333334f);
         if (time < .75f || local < .6333333f || local >= 2.8666666f)
         {
+            if (active && local >= 2.8666666f) ResetTargetHeight();
             return false;
         }
 
@@ -83,12 +85,27 @@ internal sealed class KingGrabPresentation
         ActionAnimation.SampleTrack(clip, sampler, local);
         float facing = actor.model.direction == Direction.LEFT ? -1f : 1f;
         var root = Matrix4x4.TRS(actor.WorldPosition, actor.transform.rotation, new Vector3(facing, 1f, 1f) * (ActionMotion.Scale(actor) * .8f));
-        target.WorldPosition = root.MultiplyPoint3x4(point.localPosition);
+        Vector3 grabPos = point.localPosition;
+        float liftWeight = Mathf.InverseLerp(0.6333333f, 1.0f, local);
+        grabPos.y += 1.0f * liftWeight;
+        target.WorldPosition = root.MultiplyPoint3x4(grabPos);
+        active = true;
         return true;
     }
 
     internal void Finish()
     {
+        if (active) ResetTargetHeight();
         if (sampler) Object.Destroy(sampler.gameObject);
+    }
+
+    private void ResetTargetHeight()
+    {
+        active = false;
+        if (!target) return;
+        Vector3 pos = target.WorldPosition;
+        if (pos.y == 0f) return;
+        pos.y = 0f;
+        target.WorldPosition = pos;
     }
 }
