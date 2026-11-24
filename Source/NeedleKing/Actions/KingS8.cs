@@ -45,16 +45,16 @@ public sealed class BehaviourAction_CFK_S8_Coin2 : KingBehaviourAction
     {
         var poses = new KingPose[]
         {
-            new(0f, ActionDetail.Hit),
+            new(0f, ActionDetail.Hit2),
             new(0.43333332f, ActionDetail.S7),
-            new(0.5f, ActionDetail.Hit2),
+            new(0.5f, ActionDetail.Hit),
         };
         var play = new KingPlayback(ref self, ref opponent, "S8", poses, pauses: new[] { new HitPause(0.43333334f, 0.2f) });
         const float feedback = 0.43333334f;
         float end = 1.0166667f;
         var timeline = play.CreateTimeline(play.Sample, completionSourceTime: end);
         var ready = opponent.data.actionDetail;
-        timeline.Section(feedback, ActionDetail.Hit, ready, new[]
+        timeline.Section(feedback, ActionDetail.Hit2, ready, new[]
         {
             play.MoveAt(new KingMove(0f, 0.066f, 1, false, false, true, 4, false, new Vector3(-1f,0f,0f), 0f, false, false)),
             CoinTimeline.PlaySound(0f, "human_cloth_e4f79cc4", 1f),

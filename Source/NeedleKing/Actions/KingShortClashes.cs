@@ -58,13 +58,13 @@ internal static class KingShortClashes
     {
         var poses = new KingPose[]
         {
-            new(0f, ActionDetail.Hit),
+            new(0f, ActionDetail.Hit2),
             new(0.083333335f, ActionDetail.S7),
-            new(0.150000015f, ActionDetail.Hit2),
+            new(0.150000015f, ActionDetail.Hit),
         };
         var play = new KingPlayback(ref self, ref opponent, "Parrying3", poses, deflection: true);
         var timeline = play.CreateTimeline(play.Sample, completionSourceTime: 0.33333334f);
-        timeline.Section(0.33333334f, ActionDetail.Hit, ActionDetail.Default, new[]
+        timeline.Section(0.33333334f, ActionDetail.Hit2, ActionDetail.Default, new[]
         {
             CoinTimeline.PlaySound(0f, "magicwood_p_3_3e555c5b", 1f),
         });
