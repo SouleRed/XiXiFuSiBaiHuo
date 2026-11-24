@@ -160,6 +160,16 @@ namespace 裁缝之王
             _one = true;
             InitPlayerBGM();//拉取bgm
             this.owner.personalEgoDetail.AddCard(new LorId("CaiFengZhiKing", 19));//置入bgm展开书页到ego列表
+            if (owner.faction == Faction.Enemy)//如果是接待站，开局直接拉起bgm
+            {
+                SingletonBehavior<BattleManagerUI>.Instance.ui_unitListInfoSummary.UpdateCharacterProfileAll();
+                AudioClip clip;
+                bool stageData = BattleTools.GetStageData<AudioClip>("CFK_BGM", out clip);
+                if (stageData)
+                {
+                    owner.bufListDetail.AddBuf(new DiceCardSelfAbility_CX_CFK_BGM.ChangeBGM(clip));
+                }
+            }
             _BHMC = 0;
             _TZ = 0;
             _JD = 1;
@@ -299,6 +309,7 @@ namespace 裁缝之王
         private void ZhuanJie()
         {
             SummonPins();
+            owner.SetHp((int)(owner.MaxHp * 0.65f));//转换阶段时重置血量，防止意外情况
             Presentation.Actions.ActionAudio.PlayVoice("10SV-093", 2);
             SetSp(30);
             owner.bufListDetail.RemoveBufAll(BufPositiveType.Negative);

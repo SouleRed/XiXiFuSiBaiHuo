@@ -119,19 +119,22 @@ namespace 裁缝之王
 
     public class DiceCardAbility_TX_JiaoJiaoJiao : DiceCardAbilityBase
     {
-        public static string Desc = "[命中时]若目标带有[标本化]则击杀目标并恢复体力上限8%的体力";
+        public static string Desc = "[命中时]若目标带有[标本化]则追加目标体力上限120%的伤害自身恢复体力上限8%的体力";//即死代码在斗蛐蛐时可能会无视对面锁血，因此修改为高额追伤
 
         public override void OnSucceedAttack()
         {
+            
             BattleUnitModel target = card.target;
             if (target == null) return;
-
             BattleUnitBuf buf = target.bufListDetail.GetActivatedBufList().Find(x => x.bufType == KeywordHao.BF_BiaoBenHua);
             if (buf != null)
             {
-                target.Die(owner, true);
-                target.TakeDamage(target.MaxHp+1, DamageType.ETC, owner, KeywordBuf.None);
+                target.TakeDamage((int)(target.MaxHp * 1.2f), DamageType.ETC, target, KeywordBuf.None);
                 owner.RecoverHP((int)(owner.MaxHp * 0.08f));
+                if ((int)target.hp <= (int)target.MaxHp / 2)
+                {
+                    //target.Die(target, true);
+                }
             }
         }
     }
