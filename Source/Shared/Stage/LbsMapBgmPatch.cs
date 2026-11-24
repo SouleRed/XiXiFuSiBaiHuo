@@ -1,8 +1,6 @@
 using System;
-using System.IO;
 using HarmonyLib;
 using UnityEngine;
-using 裁缝之王.Shared.Tool;
 
 namespace 裁缝之王
 {
@@ -13,20 +11,16 @@ namespace 裁缝之王
     /// 2. 任意一次敌方主题切换都强制指向该曲目（情绪等级变化等情况）；
     /// 3. 切图后同步地图自身的 mapBgm，避免后续原版逻辑再拿回默认曲目。
     ///
+    /// BGM 的查找规则见 <see cref="BgmProvider"/>。
     /// 所有入口都做了异常兜底：补丁里抛异常会打断原版流程（甚至崩游戏），
     /// 所以这里宁可静默退回原版行为，只在日志里留痕。
     /// </summary>
     public static class LbsMapBgmPatch
     {
-        /// <summary>插件生成的地图管理器类型名（避免直接引用 LbsMapPlugin.dll）。</summary>
-        private const string LbsMapManagerTypeName = "LbsAssetMapManager";
-
-        private const string BgmStageKey = "CFK_BGM";
+        /// <summary>插件生成的地图对象名固定带这个后缀，用名字判断比依赖管理器类型更稳。</summary>
+        private const string LbsMapMarker = "[LbsMap]";
 
         private const string LogTag = "[裁缝之王][BGM] ";
-
-        private static AudioClip cachedBgm;
-        private static bool loadFailed;
 
         [HarmonyPatch(typeof(BattleSceneRoot), nameof(BattleSceneRoot.InitInvitationMap))]
         public static class BattleSceneRoot_InitInvitationMap
@@ -36,15 +30,16 @@ namespace 裁缝之王
             {
                 try
                 {
-                    if (m == null) return;
-                    if (m.GetType().Name != LbsMapManagerTypeName) return;
+                    if (!IsLbsMap(m)) return;
+                    Debug.Log(LogTag + "创建地图对象=" + m.name);
 
-                    AudioClip clip = GetBgmClip();
+                    AudioClip clip = BgmProvider.Resolve(m);
                     if (clip == null) return;
 
                     // 地图创建阶段就写好，原版 OnStageStart 会用 mapBgm[0] 作为
                     // 友方（正在播放的）音轨，开场即是我们自己的曲子。
                     m.mapBgm = new[] { clip, clip, clip };
+                    BgmProvider.Publish(clip);
                 }
                 catch (Exception e)
                 {
@@ -57,19 +52,24 @@ namespace 裁缝之王
         public static class BattleSoundManager_ChangeEnemyTheme
         {
             [HarmonyPrefix]
-            private static void Prefix(BattleSoundManager __instance, ref int idx)
+            private static bool Prefix(BattleSoundManager __instance, ref int idx)
             {
                 try
                 {
-                    if (__instance == null) return;
-                    if (!TryGetTheme(out AudioClip[] theme)) return;
+                    if (__instance == null) return true;
+                    if (!TryGetTheme(out AudioClip[] theme)) return true;
 
+                    // 只把数据对齐，不执行原方法：
+                    // 原方法会 ChangeCurrentTheme(false) 把音轨切到敌方通道，
+                    // 正在播放的友方音轨会被暂停、曲子从头重来（听起来就是“被覆盖”）。
                     __instance.SetEnemyTheme(theme);
                     idx = 0;
+                    return false;
                 }
                 catch (Exception e)
                 {
                     Debug.LogWarning(LogTag + "拦截敌方主题切换失败：" + e);
+                    return true;
                 }
             }
         }
@@ -96,90 +96,54 @@ namespace 裁缝之王
             }
         }
 
+        private static bool IsLbsMap(MapManager map)
+        {
+            return map != null
+                && !string.IsNullOrEmpty(map.name)
+                && map.name.IndexOf(LbsMapMarker, StringComparison.Ordinal) >= 0;
+        }
+
+        /// <summary>
+        /// 本 MOD 的曲目素材 RMS 偏低（实测约 32%，原版约 40%+），听感偏轻。
+        /// 这里只对“正在播放的确实是本 MOD 曲目”的情况做增益，最终由 BgmProvider.BgmGain 控制。
+        /// </summary>
+        [HarmonyPatch(typeof(BattleSoundManager), "UpdateVolume")]
+        public static class BattleSoundManager_UpdateVolume
+        {
+            [HarmonyPostfix]
+            private static void Postfix(BattleSoundManager __instance)
+            {
+                try
+                {
+                    if (__instance == null) return;
+
+                    AudioSource source = __instance.CurrentPlayingTheme;
+                    if (source == null || source.clip == null) return;
+                    if (!BgmProvider.TryGetPublished(out AudioClip clip) || clip == null) return;
+                    if (source.clip != clip) return;
+
+                    source.volume = Mathf.Clamp(source.volume * BgmProvider.BgmGain, 0f, 1f);
+                }
+                catch (Exception e)
+                {
+                    Debug.LogWarning(LogTag + "调整 BGM 音量失败：" + e);
+                }
+            }
+        }
+
         private static bool TryGetTheme(out AudioClip[] theme)
         {
             theme = null;
 
             BattleSceneRoot scene = SingletonBehavior<BattleSceneRoot>.Instance;
             MapManager map = scene ? scene.currentMapObject : null;
-            if (map == null) return false;
-            if (map.GetType().Name != LbsMapManagerTypeName) return false;
+            if (!IsLbsMap(map)) return false;
 
-            AudioClip clip = GetBgmClip();
+            AudioClip clip = BgmProvider.Resolve(map);
             if (clip == null) return false;
 
             theme = new[] { clip, clip, clip };
             return true;
-        }
-
-        /// <summary>
-        /// 加载并缓存本 MOD 的战斗 BGM，同时写回关卡数据供被动逻辑复用，避免重复解码。
-        /// 任何一步失败都返回 null，让原版继续用自己的曲目，而不是抛出异常。
-        /// </summary>
-        private static AudioClip GetBgmClip()
-        {
-            if (cachedBgm != null) return cachedBgm;
-            if (loadFailed) return null;
-
-            try
-            {
-                if (BattleTools.GetStageData(BgmStageKey, out AudioClip stored) && stored != null)
-                {
-                    cachedBgm = stored;
-                    Debug.Log(LogTag + "复用关卡数据中的 BGM");
-                    return cachedBgm;
-                }
-            }
-            catch
-            {
-                // 关卡模型尚未就绪时忽略，继续走文件加载
-            }
-
-            try
-            {
-                string assemblyPath = CaiFengKing_Initializer.path;
-                if (string.IsNullOrEmpty(assemblyPath))
-                {
-                    loadFailed = true;
-                    Debug.LogWarning(LogTag + "程序集目录未知，跳过 BGM 加载");
-                    return null;
-                }
-
-                string path = Path.Combine(assemblyPath, "BGM", "BGM1.wav");
-                if (!File.Exists(path))
-                {
-                    loadFailed = true;
-                    Debug.LogWarning(LogTag + "找不到 BGM 文件：" + path);
-                    return null;
-                }
-
-                if (!BattleTools.TryGetAudioClip(path, out AudioClip clip) || clip == null)
-                {
-                    loadFailed = true;
-                    Debug.LogWarning(LogTag + "BGM 解码失败：" + path);
-                    return null;
-                }
-
-                cachedBgm = clip;
-                Debug.Log(LogTag + "BGM 加载完成：" + path);
-
-                try
-                {
-                    BattleTools.SetStageData(BgmStageKey, clip);
-                }
-                catch
-                {
-                    // 写入关卡数据失败不影响播放
-                }
-
-                return cachedBgm;
-            }
-            catch (Exception e)
-            {
-                loadFailed = true;
-                Debug.LogWarning(LogTag + "BGM 加载异常，已回退原版曲目：" + e);
-                return null;
-            }
         }
     }
 }

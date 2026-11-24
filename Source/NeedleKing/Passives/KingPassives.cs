@@ -138,20 +138,10 @@ namespace 裁缝之王
 
         internal const int KingHeight = 370;
 
-        protected void InitPlayerBGM()//拉取bgm
+        protected void InitPlayerBGM()//拉取bgm：解析规则见 BgmProvider（地图目录 → CFK_<关卡id> → BGM1）
         {
-            AudioClip audioClip;
-            bool flag = !BattleTools.GetStageData<AudioClip>("CFK_BGM", out audioClip);
-            if (flag)
-            {
-                string path = Path.Combine(CaiFengKing_Initializer.path, "BGM", "BGM1.wav");
-                AudioClip value;
-                bool flag2 = BattleTools.TryGetAudioClip(path, out value);
-                if (flag2)
-                {
-                    BattleTools.SetStageData("CFK_BGM", value);
-                }
-            }
+            if (BgmProvider.TryGetPublished(out _)) return;
+            BgmProvider.Publish(BgmProvider.ResolveForCurrentMap());
         }
 
         public override void OnWaveStart()
