@@ -37,8 +37,12 @@ namespace 裁缝之王
                 base.Init(owner);
                 int emotionTotalCoinNumber = Singleton<StageController>.Instance.GetCurrentStageFloorModel().team.emotionTotalCoinNumber;
                 Singleton<StageController>.Instance.GetCurrentWaveModel().team.emotionTotalBonus = emotionTotalCoinNumber + 3;
-                SingletonBehavior<BattleSoundManager>.Instance.SetEnemyTheme(this.array);
-                SingletonBehavior<BattleSoundManager>.Instance.ChangeEnemyTheme(0);
+                // 走开局正在播放的“友方音轨”，避免在其上 Play→Pause 造成爆音：
+                // ChangeAllyTheme 读取的是 currentMapObject.mapBgm，所以先把地图 BGM 换掉。
+                BattleSceneRoot scene = SingletonBehavior<BattleSceneRoot>.Instance;
+                MapManager map = scene ? scene.currentMapObject : null;
+                if (map != null) map.mapBgm = this.array;
+                SingletonBehavior<BattleSoundManager>.Instance.ChangeAllyTheme(0);
             }
 
             public override void OnRoundStart()

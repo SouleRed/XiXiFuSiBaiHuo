@@ -138,20 +138,10 @@ namespace 裁缝之王
 
         internal const int KingHeight = 370;
 
-        protected void InitPlayerBGM()//拉取bgm
+        protected void InitPlayerBGM()//拉取bgm：解析规则见 BgmProvider（地图目录 → CFK_<关卡id> → BGM1）
         {
-            AudioClip audioClip;
-            bool flag = !BattleTools.GetStageData<AudioClip>("CFK_BGM", out audioClip);
-            if (flag)
-            {
-                string path = Path.Combine(CaiFengKing_Initializer.path, "BGM", "BGM1.wav");
-                AudioClip value;
-                bool flag2 = BattleTools.TryGetAudioClip(path, out value);
-                if (flag2)
-                {
-                    BattleTools.SetStageData("CFK_BGM", value);
-                }
-            }
+            if (BgmProvider.TryGetPublished(out _)) return;
+            BgmProvider.Publish(BgmProvider.ResolveForCurrentMap());
         }
 
         public override void OnWaveStart()
@@ -160,6 +150,34 @@ namespace 裁缝之王
             _one = true;
             InitPlayerBGM();//拉取bgm
             this.owner.personalEgoDetail.AddCard(new LorId("CaiFengZhiKing", 19));//置入bgm展开书页到ego列表
+            if (owner.faction == Faction.Enemy)//如果是接待站，开局直接拉起bgm
+            {
+                SingletonBehavior<BattleManagerUI>.Instance.ui_unitListInfoSummary.UpdateCharacterProfileAll();
+                AudioClip clip;
+                bool stageData = BattleTools.GetStageData<AudioClip>("CFK_BGM", out clip);
+                if (stageData)
+                {
+                    owner.bufListDetail.AddBuf(new DiceCardSelfAbility_CX_CFK_BGM.ChangeBGM(clip));
+                }
+
+                // 地图与 BGM 同时出现：原版要等首个回合开始（StageController.CheckMapChange）才切到
+                // 插件地图，会比 BGM 晚一拍。这里在波次开始手动切一次；
+                // 之后的回合开始检查发现已经是当前地图就会直接跳过，不会重复切换。
+                try
+                {
+                    BattleSceneRoot scene = SingletonBehavior<BattleSceneRoot>.Instance;
+                    StageModel stageModel = Singleton<StageController>.Instance?.GetStageModel();
+                    string mapName = stageModel != null ? stageModel.GetCurrentMapInfo() : null;
+                    if (scene != null && !string.IsNullOrEmpty(mapName))
+                    {
+                        scene.ChangeToSpecialMap(mapName, false, false);
+                    }
+                }
+                catch (System.Exception e)
+                {
+                    Debug.LogWarning("[裁缝之王] 提前切换地图失败：" + e.Message);
+                }
+            }
             _BHMC = 0;
             _TZ = 0;
             _JD = 1;
@@ -202,6 +220,7 @@ namespace 裁缝之王
             {
                 _transformed = true;
                 _dmgReduction = (int)(owner.MaxHp * 0.65f - (owner.hp - dmg));
+                owner.SetHp((int)(owner.MaxHp * 0.65f));
             }
             return base.BeforeTakeDamage(attacker, dmg);
         }
@@ -298,6 +317,7 @@ namespace 裁缝之王
         private void ZhuanJie()
         {
             SummonPins();
+            owner.SetHp((int)(owner.MaxHp * 0.65f));//转换阶段时重置血量，防止意外情况
             Presentation.Actions.ActionAudio.PlayVoice("10SV-093", 2);
             SetSp(30);
             owner.bufListDetail.RemoveBufAll(BufPositiveType.Negative);

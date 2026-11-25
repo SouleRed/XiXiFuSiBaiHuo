@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CardPreviewXmlRoot xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Version>1.1</Version>
+
+  <Card ID="(书页ID)">
+    <Pid>(模组ID)</Pid>
+    <Battle>(是否在战斗中显示)</Battle>
+    <Preview Pid="(模组ID)">(书页ID)</Preview>   <!-- 预览的书页 -->
+    <Preview Pid="(模组ID)">(书页ID)</Preview>   <!-- 预览的书页 -->
+    <Preview Pid="(模组ID)">(书页ID)</Preview>   <!-- 预览的书页 -->
+    <Flavor B="(加粗)" I="(斜体)" U="(下划线)" S="(删除线)" Color="(颜色)">(本地化etc中的文本ID)</Flavor>   <!-- 风味文本 -->
+    <Flavor B="(加粗)" I="(斜体)" U="(下划线)" S="(删除线)" Color="(颜色)">(本地化etc中的文本ID)</Flavor>   <!-- 风味文本 -->
+    <Flavor B="(加粗)" I="(斜体)" U="(下划线)" S="(删除线)" Color="(颜色)">(本地化etc中的文本ID)</Flavor>   <!-- 风味文本 -->
+    <Flavor B="(加粗)" I="(斜体)" U="(下划线)" S="(删除线)" Color="(颜色)">(本地化etc中的文本ID)</Flavor>   <!-- 风味文本 -->
+  </Card>
+
+<!-- 多个风味文本会换行合并，第N行为第N个风味文本 -->
+
+  <Card ID="1">    <!-- 模组“MyMod”中ID为1的书页 -->
+    <Pid>MyMod</Pid>
+    <Battle>false</Battle>   <!-- 战斗中不会显示，仅在选卡界面显示 -->
+    <Preview Pid="@origin">25625</Preview>   <!-- 原版中ID为25625的书页 -->
+    <Preview Pid="OtherMod">4</Preview>   <!-- 模组“OtherMod”中ID为4的书页 -->
+    <Preview>17</Preview>   <!-- 本模组中ID为17的书页 -->
+    <Flavor B="true" S="true" Color="#FFFFFF">ui_exampletextId0</Flavor>   <!-- 开启加粗和删除线的风味文本 -->
+    <Flavor U="true" Color="#0E5841">ui_exampletextId2</Flavor>   <!-- 开启下划线的风味文本 -->
+  </Card>
+
+</CardPreviewXmlRoot>

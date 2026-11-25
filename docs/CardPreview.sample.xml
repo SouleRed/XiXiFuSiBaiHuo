@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CardPreviewXmlRoot xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Version>1.1</Version>
+
+  <Card ID="0">
+    <Preview>5</Preview>
+    <Preview>6</Preview>
+    <Preview>7</Preview>
+    <Flavor Color="#8FD0FF">ui_clockren_flavortext_1</Flavor>
+  </Card>
+
+  <Card ID="3">
+    <Flavor Color="#8FD0FF">ui_clockren_flavortext_2</Flavor>
+  </Card>
+
+  <Card ID="4">
+    <Preview>8</Preview>
+    <Flavor Color="#8FD0FF">ui_clockren_flavortext_3</Flavor>
+  </Card>
+
+  <Card ID="5">
+    <Flavor Color="#8FD0FF">ui_clockren_flavortext_4</Flavor>
+  </Card>
+
+  <Card ID="6">
+    <Flavor Color="#8FD0FF">ui_clockren_flavortext_5</Flavor>
+  </Card>
+
+  <Card ID="7">
+    <Flavor Color="#8FD0FF">ui_clockren_flavortext_6</Flavor>
+  </Card>
+
+</CardPreviewXmlRoot>

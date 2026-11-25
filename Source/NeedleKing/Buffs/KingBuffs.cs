@@ -1,3 +1,4 @@
+using HyperCard;
 using System;
 
 namespace 裁缝之王
@@ -85,7 +86,7 @@ namespace 裁缝之王
 
         public override void OnRoundEnd()
         {
-            _owner.TakeDamage((int)(_owner.MaxHp * 0.2f), DamageType.Passive, _owner, KeywordBuf.None);
+            _owner.TakeDamage((int)(_owner.MaxHp * 0.2f), DamageType.Buf, _owner, KeywordBuf.None);
             stack--;
             if (stack <= 0)
             {
@@ -96,8 +97,22 @@ namespace 裁缝之王
                 Destroy();
             }
         }
+        public override void BeforeRollDice(BattleDiceBehavior behavior)
+        {
+            behavior.ApplyDiceStatBonus(new DiceStatBonus
+            {
+                power = -9999,
+                min = -9999,
+                max = -9999,
+                dmgRate = -9999,
+                dmg= -9999,
+                breakRate = -9999,
+                breakDmg = -9999,
+            });
+            base.BeforeRollDice(behavior);
+        }
 
-        public override int SpeedDiceBreakedAdder() => 10;
+        public override int SpeedDiceBreakedAdder() => 99999;
 
         public override void OnTakeDamageByAttack(BattleDiceBehavior atkDice, int dmg)
         {
