@@ -33,13 +33,28 @@
 
 ## 4. 地图（LbsMap 插件）
 
+- ⚠️ **一个 Stage 只能写一条 `<MapAdd>`**：插件会为每条 MapAdd 各生成一张地图，游戏只用其中一张（实测写两条时显示的是 `LbsMap` 模板那张，你自己的图完全无效）。只写你要的那条，例如 `<MapAdd>CFK</MapAdd>`，不要保留 `<MapAdd>LbsMap</MapAdd>`
 - 一张地图 = `Assemblies\LbsMap\<名字>\{BG.png, Board.png}` + StageInfo 里一行 `<MapAdd>名字</MapAdd>`
-- 模板固定为 `Assemblies\LbsMap\LbsMap.ab`，不要改
-- 图片比例：`BG` 2000×551、`Board` 2000×678，否则被拉伸
+- 模板固定为 `Assemblies\LbsMap\LbsMap.ab`（按固定路径加载，不需要 MapAdd 登记），不要改；它自带美术是蓝绿拱窗大厅
+- 图片比例：`BG` **2000×552**（模板原生尺寸，2000×551 也可）、`Board` **2000×678**
+- 地图对象名固定为 `InvitationMap_<名字> [LbsMap]`，BGM 补丁靠 `[LbsMap]` 识别
 - 插件 DLL 已被我们改造过（改为读 BaseMod 的 `StaticInfo` 布局），源码在 `Tools\LbsMapPluginCompat`
-- 插件报错写入 `Assemblies\LbsMap-error.txt`
+- 插件报错写入 `Assemblies\LbsMap-error.txt`（不存在=没抛异常）
+- 详细机制与排错：`docs\LbsMap插件笔记.md`
+- **要做出"3D 背景 + 道具踩地板 + 粒子铺满"的效果，按这个摆法做**（已实测通过）：
+  - 背景图 → layer **13**，父级 `BG_Pivot`(z=16)，子层 y=8.29 / scale 3 / quad 20×5.52
+  - 地板 → layer **0**，`tr_quad_floor_lv0` z=-4 / rot 90°X / scale 3,6,3
+  - 道具与粒子 → 挂 `Foreground_MasterTransform`（layer **0**），z 取 12~16，scale 3
+  这样摆出来才是"道具在地板上、粒子铺满画面"；摆到 layer 13 就会变成被地板压住、粒子只在中部一小块。
+  详细层级与理由见 `docs\路线A_预制体完全还原.md`
+  完整可复用工作流已整理到 `LimbusUnpackingEffects\8.地图预制体还原到图书馆LbsMap\`
+  （入口 AGENTS.md；背景合成见 references\背景制作.md，相机与预览、光照、粒子、排错各有专页，scripts 里有导出/建包/预览模板）
 - 切图时机：原版在首个回合开始（`StageController.CheckMapChange`）才把插件地图设为当前地图，比 BGM 晚一拍；
   `KingPassives.OnWaveStart`（接待站分支）里已手动提前调用 `BattleSceneRoot.ChangeToSpecialMap(mapName, false, false)`，让地图与 BGM 同时出现；后续回合开始的检查会因"已是当前地图"直接跳过
+- 地图素材来源：可从边狱巴士解包（LbsMap 的 `BG`/`Board` 规格与游戏原生 battlemap 完全对应：`Board`=游戏 `floor` 2000×678）。
+  完整流程、缓存路径、Unity6 解析注意事项见 `docs\Limbus解包记录.md`（工具在 `LimbusUnpackingEffects` 模块1/4）
+- 想要实机级亮度/层次 → 走"预制体 + ab"路线（`docs\路线B_预制体还原.md`），**Unity 2019.3.15f1 已装好在 `D:\APP\Unity\2019.3.15f1`**；
+  打包流程、工程路径、踩过的坑见 `docs\Unity打包工作流.md`。当前主关已切到 ab 模式：`<MapAdd Prefab="CFK_Full">CFK_Full</MapAdd>`
 
 ## 5. BGM 解析（BgmProvider）
 
@@ -70,6 +85,9 @@
 
 ## 7. 验证手段
 
+- **地图预览（不必进游戏）**：`Unity.exe -batchmode -quit -projectPath D:\APP\UnityProjects\CFKMapBuild -executeMethod MapPreview.CaptureFromCLI`，
+  输出 `Preview\preview.png`；相机按 LbsMap 的双相机模型还原（主相机正交俯视 orthoSize≈15 / pitch≈19°，
+  背景相机 fov=2·atan(orthoSize/25)≈62°），取景与游戏一致
 - 编译：`.\Deploy-Local.ps1 -BuildOnly`
 - 静态检查：用 Cecil（`D:\APP\Steam\steamapps\workshop\content\1256670\2745822929\Assemblies\Mono.Cecil.dll`）读部署后的 dll，核对补丁签名、参数名、异常处理器、自递归
 - 运行日志：`%LOCALAPPDATA%Low\Project Moon\LibraryOfRuina\Player.log`
@@ -84,6 +102,11 @@
 - 不要为了"确认"去全量扫二进制；需要时用 Cecil 定向查类型/方法
 - 改完必须给出：改了哪些文件、编译结果、静态检查结论、回滚方式
 - 交付前不要跑无关的重扫；一次脚本做完多项检查
+- **随手记录**：每解决一个问题/踩到一个坑/摸索出一套流程，立刻落到文档里，别等下次重查——
+  - 规则、坑、约定、当前状态 → 本文件（AGENTS.md）
+  - 某个主题的完整操作流程 → `docs\<主题>.md`（本文件只留一行指针）
+  - 外部给的说明/样例 → 复制进 `docs\` 归档（Downloads 里的东西会丢）
+  - 回复里说一句"已记到哪"，让用户知道下次能直接复用
 
 ## 9. 当前状态
 

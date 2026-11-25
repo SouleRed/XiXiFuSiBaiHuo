@@ -2,8 +2,7 @@
 <StageXmlRoot xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Stage id="1">
     <FloorNum>1</FloorNum>
-    <MapAdd>LbsMap</MapAdd>
-    <MapAdd>CFK</MapAdd>
+    <MapAdd Prefab="CFK_Full">CFK_Full</MapAdd>
     <Chapter>7</Chapter>
     <StoryType>BF_BeiMing_1</StoryType>
     <Invitation Combine="BookValue">
@@ -28,10 +27,11 @@
     <IsChapterLast>false</IsChapterLast>
     <invitationtype>false</invitationtype>
   </Stage>
+  
+  
   <!-- 副本测试关：验证“每张地图自带 BGM”的解析（CFK_Test\BGM.wav）。测完可整段删掉。 -->
   <Stage id="2">
     <FloorNum>1</FloorNum>
-    <MapAdd>LbsMap</MapAdd>
     <MapAdd>CFK_Test</MapAdd>
     <Chapter>7</Chapter>
     <StoryType>BF_BeiMing_1</StoryType>
