@@ -9,20 +9,43 @@ using 裁缝之王.Shared.Tool;
 
 namespace 裁缝之王
 {
-    public class DiceCardSelfAbility_CX_CFK_BGM : DiceCardSelfAbilityBase//展开拉取的bgm
+    public class DiceCardSelfAbility_CX_CFK_BGM : DiceCardSelfAbilityBase//裁缝之王独立 BGM 覆盖（任意地图生效）
     {
         public static string Desc = "[装备时]改变背景音乐";
+
+        internal static AudioClip ResolveKingBgm()
+        {
+            return NativeStageMap.TryGetDefaultBgm(out AudioClip nativeClip) ? nativeClip : null;
+        }
+
+        internal static void ApplyTo(BattleUnitModel unit)
+        {
+            if (unit == null) return;
+            AudioClip clip = ResolveKingBgm();
+            if (clip == null) return;
+
+            var existing = unit.bufListDetail.GetActivatedBufList()
+                .OfType<ChangeBGM>()
+                .FirstOrDefault();
+            if (existing != null)
+            {
+                existing.ApplyTheme();
+                return;
+            }
+            unit.bufListDetail.AddBuf(new ChangeBGM(clip));
+        }
+
         public override void OnUseInstance(BattleUnitModel unit, BattleDiceCardModel self, BattleUnitModel targetUnit)
         {
             SingletonBehavior<BattleManagerUI>.Instance.ui_unitListInfoSummary.UpdateCharacterProfileAll();
-            AudioClip clip;
-            bool stageData = BattleTools.GetStageData<AudioClip>("CFK_BGM", out clip);
-            if (stageData)
-            {
-                unit.bufListDetail.AddBuf(new DiceCardSelfAbility_CX_CFK_BGM.ChangeBGM(clip));
-            }
+            ApplyTo(unit);
         }
 
+        /// <summary>
+        /// 参照原版殷红迷雾（PassiveAbility_250422）的原生切曲机制：
+        /// 通过固定敌方情感 BGM 判定端口 + SetEnemyTheme + ChangeEnemyTheme(0) 覆盖当前战斗 BGM，
+        /// 不篡改原地图自身的 mapBgm 字段，可在任意地图中稳定生效。
+        /// </summary>
         public class ChangeBGM : BattleUnitBuf
         {
             public ChangeBGM(AudioClip clip)
@@ -32,26 +55,70 @@ namespace 裁缝之王
                 this.array[2] = clip;
             }
 
+            internal AudioClip[] Theme => this.array;
+
+            internal void ApplyTheme()
+            {
+                NativeStageMap.LockEnemyThemePort();
+
+                BattleSoundManager sound = SingletonBehavior<BattleSoundManager>.Instance;
+                if (sound == null || this.array[0] == null) return;
+
+                sound.SetEnemyTheme(this.array);
+                AudioSource current = sound.CurrentPlayingTheme;
+                if (current == null || current.clip != this.array[0] || !current.isPlaying)
+                {
+                    sound.ChangeEnemyTheme(0);
+                }
+            }
+
             public override void Init(BattleUnitModel owner)
             {
                 base.Init(owner);
-                int emotionTotalCoinNumber = Singleton<StageController>.Instance.GetCurrentStageFloorModel().team.emotionTotalCoinNumber;
-                Singleton<StageController>.Instance.GetCurrentWaveModel().team.emotionTotalBonus = emotionTotalCoinNumber + 3;
-                // 走开局正在播放的“友方音轨”，避免在其上 Play→Pause 造成爆音：
-                // ChangeAllyTheme 读取的是 currentMapObject.mapBgm，所以先把地图 BGM 换掉。
-                BattleSceneRoot scene = SingletonBehavior<BattleSceneRoot>.Instance;
-                MapManager map = scene ? scene.currentMapObject : null;
-                if (map != null) map.mapBgm = this.array;
-                SingletonBehavior<BattleSoundManager>.Instance.ChangeAllyTheme(0);
+                ApplyTheme();
             }
 
             public override void OnRoundStart()
             {
-                int emotionTotalCoinNumber = Singleton<StageController>.Instance.GetCurrentStageFloorModel().team.emotionTotalCoinNumber;
-                Singleton<StageController>.Instance.GetCurrentWaveModel().team.emotionTotalBonus = emotionTotalCoinNumber + 3;
+                NativeStageMap.LockEnemyThemePort();
             }
 
             private readonly AudioClip[] array = new AudioClip[3];
+
+            /// <summary>
+            /// 防止在其他有专属 Boss 地图的接待中触发 ChangeToSpecialMap 时，
+            /// 原版 SetEnemyTheme(对方地图.mapBgm) 将已激活的裁缝之王独立 BGM 覆盖回去。
+            /// </summary>
+            [HarmonyLib.HarmonyPatch(typeof(BattleSceneRoot), nameof(BattleSceneRoot.ChangeToSpecialMap))]
+            public static class BattleSceneRoot_ChangeToSpecialMap_Patch
+            {
+                [HarmonyLib.HarmonyPostfix]
+                private static void Postfix()
+                {
+                    try
+                    {
+                        BattleObjectManager bom = BattleObjectManager.instance;
+                        BattleSoundManager sound = SingletonBehavior<BattleSoundManager>.Instance;
+                        if (bom == null || sound == null) return;
+
+                        foreach (BattleUnitModel alive in bom.GetAliveList())
+                        {
+                            ChangeBGM active = alive?.bufListDetail?.GetActivatedBufList()
+                                ?.OfType<ChangeBGM>()
+                                .FirstOrDefault();
+                            if (active != null && active.Theme[0] != null)
+                            {
+                                sound.SetEnemyTheme(active.Theme);
+                                return;
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Debug.LogWarning("[裁缝之王][BGM] 切图后保持独立 BGM 失败：" + e.Message);
+                    }
+                }
+            }
         }
     }
 

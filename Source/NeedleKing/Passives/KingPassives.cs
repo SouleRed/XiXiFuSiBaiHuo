@@ -138,44 +138,21 @@ namespace 裁缝之王
 
         internal const int KingHeight = 370;
 
-        protected void InitPlayerBGM()//拉取bgm：解析规则见 BgmProvider（地图目录 → CFK_<关卡id> → BGM1）
-        {
-            if (BgmProvider.TryGetPublished(out _)) return;
-            BgmProvider.Publish(BgmProvider.ResolveForCurrentMap());
-        }
-
         public override void OnWaveStart()
         {
             owner?.view?.ChangeHeight(KingHeight);
             _one = true;
-            InitPlayerBGM();//拉取bgm
             this.owner.personalEgoDetail.AddCard(new LorId("CaiFengZhiKing", 19));//置入bgm展开书页到ego列表
-            if (owner.faction == Faction.Enemy)//如果是接待站，开局直接拉起bgm
+            if (owner.faction == Faction.Enemy)//接待战：固定敌方情感 BGM 判定端口，原生 Filature_Map 由 mapBgm 接管
             {
                 SingletonBehavior<BattleManagerUI>.Instance.ui_unitListInfoSummary.UpdateCharacterProfileAll();
-                AudioClip clip;
-                bool stageData = BattleTools.GetStageData<AudioClip>("CFK_BGM", out clip);
-                if (stageData)
-                {
-                    owner.bufListDetail.AddBuf(new DiceCardSelfAbility_CX_CFK_BGM.ChangeBGM(clip));
-                }
+                NativeStageMap.LockEnemyThemePort();
 
-                // 地图与 BGM 同时出现：原版要等首个回合开始（StageController.CheckMapChange）才切到
-                // 插件地图，会比 BGM 晚一拍。这里在波次开始手动切一次；
-                // 之后的回合开始检查发现已经是当前地图就会直接跳过，不会重复切换。
-                try
+                StageModel stageModel = Singleton<StageController>.Instance?.GetStageModel();
+                string mapName = stageModel != null ? stageModel.GetCurrentMapInfo() : null;
+                if (!string.Equals(mapName, NativeStageMap.FilatureMapId, System.StringComparison.OrdinalIgnoreCase))
                 {
-                    BattleSceneRoot scene = SingletonBehavior<BattleSceneRoot>.Instance;
-                    StageModel stageModel = Singleton<StageController>.Instance?.GetStageModel();
-                    string mapName = stageModel != null ? stageModel.GetCurrentMapInfo() : null;
-                    if (scene != null && !string.IsNullOrEmpty(mapName))
-                    {
-                        scene.ChangeToSpecialMap(mapName, false, false);
-                    }
-                }
-                catch (System.Exception e)
-                {
-                    Debug.LogWarning("[裁缝之王] 提前切换地图失败：" + e.Message);
+                    DiceCardSelfAbility_CX_CFK_BGM.ApplyTo(owner);
                 }
             }
             _BHMC = 0;
@@ -330,15 +307,10 @@ namespace 裁缝之王
             }
             owner.breakDetail.RecoverBreak(500);
             _BHMC = 0;
-            if (owner.faction == Faction.Player)//如果是斗蛐蛐，二阶段自动切换bgm
+            if (owner.faction == Faction.Player)//玩家方（任意地图）：二阶段自动触发裁缝之王独立 BGM 覆盖
             {
                 SingletonBehavior<BattleManagerUI>.Instance.ui_unitListInfoSummary.UpdateCharacterProfileAll();
-                AudioClip clip;
-                bool stageData = BattleTools.GetStageData<AudioClip>("CFK_BGM", out clip);
-                if (stageData)
-                {
-                    owner.bufListDetail.AddBuf(new DiceCardSelfAbility_CX_CFK_BGM.ChangeBGM(clip));
-                }
+                DiceCardSelfAbility_CX_CFK_BGM.ApplyTo(owner);
             }
         }
 
@@ -365,8 +337,7 @@ namespace 裁缝之王
         {
             if (owner.faction == Faction.Enemy)
             {
-                int emotionTotalCoinNumber = Singleton<StageController>.Instance.GetCurrentStageFloorModel().team.emotionTotalCoinNumber;
-                Singleton<StageController>.Instance.GetCurrentWaveModel().team.emotionTotalBonus = emotionTotalCoinNumber + 1;
+                NativeStageMap.LockEnemyThemePort();
             }
             _BHMC++;
             owner.allyCardDetail.ExhaustAllCards();

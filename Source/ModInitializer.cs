@@ -28,6 +28,7 @@ public class CaiFengKing_Initializer : global::ModInitializer
     public override void OnInitializeMod()
     {
         NativeKingSkin.LoadSkins(path);
+        NativeStageMap.LoadMaps(path);
         RedDiceInterop.Initialize();
         CustomCombatRuntime.Register();
         AddAudioClips(new DirectoryInfo(Path.Combine(path, "BGM")));

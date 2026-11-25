@@ -11,66 +11,40 @@
 ## 2. 构建与部署
 
 ```powershell
-.\Deploy-Local.ps1              # 编译 + 同步到游戏目录（部署前需关闭游戏）
-.\Deploy-Local.ps1 -BuildOnly   # 只编译
+.\BuildAndDeploy.ps1              # 编译 + 完整同步到创意工坊目录（部署前需关闭游戏）
+.\BuildAndDeploy.ps1 -BuildOnly   # 只编译并更新仓库 MOD根目录\Assemblies\XiXiFuSiBaiHuo.dll
+.\BuildAndDeploy.ps1 -WorkshopRoot "D:\path\to\steamapps\workshop\content\1256670"
 ```
 
-- 游戏目录：`D:\APP\Steam\steamapps\common\Library Of Ruina\LibraryOfRuina_Data\Mods\裁缝之王`
-- 部署脚本自动探测 Steam 库；`Tools\LbsMapPluginCompat\LbsMapPlugin.csproj` 里的 `GameManaged` 是硬编码路径
-- 产物：`bin\Debug\XiXiFuSiBaiHuo.dll`，同时拷贝到 `MOD根目录\Assemblies\`
-- 协作者用的 `BuildAndDeploy.ps1` 指向 `E:\GAME`（本机不存在，部署到创意工坊布局），**本机不要用**
-- **交付铁律：只要改了 `MOD根目录` 下的任何东西（XML / 图片 / 音频 / dll），都必须同步到游戏目录**，并在回复里明确说"已同步"。用户不希望自己手动复制。
-  - 改代码或引用变更 → `.\Deploy-Local.ps1`（会重编 + 全量同步）
-  - 只改 XML/资源 → 直接 `Copy-Item` 到游戏目录即可（不必重编）
-  - 游戏在运行时部署会被脚本拦住，此时先只改仓库，回复里注明"待游戏关闭后同步"
+- 目标布局：统一部署到自动探测的 Steam 创意工坊目录 `<SteamLibrary>\steamapps\workshop\content\1256670\XiXiFuSiBaiHuo`
+- 脚本会自动探测 Steam 注册表与 `libraryfolders.vdf` 定位 `1256670` 工坊目录，采用临时目录整体原子替换并校验 DLL SHA256，同时忽略 0 线程僵尸进程
+- 部署完成后会自动检查并清理游戏根目录 `LibraryOfRuina_Data\Mods` 下残余的本 MOD 副本（移入回收站），防止双份加载报错
+- 产物：`bin\Debug\XiXiFuSiBaiHuo.dll`，同时拷贝到 `MOD根目录\Assemblies\XiXiFuSiBaiHuo.dll`
+- **交付铁律**：要么完整运行 `.\BuildAndDeploy.ps1`（连同 `MOD根目录` 下全部 DLL、AB 资产、XML 等整体同步），要么等用户自行执行；**不要只单独拷贝 DLL 到创意工坊或游戏 `Mods` 目录**
+  - 游戏在运行时部署会被脚本拦住，此时先只改仓库，回复里注明"待游戏关闭后执行 `.\BuildAndDeploy.ps1`"
 
 ## 3. 目录要点
 
 - `Source\` 源码；`MOD根目录\` 是最终部署内容
-- `MOD根目录\Assemblies\`：dll + `AB\`（皮肤资源）+ `BGM\`（音频）+ `LbsMap\`（地图资源）
+- `MOD根目录\Assemblies\`：dll + `AB\`（皮肤与原生地图资源）+ `BGM\`（角色语音等音频）
 - `MOD根目录\StaticInfo\StageInfo\StageInfo.xml`：关卡定义（**不再用** `Data\StageInfo.xml`）
 - `Tools\`：反编译工程与备份，git 未跟踪，`bin/obj` 已被忽略
 
-## 4. 地图（LbsMap 插件）
+## 4. 原生地图加载（NativeStageMap）
 
-- ⚠️ **一个 Stage 只能写一条 `<MapAdd>`**：插件会为每条 MapAdd 各生成一张地图，游戏只用其中一张（实测写两条时显示的是 `LbsMap` 模板那张，你自己的图完全无效）。只写你要的那条，例如 `<MapAdd>CFK</MapAdd>`，不要保留 `<MapAdd>LbsMap</MapAdd>`
-- 一张地图 = `Assemblies\LbsMap\<名字>\{BG.png, Board.png}` + StageInfo 里一行 `<MapAdd>名字</MapAdd>`
-- 模板固定为 `Assemblies\LbsMap\LbsMap.ab`（按固定路径加载，不需要 MapAdd 登记），不要改；它自带美术是蓝绿拱窗大厅
-- 图片比例：`BG` **2000×552**（模板原生尺寸，2000×551 也可）、`Board` **2000×678**
-- 地图对象名固定为 `InvitationMap_<名字> [LbsMap]`，BGM 补丁靠 `[LbsMap]` 识别
-- 插件 DLL 已被我们改造过（改为读 BaseMod 的 `StaticInfo` 布局），源码在 `Tools\LbsMapPluginCompat`
-- 插件报错写入 `Assemblies\LbsMap-error.txt`（不存在=没抛异常）
-- 详细机制与排错：`docs\LbsMap插件笔记.md`
-- **要做出"3D 背景 + 道具踩地板 + 粒子铺满"的效果，按这个摆法做**（已实测通过）：
-  - 背景图 → layer **13**，父级 `BG_Pivot`(z=16)，子层 y=8.29 / scale 3 / quad 20×5.52
-  - 地板 → layer **0**，`tr_quad_floor_lv0` z=-4 / rot 90°X / scale 3,6,3
-  - 道具与粒子 → 挂 `Foreground_MasterTransform`（layer **0**），z 取 12~16，scale 3
-  这样摆出来才是"道具在地板上、粒子铺满画面"；摆到 layer 13 就会变成被地板压住、粒子只在中部一小块。
-  详细层级与理由见 `docs\路线A_预制体完全还原.md`
-  完整可复用工作流已整理到 `LimbusUnpackingEffects\8.地图预制体还原到图书馆LbsMap\`
-  （入口 AGENTS.md；背景合成见 references\背景制作.md，相机与预览、光照、粒子、排错各有专页，scripts 里有导出/建包/预览模板）
-- 切图时机：原版在首个回合开始（`StageController.CheckMapChange`）才把插件地图设为当前地图，比 BGM 晚一拍；
-  `KingPassives.OnWaveStart`（接待站分支）里已手动提前调用 `BattleSceneRoot.ChangeToSpecialMap(mapName, false, false)`，让地图与 BGM 同时出现；后续回合开始的检查会因"已是当前地图"直接跳过
-- 地图素材来源：可从边狱巴士解包（LbsMap 的 `BG`/`Board` 规格与游戏原生 battlemap 完全对应：`Board`=游戏 `floor` 2000×678）。
-  完整流程、缓存路径、Unity6 解析注意事项见 `docs\Limbus解包记录.md`（工具在 `LimbusUnpackingEffects` 模块1/4）
-- 想要实机级亮度/层次 → 走"预制体 + ab"路线（`docs\路线B_预制体还原.md`），**Unity 2019.3.15f1 已装好在 `D:\APP\Unity\2019.3.15f1`**；
-  打包流程、工程路径、踩过的坑见 `docs\Unity打包工作流.md`。当前主关已切到 ab 模式：`<MapAdd Prefab="CFK_Full">CFK_Full</MapAdd>`
+- **不依赖第三方地图插件**（已移除 `LbsMapPlugin.dll` 与 `Assemblies\LbsMap\`）。
+- 地图资产在 Unity 2019.3.15f1（`d:\TOOL\Unity Projects\LOB特效`）中制作并直接挂载原生 `MapManager`（导出 LZ4 AB 时将 `LoRGame-CSharpX.dll` 脚本身份回写为 `Assembly-CSharp.dll`），部署在 `MOD根目录\Assemblies\AB\filature_map.ab`。
+- 关卡配置直接走原版标准 `<MapInfo>Filature_Map</MapInfo>`（`StageInfo.xml`）。
+- 注册与加载入口：[Source\Shared\Stage\NativeStageMap.cs](Source/Shared/Stage/NativeStageMap.cs)：
+  - MOD 初始化时通过 `NativeStageMap.LoadMaps(path)` 预载 `AB\filature_map.ab`；
+  - 仅单点 Hook `Util.LoadPrefab(string path, Transform parent)`，命中 `"InvitationMaps/InvitationMap_Filature_Map"` 时实例化原生预制件，后续初始化、镜头、切图与销毁全部由原版 `BattleSceneRoot` 接管。
 
-## 5. BGM 解析（BgmProvider）
+## 5. BGM 控制（原生 MapManager.mapBgm + 独立角色切曲）
 
-优先级：
-
-1. `Assemblies\LbsMap\<地图名>\BGM.wav`（或 `.mp3`）——复制地图文件夹即连音乐一起走
-2. `Assemblies\BGM\CFK_<关卡id>.wav`
-3. `Assemblies\BGM\BGM1.wav`（兜底）
-
-- ⚠️ `CaiFengKing_Initializer.path` **已经是 `...\Assemblies` 目录**，不要再拼一层 `"Assemblies"`
-- ⚠️ 一个关卡里会有**两张地图**（`LbsMap` 模板 + 用户地图），它们都会走 BGM 解析：
-  必须让同关卡所有地图统一到同一首（解析时先查已发布到关卡数据的 BGM），否则模板地图会用兜底曲把音乐"盖掉"
-- ⚠️ 不要在补丁里让原版 `ChangeEnemyTheme` 继续执行：它会切到敌方音轨并让曲子从头开始；现在实现为"只对齐数据 + 跳过原方法"
-- 播放走友方音轨（`ChangeAllyTheme`）；走敌人音轨会出现"秒开秒停"的爆音
-- 素材响度偏低时调 `BgmProvider.BgmGain`（默认 1.3，最终 clamp 到 1.0）；只作用于本 MOD 曲目
-- 关键文件：`Source\Shared\Tool\BgmProvider.cs`、`Source\Shared\Stage\LbsMapBgmPatch.cs`
+- **接待地图 BGM**：直接序列化在 `Filature_Map.prefab` 的 `MapManager.mapBgm[0..2]` 中（Vorbis 压缩 + `normalize: 1` 标准化响度），随 `filature_map.ab` 一并分发，切图时由原版 `BattleSceneRoot.ChangeToSpecialMap` 自动调用 `SetEnemyTheme(currentMapObject.mapBgm)`。
+- **固定 BGM 判定端口**：参照原版 Boss 战（哭泣之子 / 残响乐团 / 殷红迷雾），在 `OnWaveStart` 与 `OnRoundStart` 调用 `NativeStageMap.LockEnemyThemePort()`（设置 `waveModel.team.emotionTotalBonus = floorModel.team.emotionTotalCoinNumber + 1`），防止敌我情感等级波动时切回楼层默认 BGM。
+- **裁缝之王独立换曲功能**：`DiceCardSelfAbility_CX_CFK_BGM`（个人 EGO 书页 ID `19` 及玩家方二阶段 `ZhuanJie()`）直接复用 `NativeStageMap.TryGetDefaultBgm()`，按原版殷红迷雾模式调用 `LockEnemyThemePort()` + `SetEnemyTheme` + `ChangeEnemyTheme(0)`，可在任意其他地图中独立覆盖 BGM 且不篡改原地图 `mapBgm`。
+- ⚠️ `CaiFengKing_Initializer.path` **已经是 `...\Assemblies` 目录**，不要再拼一层 `"Assemblies"`。
 
 ## 6. 已知坑（都实际踩过）
 
@@ -88,7 +62,7 @@
 - **地图预览（不必进游戏）**：`Unity.exe -batchmode -quit -projectPath D:\APP\UnityProjects\CFKMapBuild -executeMethod MapPreview.CaptureFromCLI`，
   输出 `Preview\preview.png`；相机按 LbsMap 的双相机模型还原（主相机正交俯视 orthoSize≈15 / pitch≈19°，
   背景相机 fov=2·atan(orthoSize/25)≈62°），取景与游戏一致
-- 编译：`.\Deploy-Local.ps1 -BuildOnly`
+- 编译：`.\BuildAndDeploy.ps1 -BuildOnly`
 - 静态检查：用 Cecil（`D:\APP\Steam\steamapps\workshop\content\1256670\2745822929\Assemblies\Mono.Cecil.dll`）读部署后的 dll，核对补丁签名、参数名、异常处理器、自递归
 - 运行日志：`%LOCALAPPDATA%Low\Project Moon\LibraryOfRuina\Player.log`
   - 关键标签：`[裁缝之王]`、`[裁缝之王][BGM]`、`[MapAdd]`
@@ -110,8 +84,8 @@
 
 ## 9. 当前状态
 
-- 地图：`CFK`（主关）、`CFK_Test`（测试关，验证"地图自带 BGM"）；测试关 id=2，测完可整段删除
-- 未提交改动：见 `git status`；`Tools\` 与 `Assemblies\LbsMap\` 仍是未跟踪状态
+- 地图：主关（Stage id=1）已切换为原生地图 `<MapInfo>Filature_Map</MapInfo>`（`Assemblies\AB\filature_map.ab`，内置 BGM），旧版 LbsMap 插件与测试关（id=2）已清理
+- 未提交改动：见 `git status`
 
 ## 10. 书页风味文本 / 预览（LS_PreviewUtil）
 
