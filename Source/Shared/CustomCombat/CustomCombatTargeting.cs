@@ -36,10 +36,15 @@ internal static class CustomCombatTargeting
 
     internal static bool Active => ui != null && editing != null;
 
-    private static ICustomAttackCapacity GetAbility(BattleDiceCardModel card) => card?._script as ICustomAttackCapacity;
+    private static ICustomAttackCapacity GetAbility(BattleDiceCardModel card)
+    {
+        if (card == null) return null;
+        if (card._script == null) card._script = card.CreateDiceCardSelfAbilityScript();
+        return card._script as ICustomAttackCapacity;
+    }
 
     private static ICustomAttackCapacity GetAbility(BattlePlayingCardDataInUnitModel page)
-        => page?.cardAbility as ICustomAttackCapacity ?? page?.card?._script as ICustomAttackCapacity;
+        => page?.cardAbility as ICustomAttackCapacity ?? GetAbility(page?.card);
 
     private static int Capacity(BattlePlayingCardDataInUnitModel page)
         => GetAbility(page) is { AttackCapacity: > 1 } ability ? ability.AttackCapacity : 1;
