@@ -288,7 +288,26 @@ namespace 裁缝之王
         public override void OnDie()
         {
             Presentation.Actions.ActionAudio.PlayVoice("10SV-099",2);
+            RemoveAllNeedlekin(owner != null ? owner.faction : Faction.Enemy);
             base.OnDie();
+        }
+
+        /// <summary>
+        /// 自身死亡时清理所有针族：针族以 PassiveAbility_7XiaoErJian_CFK 识别，
+        /// 仅移除与自身同阵营的单位，避免误伤对面阵营的召唤物。
+        /// </summary>
+        private void RemoveAllNeedlekin(Faction faction)
+        {
+            var units = BattleObjectManager.instance.GetList();
+            if (units == null) return;
+            foreach (BattleUnitModel unit in units)
+            {
+                if (unit == null || unit == owner) continue;
+                if (unit.faction != faction) continue;
+                if (unit.IsDead() || unit.IsExtinction()) continue;
+                if (!unit.passiveDetail.HasPassive<PassiveAbility_7XiaoErJian_CFK>()) continue;
+                unit.Die(null, true);
+            }
         }
 
         private void ZhuanJie()

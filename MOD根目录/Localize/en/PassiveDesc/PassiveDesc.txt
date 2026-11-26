@@ -64,8 +64,9 @@ At the start of the encounter, gain "Shower of Stinging Sunshine [King of Needle
     <Desc>When hitting a target with Naildle, inflict 1 additional Bleed on it</Desc>
   </PassiveDesc>
   <PassiveDesc ID="9">
-    <Name>Shower of Stinging Sunshine [Haute Couture::Le Rouge - King of Needleworks]</Name>
-    <Desc>At the start of the Act, gain [Shower of Stinging Sunshine - Le Rouge - King of Needleworks]
+    <Name>Shower of Stinging Sunshine [Haute Couture::King of Needleworks]</Name>
+    <Desc>[Exclusive passive for the crossover Mod "Red and Black" - Haute Couture::Le Rouge - King of Needleworks Heathcliff]
+At the start of the Act, gain [Shower of Stinging Sunshine - Le Rouge - King of Needleworks]
 At the start of each Scene, inflict [Tongue-pinning Needle] on 2 random enemies
 Can gain Cry effects even without [Haute Couture::Le Rouge - Red God]
 Every 3 Scenes, Cry effects are enhanced for 1 Scene
