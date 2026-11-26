@@ -68,7 +68,7 @@ At the start of the encounter, gain "Shower of Stinging Sunshine [King of Needle
     <Desc>[Exclusive passive for the crossover Mod "Red and Black" - Haute Couture::Le Rouge - King of Needleworks Heathcliff]
 At the start of the Act, gain [Shower of Stinging Sunshine - Le Rouge - King of Needleworks]
 At the start of each Scene, inflict [Tongue-pinning Needle] on 2 random enemies
-Can gain Cry effects even without [Haute Couture::Le Rouge - Red God]
+Can gain Cry effects even without [Haute Couture::Le Rouge - The Crimson God]
 Every 3 Scenes, Cry effects are enhanced for 1 Scene
 -Gain +1 additional Power with all dice
 -Deal +10% additional damage
