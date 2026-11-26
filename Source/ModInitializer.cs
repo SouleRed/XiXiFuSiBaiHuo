@@ -26,16 +26,18 @@ public class CaiFengKing_Initializer : global::ModInitializer
 
     public override void OnInitializeMod()
     {
+        var selfAssembly = Assembly.GetExecutingAssembly();
+        RegisterDeferredAbilities(selfAssembly);
         NativeKingSkin.LoadSkins(path);
         NativeStageMap.LoadMaps(path);
         RedDiceInterop.Initialize();
         CustomCombatRuntime.Register();
         AddAudioClips(new DirectoryInfo(Path.Combine(path, "BGM")));
         YInitializer.ActivateMods.Add("CaiFengKing");
-        AutoKeywordUtils.RegisterKeywordsFromAssembly(Assembly.GetExecutingAssembly());
+        AutoKeywordUtils.RegisterKeywordsFromAssembly(selfAssembly);
 
         Harmony harmony = new(_packageId);
-        foreach (Type type in AccessTools.GetTypesFromAssembly(Assembly.GetExecutingAssembly()))
+        foreach (Type type in AccessTools.GetTypesFromAssembly(selfAssembly))
         {
             try
             {
@@ -44,6 +46,32 @@ public class CaiFengKing_Initializer : global::ModInitializer
             catch (Exception e)
             {
                 Debug.LogError($"[裁缝之王][Harmony] {type.FullName}: 注册失败 {e}");
+            }
+        }
+    }
+
+    // 本程序集可能先于 RedDice.dll 加载，导致继承 RedDiceCardSelfAbilityBase 的书页/骰子脚本初次扫描漏注册；
+    // OnInitializeMod 执行时所有前置 DLL 均已就绪，此处补齐缺失条目。
+    private static void RegisterDeferredAbilities(Assembly assembly)
+    {
+        var manager = Singleton<AssemblyManager>.Instance;
+        if (manager == null) return;
+        const string selfPrefix = "DiceCardSelfAbility_";
+        const string dicePrefix = "DiceCardAbility_";
+        foreach (Type type in AccessTools.GetTypesFromAssembly(assembly))
+        {
+            if (type == null || type.IsAbstract) continue;
+            if (type.IsSubclassOf(typeof(DiceCardSelfAbilityBase)) && type.Name.StartsWith(selfPrefix, StringComparison.Ordinal))
+            {
+                string key = type.Name.Substring(selfPrefix.Length);
+                if (!manager._diceCardSelfAbilityDict._dict.ContainsKey(key))
+                    manager._diceCardSelfAbilityDict.Add(key, type);
+            }
+            else if (type.IsSubclassOf(typeof(DiceCardAbilityBase)) && type.Name.StartsWith(dicePrefix, StringComparison.Ordinal))
+            {
+                string key = type.Name.Substring(dicePrefix.Length);
+                if (!manager._diceCardAbilityDict._dict.ContainsKey(key))
+                    manager._diceCardAbilityDict.Add(key, type);
             }
         }
     }
