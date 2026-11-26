@@ -80,8 +80,8 @@
     <Desc>[使用时]目标每带有4层[流血]则使本书页所有骰子威力+1(至多+2)</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="TX_XiaoDaZhao">
-    <Desc>[命中时]重复投掷本骰子1次</Desc>
-    <Desc>[重复投掷命中时]追加目标[流血]层数的伤害</Desc>
+    <Desc>[命中时]重复投掷本骰子1次
+[重复投掷命中时]追加目标[流血]层数的伤害并施加1层[针钉]</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="TX_2Liu_X">
     <Desc>[命中时]下一幕对目标施加2层[流血]</Desc>
