@@ -3,7 +3,7 @@
 ## 标识与布局
 
 - **目标**：《废墟图书馆》MOD（C# 10 / .NET Framework 4.8 / Unity 2019.3.15f1）。
-- **区分三套标识**：程序集与工坊目录为 `XiXiFuSiBaiHuo`；代码内 `PackageId`（`LorId`、对话、激活列表）为 `CaiFengKing`；`StageModInfo.xml` Workshop ID 为 `CaiFengZhiKing`。
+- **区分两套标识**：程序集与工坊目录为 `XiXiFuSiBaiHuo`；包名（`StageModInfo.xml` Workshop ID、`LorId`、对话组名、激活列表）统一为 `CaiFengZhiKing`（`CaiFengKing` 仅作皮肤名与部分类名）。
 - **目录职责**：`Source\` 为源码；`MOD根目录\` 为最终分发目录；关卡配置使用 `MOD根目录\StaticInfo\StageInfo\StageInfo.xml`（非 `Data\`）；`CaiFengKing_Initializer.path` 已指向 `...\Assemblies`，拼接子路径时不要重复附加 `Assemblies`。
 
 ## 构建、部署与仓库边界

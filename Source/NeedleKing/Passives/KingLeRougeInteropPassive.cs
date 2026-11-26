@@ -41,12 +41,17 @@ namespace 裁缝之王
             }
         }
 
+        internal static bool IsCryEnhancedRound()
+        {
+            int round = Singleton<StageController>.Instance?.RoundTurn ?? 0;
+            return round > 0 && round % 3 == 0;
+        }
+
         public override void BeforeRollDice(BattleDiceBehavior behavior)
         {
             if (behavior == null || !LeRougeInterop.IsHeathcliffKing(owner)) return;
 
-            int round = Singleton<StageController>.Instance?.RoundTurn ?? 0;
-            if (round <= 0 || round % 3 != 0) return;
+            if (!IsCryEnhancedRound()) return;
             if (!LeRougeInterop.HasCry(owner)) return;
 
             int sharpNails = LeRougeInterop.GetSharpNails(owner);

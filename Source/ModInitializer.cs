@@ -13,10 +13,10 @@ namespace 裁缝之王;
 
 public class CaiFengKing_Initializer : global::ModInitializer
 {
-    public const string ModPackage = "CaiFengKing";
-    public static string packageId = "CaiFengKing";
-    public static string _packageId = "CaiFengKing";
-    public static string currentID = "CaiFengKing";
+    public const string ModPackage = "CaiFengZhiKing";
+    public static string packageId = "CaiFengZhiKing";
+    public static string _packageId = "CaiFengZhiKing";
+    public static string currentID = "CaiFengZhiKing";
     public static string PackageId => _packageId;
 
     public static string path = Path.GetDirectoryName(Uri.UnescapeDataString(new UriBuilder(Assembly.GetExecutingAssembly().CodeBase).Path));
@@ -32,7 +32,7 @@ public class CaiFengKing_Initializer : global::ModInitializer
         RedDiceInterop.Initialize();
         CustomCombatRuntime.Register();
         AddAudioClips(new DirectoryInfo(Path.Combine(path, "BGM")));
-        YInitializer.ActivateMods.Add("CaiFengKing");
+        YInitializer.ActivateMods.Add(_packageId);
         AutoKeywordUtils.RegisterKeywordsFromAssembly(selfAssembly);
 
         Harmony harmony = new(_packageId);
@@ -52,7 +52,7 @@ public class CaiFengKing_Initializer : global::ModInitializer
 
     public static string GetBattleDlg(LOR_XML.DialogType dlgType, string character)
     {
-        LOR_XML.BattleDialogCharacter characterData = Singleton<BattleDialogXmlList>.Instance.GetCharacterData("CaiFengKing", character);
+        LOR_XML.BattleDialogCharacter characterData = Singleton<BattleDialogXmlList>.Instance.GetCharacterData(_packageId, character);
         if (characterData == null) return string.Empty;
 
         foreach (LOR_XML.BattleDialogType dialogType in characterData.dialogTypeList)

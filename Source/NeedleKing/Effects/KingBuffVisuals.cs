@@ -46,12 +46,16 @@ public sealed class KingBuffVisuals : MonoBehaviour
             appearance = view.charAppearance;
         }
 
-        bool marked = false, golden = false, hasLrhWarmLight = false;
+        bool marked = false, golden = false, hasKingWarmLight = false, hasLrhWarmLight = false;
         int howlingTier = 0;
         foreach (var buf in model.bufListDetail.GetActivatedBufList())
         {
             if (buf == null || buf.IsDestroyed()) continue;
-            if (buf is BattleUnitBuf_BF_YangGuang_CFK) golden = true;
+            if (buf is BattleUnitBuf_BF_YangGuang_CFK)
+            {
+                golden = true;
+                hasKingWarmLight = true;
+            }
             else if (buf is BattleUnitBuf_BF_YangGuang_LRH)
             {
                 golden = true;
@@ -62,22 +66,26 @@ public sealed class KingBuffVisuals : MonoBehaviour
             else if (buf is BattleUnitBuf_BF_BeiMing_2) howlingTier = 2;
             else if (buf is BattleUnitBuf_BF_BeiMing_1 && howlingTier < 1) howlingTier = 1;
         }
-        if (hasLrhWarmLight)
+        if (hasLrhWarmLight && PassiveAbility_8LRH_WarmLight_CFK.IsCryEnhancedRound())
         {
             int lrhCryTier = Shared.Interop.LeRougeInterop.GetCryTier(model);
             if (lrhCryTier > howlingTier) howlingTier = lrhCryTier;
         }
 
         // 统一挂在 Appearance 节点下，将源特效从贴图单位转回源单位。
+        // 联动红派希斯克里夫按常规角色身高（170）与裁缝之王固定身高（370）之比在原缩放基础上叠加等比缩放。
         float sourceUnits = 1f / Actions.ActionMotion.SourceVisualScale;
+        float personalScale = hasLrhWarmLight && !hasKingWarmLight
+            ? 170f / PassiveAbility_3DuShagTS_CFK.KingHeight
+            : 1f;
         var parent = appearance.transform;
         var rotation = Quaternion.Euler(0f, 180f, 0f);
         int layer = LayerMask.NameToLayer(appearance.GetLayerName() ?? "");
         if (layer < 0) layer = appearance.gameObject.layer;
 
         needle.Sync(marked, parent, rotation, sourceUnits, layer);
-        sunlight.Sync(golden, parent, rotation, sourceUnits * NativeKingSkin.SunlightSourceHeight * SunlightHeightFactor, layer);
-        cocoon.Sync(howlingTier > 0, parent, rotation, 1f, layer);
+        sunlight.Sync(golden, parent, rotation, sourceUnits * NativeKingSkin.SunlightSourceHeight * SunlightHeightFactor * personalScale, layer);
+        cocoon.Sync(howlingTier > 0, parent, rotation, 1f * personalScale, layer);
 
         activeHowlingTier = howlingTier;
         var fieldParent = SingletonBehavior<BattleSceneRoot>.Instance ? SingletonBehavior<BattleSceneRoot>.Instance.transform : null;

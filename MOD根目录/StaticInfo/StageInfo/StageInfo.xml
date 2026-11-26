@@ -13,6 +13,7 @@
       <Formation>41</Formation>
       <AvailableUnit>5</AvailableUnit>
       <Unit>1</Unit>
+      <ManagerScript>CaiFengKing</ManagerScript>
       <FormationType>Default</FormationType>
       <emotionCardList/>
     </Wave>
