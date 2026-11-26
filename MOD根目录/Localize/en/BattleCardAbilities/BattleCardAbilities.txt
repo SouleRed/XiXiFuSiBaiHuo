@@ -7,7 +7,7 @@
     <Desc>[On Use] If the target has at least 4 Bleed, deal +20% damage with this page</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="CX_WeiShaJiu">
-    <Desc>[Atk Weight 2]</Desc>
+    <Desc>[Atk Weight 3][Unfocused Volley]</Desc>
     <Desc>[On Use] Deal +5% damage with this page for each Naildle on the target (max 25%)</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="TX_2ZhenLiuQ">

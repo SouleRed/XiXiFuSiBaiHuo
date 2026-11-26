@@ -7,11 +7,11 @@
     <Desc>[사용 시] 대상이 출혈을 4 이상 보유하고 있다면 이 책장의 피해량 +20%</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="CX_WeiShaJiu">
-    <Desc>[공격 가중치 2]</Desc>
+    <Desc>[공격 가중치 3][광역 난사]</Desc>
     <Desc>[사용 시] 대상이 보유한 바늘못 1마다 이 책장의 피해량 +5% (최대 25%)</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="TX_2ZhenLiuQ">
-    <Desc>[적중 시] 대상에게 출혈 2과 바늘못 부여</Desc>
+    <Desc>[적중 시] 대상에게 출혈 2와 바늘못 부여</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="CX_6Liu20Shang">
     <Desc>[사용 시] 대상이 출혈을 6 이상 보유하고 있다면 이 책장의 피해량 +20%</Desc>
@@ -20,7 +20,7 @@
     <Desc>[적중 시] 대상에게 출혈 1과 바늘못 부여</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="TX_2ZhenLiu">
-    <Desc>[적중 시] 대상에게 출혈 2과 바늘못 부여</Desc>
+    <Desc>[적중 시] 대상에게 출혈 2와 바늘못 부여</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="CX_20YiShang">
     <Desc>[공격 가중치 5]</Desc>

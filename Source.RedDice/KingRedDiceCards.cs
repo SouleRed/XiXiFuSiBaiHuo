@@ -7,7 +7,7 @@ using 裁缝之王.Presentation.CustomCombat;
 
 namespace 裁缝之王
 {
-    public class DiceCardSelfAbility_CX_WeiShaJiu : RedDiceCardSelfAbilityBase, ICustomRandomBarrage
+    public class DiceCardSelfAbility_CX_WeiShaJiu : RedDiceCardSelfAbilityBase, ICustomRandomBarrage//根据这个决定广域乱射
     {
         public int AttackCapacity => 3;
 

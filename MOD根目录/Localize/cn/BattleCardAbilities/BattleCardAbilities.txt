@@ -7,7 +7,7 @@
     <Desc>[使用时]若目标至少带有4层[流血]则使本书页造成的伤害+20%</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="CX_WeiShaJiu">
-    <Desc>[攻击容量2]</Desc>
+    <Desc>[攻击容量3][广域乱射]</Desc>
     <Desc>[使用时]目标每带有1层[针钉]使本书页造成的伤害+5%(至多25%)</Desc>
   </BattleCardAbility>
   <BattleCardAbility ID="TX_2ZhenLiuQ">

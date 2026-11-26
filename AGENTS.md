@@ -20,6 +20,8 @@
 - **Harmony 补丁**：参数名必须与目标方法签名完全一致；常规补丁通过前置条件与空值守卫保证安全，**禁止无脑 `try/catch` 吞异常**；仅在外部资产/联动边界或具备明确回退路径（如失败回退原版）的拦截点按需捕获并完整记录异常。
 - **继承虚调用**：禁止直接落盘反编译风格的 `((父类)this).虚方法()`，必须使用 `base.`。
 - **`.csproj` 收录**：使用 `Source\**\*.cs` 通配符；若显式添加 `<Compile Include>`，必须同步加入通配符 `Exclude`，避免 CS2002。
+- **多目标/广域乱射**：卡牌脚本实现 `ICustomAttackCapacity`（`AttackCapacity`）即得多目标，再实现 `ICustomRandomBarrage` 得广域乱射；
+  容量由接口决定，不改 `CardInfo` 骰子结构；跨程序集需 `InternalsVisibleTo`。机制与接入步骤见 [docs/自定义多目标与广域乱射.md](docs/自定义多目标与广域乱射.md)。
 - **接待图标**：以作者示例 mod（3616379979）为准，写在 `Data\StageLine\StoryIconSlot.xml`（`IconSlot`：Name/Stage/Locate/Position），
   图标素材放 `Data\StageLine\ArtWork\`；`Data\XmlInfos\StoryIcon`（MapIconSlot）是章节地图体系，与本章不同。
   字段说明见 [docs/章节地图与接待图标.md](docs/章节地图与接待图标.md)。

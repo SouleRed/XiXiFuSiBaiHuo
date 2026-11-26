@@ -34,9 +34,9 @@
     <Category>None</Category>
     <SkinChangeType>EGO</SkinChangeType>
     <BehaviourList>
-      <Behaviour Min="4" Dice="8" Type="Atk" Detail="Penetrate" Motion="J" Script="bleeding1atk" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin1" />
-      <Behaviour Min="4" Dice="8" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_1ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin2" />
-      <Behaviour Min="5" Dice="8" Type="Atk" Detail="Penetrate" Motion="H" Script="TX_2ZhenLiuQ" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin3" />
+      <Behaviour Min="5" Dice="8" Type="Atk" Detail="Penetrate" Motion="J" Script="bleeding1atk" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin1" />
+      <Behaviour Min="5" Dice="8" Type="Atk" Detail="Penetrate" Motion="Z" Script="TX_1ZhenLiu" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin2" />
+      <Behaviour Min="5" Dice="9" Type="Atk" Detail="Penetrate" Motion="H" Script="TX_2ZhenLiuQ" Desc="RedDice/NoPoDicePenetrate/RedDice" MotionDefault="N" EffectRes="" ActionScript="CFK_S2_Coin3" />
     </BehaviourList>
     <Name>纬纱就这样</Name>
     <TextId>-1</TextId>
