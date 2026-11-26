@@ -57,9 +57,6 @@
     <Reference Include="BaseMod">
       <HintPath>$(MSBuildProjectDirectory)\必要程序集\BaseMod.dll</HintPath>
     </Reference>
-    <Reference Include="RedDice">
-      <HintPath>$(MSBuildProjectDirectory)\必要程序集\RedDice.dll</HintPath>
-    </Reference>
     <Reference Include="Soule.MotionCamera.Runtime">
       <HintPath>$(MSBuildProjectDirectory)\必要程序集\Soule.MotionCamera.Runtime.dll</HintPath>
     </Reference>

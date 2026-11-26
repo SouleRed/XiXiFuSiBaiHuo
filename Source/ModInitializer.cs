@@ -27,7 +27,7 @@ public class CaiFengKing_Initializer : global::ModInitializer
     public override void OnInitializeMod()
     {
         var selfAssembly = Assembly.GetExecutingAssembly();
-        RegisterDeferredAbilities(selfAssembly);
+        LoadDeferredRedDiceAbilities(selfAssembly, path);
         NativeKingSkin.LoadSkins(path);
         NativeStageMap.LoadMaps(path);
         RedDiceInterop.Initialize();
@@ -50,30 +50,100 @@ public class CaiFengKing_Initializer : global::ModInitializer
         }
     }
 
-    // 本程序集可能先于 RedDice.dll 加载，导致继承 RedDiceCardSelfAbilityBase 的书页/骰子脚本初次扫描漏注册；
-    // OnInitializeMod 执行时所有前置 DLL 均已就绪，此处补齐缺失条目。
-    private static void RegisterDeferredAbilities(Assembly assembly)
+    private static bool _resolverInstalled;
+    private static Assembly _selfAssemblyCache;
+    private static Assembly _redDiceAssemblyCache;
+
+    // 依赖 RedDice 的书页/骰子脚本独立打包在 Assemblies\Deferred\XiXiFuSiBaiHuo.RedDice.dll，
+    // 避开阶段 1 原版扫描时因 MOD 加载顺序导致的 Mono 引用缺失缓存；
+    // OnInitializeMod 执行时所有前置 MOD 均已加载完毕，挂好 AssemblyResolve 后再加载并去重注册。
+    private static void LoadDeferredRedDiceAbilities(Assembly selfAssembly, string assembliesDir)
     {
+        string deferredPath = Path.Combine(assembliesDir, "Deferred", "XiXiFuSiBaiHuo.RedDice.dll");
+        if (!File.Exists(deferredPath))
+        {
+            Debug.LogWarning($"[裁缝之王][RedDice] 未找到延迟程序集：{deferredPath}");
+            return;
+        }
+
+        Assembly redDiceAssembly = null;
+        foreach (Assembly loaded in AppDomain.CurrentDomain.GetAssemblies())
+        {
+            if (string.Equals(loaded.GetName().Name, "RedDice", StringComparison.OrdinalIgnoreCase))
+            {
+                redDiceAssembly = loaded;
+                break;
+            }
+        }
+
+        if (redDiceAssembly == null)
+        {
+            Debug.LogWarning("[裁缝之王][RedDice] 未检测到 RedDice 程序集，跳过红骰书页与骰子脚本加载。");
+            return;
+        }
+
+        _selfAssemblyCache = selfAssembly;
+        _redDiceAssemblyCache = redDiceAssembly;
+        if (!_resolverInstalled)
+        {
+            _resolverInstalled = true;
+            AppDomain.CurrentDomain.AssemblyResolve += ResolveDeferredDependency;
+        }
+
+        Assembly deferredAssembly;
+        try
+        {
+            deferredAssembly = Assembly.LoadFile(deferredPath);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"[裁缝之王][RedDice] 延迟程序集加载失败：{deferredPath}\n{e}");
+            return;
+        }
+
         var manager = Singleton<AssemblyManager>.Instance;
         if (manager == null) return;
+
         const string selfPrefix = "DiceCardSelfAbility_";
         const string dicePrefix = "DiceCardAbility_";
-        foreach (Type type in AccessTools.GetTypesFromAssembly(assembly))
+        int selfCount = 0;
+        int diceCount = 0;
+        foreach (Type type in AccessTools.GetTypesFromAssembly(deferredAssembly))
         {
             if (type == null || type.IsAbstract) continue;
             if (type.IsSubclassOf(typeof(DiceCardSelfAbilityBase)) && type.Name.StartsWith(selfPrefix, StringComparison.Ordinal))
             {
                 string key = type.Name.Substring(selfPrefix.Length);
                 if (!manager._diceCardSelfAbilityDict._dict.ContainsKey(key))
+                {
                     manager._diceCardSelfAbilityDict.Add(key, type);
+                    selfCount++;
+                }
             }
             else if (type.IsSubclassOf(typeof(DiceCardAbilityBase)) && type.Name.StartsWith(dicePrefix, StringComparison.Ordinal))
             {
                 string key = type.Name.Substring(dicePrefix.Length);
                 if (!manager._diceCardAbilityDict._dict.ContainsKey(key))
+                {
                     manager._diceCardAbilityDict.Add(key, type);
+                    diceCount++;
+                }
             }
         }
+
+        AutoKeywordUtils.RegisterKeywordsFromAssembly(deferredAssembly);
+        Debug.Log($"[裁缝之王][RedDice] 已延迟注册红骰脚本：书页={selfCount}, 骰子={diceCount}");
+    }
+
+    private static Assembly ResolveDeferredDependency(object sender, ResolveEventArgs args)
+    {
+        if (string.IsNullOrEmpty(args?.Name)) return null;
+        string shortName = new AssemblyName(args.Name).Name;
+        if (string.Equals(shortName, "RedDice", StringComparison.OrdinalIgnoreCase))
+            return _redDiceAssemblyCache;
+        if (string.Equals(shortName, _selfAssemblyCache?.GetName().Name, StringComparison.OrdinalIgnoreCase))
+            return _selfAssemblyCache;
+        return null;
     }
 
     public static string GetBattleDlg(LOR_XML.DialogType dlgType, string character)
