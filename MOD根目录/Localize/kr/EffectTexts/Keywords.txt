@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<BattleEffectTextRoot>
+  <effectTextList>
+    <BattleEffectText ID="BF_ZhenDing">
+      <Name>바늘못</Name>
+      <Desc>관통 피해를 받을 때 출혈 횟수 +1, 이 효과의 중첩 -1
+매 막 종료 시 출혈 {0}중 획득, 이 효과의 중첩 -1</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_BiaoBenHua">
+      <Name>박제 상태</Name>
+      <Desc>행동 불가
+공격받을 때 다음 막에 출혈 3 획득
+매 막 종료 시 최대 체력의 20%만큼 피해를 받고 이 효과의 중첩 -1
+이 효과가 해제될 때 자신의 바늘못 제거</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_BeiMing_1">
+      <Name>고치의 울음소리 - 미약</Name>
+      <Desc>때때로 울음소리가 들린다. 위력 무효 면역
+자신의 모든 주사위 위력 +2</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_BeiMing_2">
+      <Name>고치의 울음소리 - 악성</Name>
+      <Desc>울음소리는 멈추지 않는다. 위력 무효 면역
+자신의 모든 주사위 위력 +3</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_CiSheZ">
+      <Name>혀에 꽂힌 바늘</Name>
+      <Desc>1막 지속
+이 막 종료 시 공격형 주사위를 사용하지 않았다면 자신의 바늘못 중첩 절반으로 감소
+그렇지 않다면 자신에게 바늘못 3 부여</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_YangGuang_CFK">
+      <Name>따갑게 내리쬐는 햇살 [바느질의 왕]</Name>
+      <Desc>대상이 보유한 바늘못 3마다 자신의 모든 주사위 위력 +1</Desc>
+    </BattleEffectText>
+  </effectTextList>
+</BattleEffectTextRoot>

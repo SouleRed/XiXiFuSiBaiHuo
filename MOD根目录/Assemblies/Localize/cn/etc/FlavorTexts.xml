@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <localize>
-  <text id="ui_cfk_flavor_3">缝纫最重要的就是针数啊,针数!</text>
+  <text id="ui_cfk_flavor_3">缝纫最重要的就是针数啊针数.</text>
   <text id="ui_cfk_flavor_4">"啊,这不是米兰式扣眼啊." "支数得超过200才能叫衬衫面料吧."</text>
   <text id="ui_cfk_flavor_5">于手工缝制而言,熟练工匠的数量就是生命.</text>
-  <text id="ui_cfk_flavor_6">给我...拿来...太少了...还不够!</text>
+  <text id="ui_cfk_flavor_6">"给我...拿来...!" "再多点...再多点...!还...不够...!!"</text>
   <text id="ui_cfk_flavor_7">"啊,从外面能看见缝线呢." "能看到两列缝线呢.淘汰."</text>
   <text id="ui_cfk_flavor_8">为了把已经钉入的钉子拔出,必须暂时停下脚步.</text>
-  <text id="ui_cfk_flavor_9">生动的...!哭泣声...!只要...一次...</text>
-  <text id="ui_cfk_flavor_10">"仔细看去,针脚太均匀了,是用了机器吧?" "不是纯手工缝制就算不上定做."</text>
+  <text id="ui_cfk_flavor_9">鲜活的...哭声...!我的...!晚...餐!</text>
+  <text id="ui_cfk_flavor_10">"仔细看去,针脚太均匀了,是用了机器吧?" "不是纯手工缝制就算不上量身定制."</text>
 </localize>

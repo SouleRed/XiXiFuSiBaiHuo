@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<PassiveDescRoot>
+  <PassiveDesc ID="1">
+    <Name>Sanity System - Messy Sewing</Name>
+    <Desc>Max Sanity is 45, minimum is -45
+The higher this unit's Sanity, the more likely it rolls maximum values
+The lower this unit's Sanity, the more likely it rolls minimum values
+If Sanity falls too low, Low Morale and Panic take effect
+Low Morale - Gain 1 Feeble and 2 Protection
+Panic - Gain 2 Feeble and 4 Protection
+If this unit is in Panic, restore Sanity to 0 at the start of next Scene
+This unit's Panic type cannot be changed</Desc>
+  </PassiveDesc>
+  <PassiveDesc ID="2">
+    <Name>King of Needleworks</Name>
+    <Desc>If there are other allied units on the field, halve damage taken by this unit
+Immune to Seal and Stun; damage from negative effects on this unit is reduced by 50%
+When this unit takes more than 30 damage, the excess is reduced by 60%
+This unit's damage resistances cannot be changed by external effects</Desc>
+  </PassiveDesc>
+  <PassiveDesc ID="3">
+    <Name>Handmade</Name>
+    <Desc>For each ally other than self on the field, gain +1 Power with all dice
+If an enemy has 5 or more Naildle, use "Pick stitch too obvious, you say?! I'll pick-stitch your ass!"
+If an enemy is Taxidermized, use "Just... Eat!!"
+(Naildle: When taking Pierce damage, gain +1 Bleed Count and reduce this effect's Stack by 1. Turn End: Gain Bleed equal to this effect's Stack and reduce its Stack by 1)
+(Taxidermized: Cannot act. When hit, gain 3 Bleed. Turn End: Take damage equal to 20% of max HP and reduce this effect's Stack by 1. When this effect expires, remove Naildle from self)</Desc>
+  </PassiveDesc>
+  <PassiveDesc ID="4">
+    <Name>Unending, Unavoidable Stream of Customer Complaints</Name>
+    <Desc>A cry comes from the light of the Library
+The cry is heard every 3 Scenes
+When the cry is heard
+- Gain "Cry of the Cocoon - Frail"
+- Immune to Stagger
+HP cannot fall below 65%; upon reaching 65% HP, enter the next phase
+Upon entering the next phase
+- Remove every negative effect from self
+- Restore Sanity to 30
+- The cry will not cease
+- Gain "Cry of the Cocoon - Vicious" instead
+- Immediately summon Needlekin once
+(Cry of the Cocoon - Frail: The Cocoon is crying intermittently. Immune to Power Nullification. Skill Final Power +2)
+(Cry of the Cocoon - Vicious: The Cocoon does not cease its cries. Immune to Power Nullification. Skill Final Power +3)</Desc>
+  </PassiveDesc>
+  <PassiveDesc ID="5">
+    <Name>The Sewing Commences</Name>
+    <Desc>At the start of each Scene, inflict "Tongue-pinning Needle" on 2 random enemies
+(Tongue-pinning Needle: Lasts 1 Scene. At the end of this Scene, if this unit has not used an Attack die, halve its Naildle; otherwise, inflict 3 Naildle on self)</Desc>
+  </PassiveDesc>
+  <PassiveDesc ID="6">
+    <Name>Shower of Stinging Sunshine</Name>
+    <Desc>Increase the max HP and max Stagger Resist of all Librarians
+Influenced by the light of the Library, restore 20 Sanity at the start of each Scene
+At the start of the encounter, gain "Shower of Stinging Sunshine [King of Needleworks]"
+(Shower of Stinging Sunshine [King of Needleworks]: Gain +1 Power with all dice for every 3 Naildle on the target)</Desc>
+  </PassiveDesc>
+  <PassiveDesc ID="7">
+    <Name>Sewing</Name>
+    <Desc>When a Pierce die hits a target, 33% chance to inflict 1 Naildle on it</Desc>
+  </PassiveDesc>
+  <PassiveDesc ID="8">
+    <Name>Tiny and Sharp Nails</Name>
+    <Desc>When hitting a target with Naildle, inflict 1 additional Bleed on it</Desc>
+  </PassiveDesc>
+</PassiveDescRoot>

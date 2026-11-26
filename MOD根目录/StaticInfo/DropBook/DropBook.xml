@@ -2,8 +2,8 @@
 <BookUseXmlRoot xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
   <Version>1.1</Version>
   <BookUse ID="1">
-    <Name>裁缝之王之书</Name>
-    <TextId />
+    <Name>dropbook_cfk_king</Name>
+    <TextId>dropbook_cfk_king</TextId>
     <BookIcon>BF_BeiMing_1</BookIcon>
     <Chapter>7</Chapter>
     <BookValue>0</BookValue>

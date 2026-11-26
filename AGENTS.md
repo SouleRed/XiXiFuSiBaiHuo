@@ -25,4 +25,7 @@
   字段说明见 [docs/章节地图与接待图标.md](docs/章节地图与接待图标.md)。
 - **接待邀请函书籍**：`<Book>` 引用原版书页必须写 `Pid="@origin"`，否则会被当成本模组的书、退化成"棍木"占位；
   引用本模组的书写包名（`Pid="CaiFengKing"`）。详见 [docs/章节地图与接待图标.md](docs/章节地图与接待图标.md)。
+- **术语来源**：边狱巴士原生系统（攻击容量、广域乱射等）用边狱官方译名；其余用图书馆官方译名（幕=막、混乱=흐트러짐、强壮=힘）。详见 `LimbusUnpackingEffects\9.边狱巴士与图书馆本地化翻译\` 的术语对照表。
+- **多语言**：本地化源在 `Assemblies\Localize\{cn,en,kr}\`；同一份还要镜像到根 `Localize\{cn,en,kr}\`（BaseMod 加载会走本地化字体处理，
+  否则部分 UI 的韩文会显示成方块）。改了语言文件后：`robocopy MOD根目录\Assemblies\Localize MOD根目录\Localize /MIR`，然后把镜像目录里的 `.xml` 全部改名成 `.txt`（BaseMod 只解析 `.txt`）。
 - **本地化与风味文本**：游戏内 XML 文本禁止全角中文标点（`，。！？：；、""`），统一转为半角；书页风味文本与预览规范及录入约定见 [docs/CardPreview.md](docs/CardPreview.md)。

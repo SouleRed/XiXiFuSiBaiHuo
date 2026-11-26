@@ -1,0 +1,89 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<BattleCardAbilityDescRoot>
+  <BattleCardAbility ID="CX_CFK_BGM">
+    <Desc>[装备时]展开BGM</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="CX_4Liu20Shang">
+    <Desc>[使用时]若目标至少带有4层[流血]则使本书页造成的伤害+20%</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="CX_WeiShaJiu">
+    <Desc>[攻击容量2]</Desc>
+    <Desc>[使用时]目标每带有1层[针钉]使本书页造成的伤害+5%(至多25%)</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="TX_2ZhenLiuQ">
+    <Desc>[命中时]对目标施加2层[流血]与[针钉]</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="CX_6Liu20Shang">
+    <Desc>[使用时]若目标至少带有6层[流血]则使本书页造成的伤害+20%</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="TX_1ZhenLiu">
+    <Desc>[命中时]对目标施加1层[流血]与[针钉]</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="TX_2ZhenLiu">
+    <Desc>[命中时]对目标施加2层[流血]与[针钉]</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="CX_20YiShang">
+    <Desc>[攻击容量5]</Desc>
+    <Desc>使用时]目标每带有1层[针钉]使本书页造成的伤害+10%(至多50%)</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="TX_1Zhen">
+    <Desc>[命中时]对目标施加1层[针钉]</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="CX_ZhaoHuan">
+    <Desc>[战斗开始]这一幕结束时召唤3名[针族]</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="CX_ShouGongFengZhi">
+    <Desc>[优先指定友方单位] [不对友方单位造成伤害与混乱伤害]</Desc>
+    <Desc>[战斗开始]若目标为友方单位则使其这一幕与下一幕获得1层[强壮]</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="TX_ShouGongFengZhi">
+    <Desc>[命中时]若目标为友方单位则使其对敌方单位使用一张费用最高的书页</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="CX_ShuangZhenTaoTai">
+    <Desc>[攻击容量5]</Desc>
+    <Desc>[使用时]若场上不存在友方单位则摧毁本书页所有骰子</Desc>
+    <Desc>除自身外每有一名友方角色则使本书页所有骰子造成的伤害+50%且威力+4 </Desc>
+    <Desc>[攻击结束]移除所有针族并使自身下一幕获得移除的友方单位数的[强壮]</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="TX_ShuangZhenTaoTai">
+    <Desc>[命中时]若目标带有[标本化]则造成的伤害+100%</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="CX_NiuKouTaoTai">
+    <Desc>[拼点失败]使目标的[针钉]层数-1</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="TX_NiuKouTaoTai">
+    <Desc>[命中时]追加目标[针钉]层数的伤害</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="CX_JiaoJiaoJiao">
+    <Desc>[优先指定标本化的目标]</Desc>
+	<Desc>[钉层数低于5的单位无法改变本书页的攻击目标]</Desc>
+    <Desc>[使用时]目标每带有1层[针钉]使本书页造成的伤害+10%(至多50%)</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="TX_JiaoJiaoJiao">
+    <Desc>[命中时]若目标带有[标本化]则追加目标体力上限120%的伤害自身恢复体力上限8%的体力</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="CX_BiaoBenHua">
+    <Desc>[攻击容量5]</Desc>
+	<Desc>[本书页不造成伤害与混乱伤害]</Desc>
+    <Desc>[使用时]摧毁目标当前书页所有骰子</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="TX_BiaoBenHua">
+    <Desc>[命中时]若目标[针钉]层数不低于5则对其施加2层[标本化]</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="CX_4Liu1WLi">
+    <Desc>[使用时]若目标至少带有4层[流血]则使本书页所有骰子威力+1</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="TX_1Zhen_X">
+    <Desc>[命中时]对目标施加1层[针钉]</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="CX_XiaoDaZhao">
+    <Desc>[使用时]目标每带有4层[流血]则使本书页所有骰子威力+1(至多+2)</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="TX_XiaoDaZhao">
+    <Desc>[命中时]重复投掷本骰子1次
+[重复投掷命中时]追加目标[流血]层数的伤害并施加1层[针钉]</Desc>
+  </BattleCardAbility>
+  <BattleCardAbility ID="TX_2Liu_X">
+    <Desc>[命中时]下一幕对目标施加2层[流血]</Desc>
+  </BattleCardAbility>
+</BattleCardAbilityDescRoot>

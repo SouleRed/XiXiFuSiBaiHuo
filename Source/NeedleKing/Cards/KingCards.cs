@@ -64,23 +64,42 @@ namespace 裁缝之王
                 BattleSoundManager sound = SingletonBehavior<BattleSoundManager>.Instance;
                 if (sound == null || this.array[0] == null) return;
 
-                sound.SetEnemyTheme(this.array);
+                // 已经在放同一首曲子时不要重切：重切会硬停当前音轨，开局会听到爆音
                 AudioSource current = sound.CurrentPlayingTheme;
-                if (current == null || current.clip != this.array[0] || !current.isPlaying)
+                if (current != null && current.clip == this.array[0])
                 {
-                    sound.ChangeEnemyTheme(0);
+                    if (current.isPlaying) return;
                 }
+
+                // 开场瞬间 CurrentPlayingTheme 仍为空（原版还没 StartBgm），此时切换会打断开场曲，
+                // 交给 OnRoundStart 再做，避免开局爆音
+                if (current == null) return;
+
+                sound.SetEnemyTheme(this.array);
+                sound.ChangeEnemyTheme(0);
+            }
+
+            private static void ApplyOnRoundStartIfNeeded(AudioClip[] theme)
+            {
+                BattleSoundManager sound = SingletonBehavior<BattleSoundManager>.Instance;
+                if (sound == null || theme[0] == null) return;
+                AudioSource current = sound.CurrentPlayingTheme;
+                if (current != null && current.clip == theme[0]) return;
+                sound.SetEnemyTheme(theme);
+                sound.ChangeEnemyTheme(0);
             }
 
             public override void Init(BattleUnitModel owner)
             {
                 base.Init(owner);
+                NativeStageMap.LockEnemyThemePort();
                 ApplyTheme();
             }
 
             public override void OnRoundStart()
             {
                 NativeStageMap.LockEnemyThemePort();
+                ApplyOnRoundStartIfNeeded(this.array);
             }
 
             private readonly AudioClip[] array = new AudioClip[3];

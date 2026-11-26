@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<localize>
+  <text id="dropbook_cfk_king">바느질의 왕의 책</text>
+</localize>

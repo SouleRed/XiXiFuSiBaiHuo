@@ -1,6 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <CharactersNameRoot>
   <Name ID="-1">裁缝之王</Name>
   <Name ID="2">经线之针族</Name>
   <Name ID="3">纬线之针族</Name>
+  <Name ID="1496">裁缝之王</Name>
+  <Name ID="1498">经线之针族</Name>
+  <Name ID="1499">纬线之针族</Name>
+  <Name ID="1">裁缝之王</Name>
 </CharactersNameRoot>

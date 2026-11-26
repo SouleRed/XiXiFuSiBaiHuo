@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<BattleDialogRoot xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <Version>1.1</Version>
+  <GroupName>CaiFengZhiKing</GroupName>
+  <Character ID="CaiFengKing_1">
+    <Type ID="START_BATTLE">
+      <BattleDialog ID="START_BATTLE_0">생동하는... 울음소리...! 나의...! 만...찬!</BattleDialog>
+    </Type>
+    <Type ID="BATTLE_VICTORY">
+      <BattleDialog ID="BATTLE_VICTORY_0">끄으으윽!! 해, 묵은... 울, 림... 나의...! 황금...?</BattleDialog>
+    </Type>
+    <Type ID="DEATH">
+      <BattleDialog ID="DEATH_0">흐으... 하... 하! 하! 하...!!</BattleDialog>
+    </Type>
+    <Type ID="COLLEAGUE_DEATH">
+      <BattleDialog ID="COLLEAGUE_DEATH_0">더는! 견... 딜 수 없...어! 허기... 갈증...!</BattleDialog>
+    </Type>
+    <Type ID="KILLS_OPPONENT">
+      <BattleDialog ID="KILLS_OPPONENT_0">가...라...!</BattleDialog>
+    </Type>
+    <Type ID="SPECIAL_EVENT">
+      <BattleDialog ID="SPECIAL_EVENT_0">내게... 가져와...!</BattleDialog>
+    </Type>
+  </Character>
+  <Character ID="1496">
+    <Type ID="START_BATTLE">
+      <BattleDialog ID="START_BATTLE_0">생동하는... 울음소리...! 나의...! 만...찬!</BattleDialog>
+    </Type>
+    <Type ID="BATTLE_VICTORY">
+      <BattleDialog ID="BATTLE_VICTORY_0">끄으으윽!! 해, 묵은... 울, 림... 나의...! 황금...?</BattleDialog>
+    </Type>
+    <Type ID="DEATH">
+      <BattleDialog ID="DEATH_0">흐으... 하... 하! 하! 하...!!</BattleDialog>
+    </Type>
+    <Type ID="COLLEAGUE_DEATH">
+      <BattleDialog ID="COLLEAGUE_DEATH_0">더는! 견... 딜 수 없...어! 허기... 갈증...!</BattleDialog>
+    </Type>
+    <Type ID="KILLS_OPPONENT">
+      <BattleDialog ID="KILLS_OPPONENT_0">가...라...!</BattleDialog>
+    </Type>
+    <Type ID="SPECIAL_EVENT">
+      <BattleDialog ID="SPECIAL_EVENT_0">내게... 가져와...!</BattleDialog>
+    </Type>
+  </Character>
+</BattleDialogRoot>
