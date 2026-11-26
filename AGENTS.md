@@ -15,8 +15,14 @@
 
 ## 编码与资产约束
 
-- **原生地图与 BGM**：地图通过 `NativeStageMap` 加载原生 `MapManager` AB（`filature_map.ab`）及内置 `mapBgm`，不引入第三方地图插件。
+- **原生地图与 BGM**：地图通过 `NativeStageMap` 加载原生 `MapManager` AB（`Assemblies\AB\filature_map.ab`）及内置 `mapBgm`，不引入第三方地图插件。
+  流程、验证日志与排错见 [docs/原生地图与BGM.md](docs/原生地图与BGM.md)；部署目标是创意工坊目录 `workshop\content\1256670\XiXiFuSiBaiHuo`，脚本会清掉游戏根 `Mods` 下的同名副本。
 - **Harmony 补丁**：参数名必须与目标方法签名完全一致；常规补丁通过前置条件与空值守卫保证安全，**禁止无脑 `try/catch` 吞异常**；仅在外部资产/联动边界或具备明确回退路径（如失败回退原版）的拦截点按需捕获并完整记录异常。
 - **继承虚调用**：禁止直接落盘反编译风格的 `((父类)this).虚方法()`，必须使用 `base.`。
 - **`.csproj` 收录**：使用 `Source\**\*.cs` 通配符；若显式添加 `<Compile Include>`，必须同步加入通配符 `Exclude`，避免 CS2002。
+- **接待图标**：以作者示例 mod（3616379979）为准，写在 `Data\StageLine\StoryIconSlot.xml`（`IconSlot`：Name/Stage/Locate/Position），
+  图标素材放 `Data\StageLine\ArtWork\`；`Data\XmlInfos\StoryIcon`（MapIconSlot）是章节地图体系，与本章不同。
+  字段说明见 [docs/章节地图与接待图标.md](docs/章节地图与接待图标.md)。
+- **接待邀请函书籍**：`<Book>` 引用原版书页必须写 `Pid="@origin"`，否则会被当成本模组的书、退化成"棍木"占位；
+  引用本模组的书写包名（`Pid="CaiFengKing"`）。详见 [docs/章节地图与接待图标.md](docs/章节地图与接待图标.md)。
 - **本地化与风味文本**：游戏内 XML 文本禁止全角中文标点（`，。！？：；、""`），统一转为半角；书页风味文本与预览规范及录入约定见 [docs/CardPreview.md](docs/CardPreview.md)。

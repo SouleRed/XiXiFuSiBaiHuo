@@ -4,9 +4,10 @@
     <FloorNum>1</FloorNum>
     <Chapter>7</Chapter>
     <StoryType>BF_BeiMing_1</StoryType>
-    <Invitation Combine="BookValue">
-      <Value>7</Value>
-      <Num>1</Num>
+    <Invitation Combine="BookRecipe">
+      <Book Pid="@origin">250034</Book>
+      <Book Pid="@origin">250035</Book>
+      <Book Pid="@origin">250037</Book>
     </Invitation>
     <Wave>
       <Formation>41</Formation>

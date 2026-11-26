@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<StoryIconRoot xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+
+  <!-- 参考作者示例 mod（3616379979）：只写 Name / Stage / Locate / Position -->
+  <IconSlot ID="1">
+    <Name>裁缝之王</Name>
+    <Stage>1</Stage>
+    <Locate>Yan</Locate>
+    <Position x="-600" y="2900" />
+  </IconSlot>
+
+</StoryIconRoot>
