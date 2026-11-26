@@ -1,6 +1,5 @@
 using AutoKeywordUtil;
 using HarmonyLib;
-using NAudio.Wave;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -68,12 +67,11 @@ public class CaiFengKing_Initializer : global::ModInitializer
         foreach (DirectoryInfo sub in dir.GetDirectories()) AddAudioClips(sub);
         foreach (FileInfo f in dir.GetFiles())
         {
-            string ext = f.Extension.ToLowerInvariant();
-            if (ext != ".wav" && ext != ".mp3") continue;
+            if (!f.Extension.Equals(".wav", StringComparison.OrdinalIgnoreCase)) continue;
             try
             {
                 string key = Path.GetFileNameWithoutExtension(f.Name);
-                AudioClip clip = ext == ".mp3" ? LoadMp3Clip(f.FullName) : LoadWavClip(f.FullName);
+                AudioClip clip = LoadWavClip(f.FullName);
                 if (clip) AudioClips[key] = clip;
             }
             catch (Exception e)
@@ -83,79 +81,39 @@ public class CaiFengKing_Initializer : global::ModInitializer
         }
     }
 
-    private static AudioClip LoadMp3Clip(string mp3Path)
-    {
-        string tempWav = mp3Path + ".wav";
-        try
-        {
-            using (var mp3 = new Mp3FileReader(mp3Path))
-                WaveFileWriter.CreateWaveFile(tempWav, mp3);
-            return LoadWavClip(tempWav);
-        }
-        finally
-        {
-            if (File.Exists(tempWav)) File.Delete(tempWav);
-        }
-    }
-
     private static AudioClip LoadWavClip(string wavPath)
     {
-        var w = new WavData(File.ReadAllBytes(wavPath));
-        if (w.LeftChannel == null || w.SampleCount <= 0 || w.ChannelCount <= 0) return null;
+        byte[] wav = File.ReadAllBytes(wavPath);
+        if (wav.Length < 44) return null;
 
-        float[] interleaved;
-        if (w.ChannelCount == 1)
+        int channels = wav[22] | (wav[23] << 8);
+        int frequency = wav[24] | (wav[25] << 8) | (wav[26] << 16) | (wav[27] << 24);
+        if (channels <= 0 || frequency <= 0) return null;
+
+        int pos = 12;
+        int dataSize = 0;
+        while (pos + 8 <= wav.Length)
         {
-            interleaved = w.LeftChannel;
-        }
-        else
-        {
-            interleaved = new float[w.SampleCount * 2];
-            for (int i = 0; i < w.SampleCount; i++)
+            int chunkSize = wav[pos + 4] | (wav[pos + 5] << 8) | (wav[pos + 6] << 16) | (wav[pos + 7] << 24);
+            if (wav[pos] == 'd' && wav[pos + 1] == 'a' && wav[pos + 2] == 't' && wav[pos + 3] == 'a')
             {
-                interleaved[i * 2] = w.LeftChannel[i];
-                interleaved[i * 2 + 1] = w.RightChannel[i];
+                pos += 8;
+                dataSize = Math.Min(Math.Max(0, chunkSize), wav.Length - pos);
+                break;
             }
+            pos += 8 + chunkSize + (chunkSize & 1);
         }
 
-        AudioClip clip = AudioClip.Create(Path.GetFileNameWithoutExtension(wavPath), w.SampleCount, w.ChannelCount, w.Frequency, false);
-        clip.SetData(interleaved, 0);
+        int totalSamples = dataSize / 2;
+        int sampleFrames = totalSamples / channels;
+        if (sampleFrames <= 0) return null;
+
+        float[] data = new float[sampleFrames * channels];
+        for (int i = 0; i < data.Length; i++, pos += 2)
+            data[i] = (short)((wav[pos + 1] << 8) | wav[pos]) / 32768f;
+
+        AudioClip clip = AudioClip.Create(Path.GetFileNameWithoutExtension(wavPath), sampleFrames, channels, frequency, false);
+        clip.SetData(data, 0);
         return clip;
-    }
-
-    private sealed class WavData
-    {
-        internal readonly float[] LeftChannel;
-        internal readonly float[] RightChannel;
-        internal readonly int ChannelCount;
-        internal readonly int SampleCount;
-        internal readonly int Frequency;
-
-        internal WavData(byte[] wav)
-        {
-            ChannelCount = wav[22];
-            Frequency = wav[24] | (wav[25] << 8) | (wav[26] << 16) | (wav[27] << 24);
-            int pos = 12;
-            while (pos + 8 <= wav.Length && (wav[pos] != 'd' || wav[pos + 1] != 'a' || wav[pos + 2] != 't' || wav[pos + 3] != 'a'))
-            {
-                int chunkSize = wav[pos + 4] | (wav[pos + 5] << 8) | (wav[pos + 6] << 16) | (wav[pos + 7] << 24);
-                pos += 8 + chunkSize;
-            }
-            pos += 8;
-            SampleCount = Math.Max(0, (wav.Length - pos) / 2);
-            if (ChannelCount == 2) SampleCount /= 2;
-            LeftChannel = new float[SampleCount];
-            RightChannel = ChannelCount == 2 ? new float[SampleCount] : null;
-            for (int i = 0; i < SampleCount && pos + 1 < wav.Length; i++)
-            {
-                LeftChannel[i] = (short)((wav[pos + 1] << 8) | wav[pos]) / 32768f;
-                pos += 2;
-                if (ChannelCount == 2 && pos + 1 < wav.Length)
-                {
-                    RightChannel[i] = (short)((wav[pos + 1] << 8) | wav[pos]) / 32768f;
-                    pos += 2;
-                }
-            }
-        }
     }
 }
