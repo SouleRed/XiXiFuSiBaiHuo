@@ -63,4 +63,16 @@ At the start of the encounter, gain "Shower of Stinging Sunshine [King of Needle
     <Name>Tiny and Sharp Nails</Name>
     <Desc>When hitting a target with Naildle, inflict 1 additional Bleed on it</Desc>
   </PassiveDesc>
+  <PassiveDesc ID="9">
+    <Name>Shower of Stinging Sunshine [Haute Couture::Le Rouge - King of Needleworks]</Name>
+    <Desc>At the start of the Act, gain [Shower of Stinging Sunshine - Le Rouge - King of Needleworks]
+At the start of each Scene, inflict [Tongue-pinning Needle] on 2 random enemies
+Can gain Cry effects even without [Haute Couture::Le Rouge - Red God]
+Every 3 Scenes, Cry effects are enhanced for 1 Scene
+-Gain +1 additional Power with all dice
+-Deal +10% additional damage
+-Deal +5% more damage for every 10 [Tiny and Sharp Nails] on self
+(Shower of Stinging Sunshine - Le Rouge - King of Needleworks: Gain +1 Power with all dice for every 3 combined [Naildle] and [Abject] on the target (Max +3))
+(Tongue-pinning Needle: Take +5% damage. At the end of this Scene, inflict 2 [Naildle] on self and remove this effect)</Desc>
+  </PassiveDesc>
 </PassiveDescRoot>

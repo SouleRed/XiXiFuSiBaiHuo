@@ -33,5 +33,14 @@ Otherwise, inflict 3 Naildle on self</Desc>
       <Name>Shower of Stinging Sunshine [King of Needleworks]</Name>
       <Desc>Gain +1 Power with all dice for every 3 Naildle on the target</Desc>
     </BattleEffectText>
+    <BattleEffectText ID="BF_YangGuang_LRH">
+      <Name>Shower of Stinging Sunshine - Le Rouge - King of Needleworks</Name>
+      <Desc>Gain +1 Power with all dice for every 3 combined [Naildle] and [Abject] on the target (Max +3)</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_CiSheZ_LRH">
+      <Name>Tongue-pinning Needle</Name>
+      <Desc>Take +5% damage
+At the end of this Scene, inflict 2 [Naildle] on self and remove this effect</Desc>
+    </BattleEffectText>
   </effectTextList>
 </BattleEffectTextRoot>

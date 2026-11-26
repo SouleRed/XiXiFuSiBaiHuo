@@ -10,10 +10,8 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot = [IO.Path]::GetFullPath((Split-Path -Parent $PSCommandPath)).TrimEnd('\')
 $projectPath = Join-Path $repoRoot 'XiXiFuSiBaiHuo.csproj'
-$redDiceProjectPath = Join-Path $repoRoot 'XiXiFuSiBaiHuo.RedDice.csproj'
 $modSource = Join-Path $repoRoot 'MOD根目录'
 $dllSource = Join-Path $repoRoot "bin\$Configuration\XiXiFuSiBaiHuo.dll"
-$redDiceDllSource = Join-Path $repoRoot "bin\$Configuration\XiXiFuSiBaiHuo.RedDice.dll"
 $modDirectoryName = 'XiXiFuSiBaiHuo'
 $modPackageId = 'CaiFengZhiKing'
 
@@ -185,7 +183,7 @@ Push-Location -LiteralPath $repoRoot
 try
 {
     Write-Host "[1/6] 编译 $Configuration DLL..."
-    & dotnet msbuild $redDiceProjectPath `
+    & dotnet msbuild $projectPath `
         -t:Build `
         "-p:Configuration=$Configuration" `
         -p:Platform=AnyCPU `
@@ -193,34 +191,24 @@ try
         -v:minimal `
         -clp:ErrorsOnly
     if ($LASTEXITCODE -ne 0) { throw "DLL 编译失败，退出代码：$LASTEXITCODE" }
-    if (!(Test-Path -LiteralPath $dllSource -PathType Leaf)) { throw "编译完成但找不到主 DLL：$dllSource" }
-    if (!(Test-Path -LiteralPath $redDiceDllSource -PathType Leaf)) { throw "编译完成但找不到 RedDice 延迟 DLL：$redDiceDllSource" }
+    if (!(Test-Path -LiteralPath $dllSource -PathType Leaf)) { throw "编译完成但找不到 DLL：$dllSource" }
 
     $sourceHash = (Get-FileHash -LiteralPath $dllSource -Algorithm SHA256).Hash
-    $redDiceHash = (Get-FileHash -LiteralPath $redDiceDllSource -Algorithm SHA256).Hash
     $legacyDll = Join-Path $modSource 'Assemblies\裁缝之王.dll'
     if (Test-Path -LiteralPath $legacyDll) { Remove-Item -LiteralPath $legacyDll -Force }
 
     $modDll = Join-Path $modSource 'Assemblies\XiXiFuSiBaiHuo.dll'
-    $modRedDiceDll = Join-Path $modSource 'Assemblies\Deferred\XiXiFuSiBaiHuo.RedDice.dll'
     Write-Host '[2/6] 将 DLL 复制到仓库 MOD 根目录...'
     New-Item -ItemType Directory -Path (Split-Path -Parent $modDll) -Force | Out-Null
-    New-Item -ItemType Directory -Path (Split-Path -Parent $modRedDiceDll) -Force | Out-Null
     Copy-Item -LiteralPath $dllSource -Destination $modDll -Force
-    Copy-Item -LiteralPath $redDiceDllSource -Destination $modRedDiceDll -Force
     if ((Get-FileHash -LiteralPath $modDll -Algorithm SHA256).Hash -ne $sourceHash)
     {
-        throw '复制到 MOD 根目录后的主 DLL 哈希校验失败。'
-    }
-    if ((Get-FileHash -LiteralPath $modRedDiceDll -Algorithm SHA256).Hash -ne $redDiceHash)
-    {
-        throw '复制到 MOD 根目录后的 RedDice 延迟 DLL 哈希校验失败。'
+        throw '复制到 MOD 根目录后的 DLL 哈希校验失败。'
     }
 
     if ($BuildOnly)
     {
         Write-Host "BUILD OK：$modDll"
-        Write-Host "BUILD OK：$modRedDiceDll"
         return
     }
 

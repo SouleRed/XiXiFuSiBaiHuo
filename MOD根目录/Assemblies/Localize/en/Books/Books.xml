@@ -16,5 +16,10 @@
       <TextList />
       <PassiveList />
     </BookDesc>
+    <BookDesc BookID="4">
+      <BookName>Haute Couture::King of Needleworks Heathcliff's Page</BookName>
+      <TextList />
+      <PassiveList />
+    </BookDesc>
   </bookDescList>
 </BookDescRoot>

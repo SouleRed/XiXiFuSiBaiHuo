@@ -8,5 +8,6 @@
     <Chapter>7</Chapter>
     <BookValue>0</BookValue>
     <DropItem Type="Equip">1</DropItem>
+    <DropItem Type="Equip">4</DropItem>
   </BookUse>
 </BookUseXmlRoot>

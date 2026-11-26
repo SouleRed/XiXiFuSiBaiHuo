@@ -25,6 +25,12 @@ namespace 裁缝之王
         public static KeywordBuf BF_YangGuang_CFK { get; } = Tools.MakeEnum<KeywordBuf>("BF_YangGuang_CFK");
         public const string BF_YangGuang_CFKName = "BF_YangGuang_CFK";
 
+        public static KeywordBuf BF_YangGuang_LRH { get; } = Tools.MakeEnum<KeywordBuf>("BF_YangGuang_LRH");
+        public const string BF_YangGuang_LRHName = "BF_YangGuang_LRH";
+
+        public static KeywordBuf BF_CiSheZ_LRH { get; } = Tools.MakeEnum<KeywordBuf>("BF_CiSheZ_LRH");
+        public const string BF_CiSheZ_LRHName = "BF_CiSheZ_LRH";
+
         public static KeywordBuf BF_Zhaohuan { get; } = Tools.MakeEnum<KeywordBuf>("BF_Zhaohuan");
         public const string BF_ZhaohuanName = "BF_Zhaohuan";
 

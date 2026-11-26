@@ -33,5 +33,14 @@
       <Name>따갑게 내리쬐는 햇살 [바느질의 왕]</Name>
       <Desc>대상이 보유한 바늘못 3마다 자신의 모든 주사위 위력 +1</Desc>
     </BattleEffectText>
+    <BattleEffectText ID="BF_YangGuang_LRH">
+      <Name>따갑게 내리쬐는 햇살-홍파-바느질의 왕</Name>
+      <Desc>대상의 [바늘못]과 [비천한 것] 중첩 합 3마다 자신의 모든 주사위 위력 +1(최대 +3)</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_CiSheZ_LRH">
+      <Name>혀에 꽂힌 바늘</Name>
+      <Desc>자신이 받는 피해 +5%
+이 막 종료 시 자신에게 [바늘못] 2 부여 후 해제</Desc>
+    </BattleEffectText>
   </effectTextList>
 </BattleEffectTextRoot>

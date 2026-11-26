@@ -98,4 +98,39 @@
       <Passive>8</Passive>
     </EquipEffect>
   </Book>
+  <Book ID="4">
+    <TextId>4</TextId>
+    <CharacterSkinType>Custom</CharacterSkinType>
+    <BookIcon>BF_BeiMing_1</BookIcon>
+    <CharacterSkin>CaiFengKing</CharacterSkin>
+    <Episode>-1</Episode>
+    <Rarity>Unique</Rarity>
+    <RangeType>Hybrid</RangeType>
+    <Chapter>7</Chapter>
+    <Name>高级定制::裁缝之王 希斯克里夫之页</Name>
+    <EquipEffect>
+      <HP>1</HP>
+      <HpReduction>0</HpReduction>
+      <Break>1</Break>
+      <SpeedMin>1</SpeedMin>
+      <Speed>1</Speed>
+      <StartPlayPoint>1</StartPlayPoint>
+      <MaxPlayPoint>1</MaxPlayPoint>
+      <SResist>Normal</SResist>
+      <PResist>Normal</PResist>
+      <HResist>Normal</HResist>
+      <SBResist>Normal</SBResist>
+      <PBResist>Normal</PBResist>
+      <HBResist>Normal</HBResist>
+      <Passive>9</Passive>
+      <DeadLine>0</DeadLine>
+      <SpeedDiceNum>0</SpeedDiceNum>
+      <AddedStartDraw>0</AddedStartDraw>
+    </EquipEffect>
+    <SkinGender>N</SkinGender>
+    <NotEquip>true</NotEquip>
+    <RandomFace>false</RandomFace>
+    <SpeedDiceNum>1</SpeedDiceNum>
+    <SuccessionPossibleNumber>9</SuccessionPossibleNumber>
+  </Book>
 </BookXmlRoot>

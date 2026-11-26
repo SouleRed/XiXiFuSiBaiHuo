@@ -16,5 +16,10 @@
     <TextList />
     <PassiveList />
     </BookDesc>
+    <BookDesc BookID="4">
+      <BookName>高级定制::裁缝之王 希斯克里夫之页</BookName>
+    <TextList />
+    <PassiveList />
+    </BookDesc>
   </bookDescList>
 </BookDescRoot>

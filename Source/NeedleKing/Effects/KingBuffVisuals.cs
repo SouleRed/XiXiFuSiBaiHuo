@@ -46,16 +46,26 @@ public sealed class KingBuffVisuals : MonoBehaviour
             appearance = view.charAppearance;
         }
 
-        bool marked = false, golden = false;
+        bool marked = false, golden = false, hasLrhWarmLight = false;
         int howlingTier = 0;
         foreach (var buf in model.bufListDetail.GetActivatedBufList())
         {
             if (buf == null || buf.IsDestroyed()) continue;
             if (buf is BattleUnitBuf_BF_YangGuang_CFK) golden = true;
+            else if (buf is BattleUnitBuf_BF_YangGuang_LRH)
+            {
+                golden = true;
+                hasLrhWarmLight = true;
+            }
             else if (buf.stack <= 0) continue;
-            else if (buf is BattleUnitBuf_BF_CiSheZ) marked = true;
+            else if (buf is BattleUnitBuf_BF_CiSheZ || buf is BattleUnitBuf_BF_CiSheZ_LRH) marked = true;
             else if (buf is BattleUnitBuf_BF_BeiMing_2) howlingTier = 2;
             else if (buf is BattleUnitBuf_BF_BeiMing_1 && howlingTier < 1) howlingTier = 1;
+        }
+        if (hasLrhWarmLight)
+        {
+            int lrhCryTier = Shared.Interop.LeRougeInterop.GetCryTier(model);
+            if (lrhCryTier > howlingTier) howlingTier = lrhCryTier;
         }
 
         // 统一挂在 Appearance 节点下，将源特效从贴图单位转回源单位。

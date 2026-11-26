@@ -33,5 +33,14 @@
       <Name>沐浴着温暖的光芒[裁缝之王]</Name>
       <Desc>目标每带有3层"针钉"则使自身所有骰子威力+1</Desc>
     </BattleEffectText>
+    <BattleEffectText ID="BF_YangGuang_LRH">
+      <Name>沐浴着温暖的光芒-红派-裁缝之王</Name>
+      <Desc>目标的[针钉]与[卑贱之物]层数之和每有3使自身所有骰子威力+1(至多+3)</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_CiSheZ_LRH">
+      <Name>刺舌之针</Name>
+      <Desc>自身受到的伤害+5%
+这一幕结束时对自身施加2层[针钉]随后解除本效果</Desc>
+    </BattleEffectText>
   </effectTextList>
 </BattleEffectTextRoot>
