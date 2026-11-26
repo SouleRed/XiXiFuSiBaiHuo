@@ -1,4 +1,5 @@
 using HarmonyLib;
+using LOR_BattleUnit_UI;
 using UI;
 using UnityEngine;
 using 裁缝之王.Presentation.Actions;
@@ -207,6 +208,86 @@ public static class ModPatches
             return !KingBehaviourAction.IsNativeWinningAction(manager._librarian, manager._currentLibrarianBehaviourResult)
                 && !KingBehaviourAction.IsNativeWinningAction(manager._enemy, manager._currentEnemyBehaviourResult);
         }
+    }
+
+    #endregion
+
+    #region 攻击容量我方多目标选牌交互
+
+    [HarmonyPatch(typeof(StageController), nameof(StageController.StartBattle))]
+    public static class StageController_StartBattle
+    {
+        [HarmonyPrefix]
+        public static void Prefix() => CustomCombatTargeting.Reset();
+    }
+
+    [HarmonyPatch(typeof(StageController), nameof(StageController.EndBattle))]
+    public static class StageController_EndBattle
+    {
+        [HarmonyPrefix]
+        public static void Prefix() => CustomCombatTargeting.Reset();
+    }
+
+    [HarmonyPatch(typeof(BattlePlayingCardSlotDetail), nameof(BattlePlayingCardSlotDetail.AddCard))]
+    public static class BattlePlayingCardSlotDetail_AddCard
+    {
+        [HarmonyPostfix]
+        public static void Postfix(BattlePlayingCardSlotDetail __instance, BattleDiceCardModel card)
+            => CustomCombatTargeting.FillAutomatic(__instance, card);
+    }
+
+    [HarmonyPatch(typeof(BattleUnitCardsInHandUI), nameof(BattleUnitCardsInHandUI.ApplySelectedCard))]
+    public static class BattleUnitCardsInHandUI_ApplySelectedCard
+    {
+        [HarmonyPrefix]
+        public static bool Prefix(BattleUnitCardsInHandUI __instance, BattleUnitModel target, int targetSlot)
+            => !CustomCombatTargeting.Apply(__instance, target, targetSlot);
+    }
+
+    [HarmonyPatch(typeof(BattleUnitCardsInHandUI), "Update")]
+    public static class BattleUnitCardsInHandUI_Update
+    {
+        [HarmonyPrefix]
+        public static bool Prefix(BattleUnitCardsInHandUI __instance) => CustomCombatTargeting.Update(__instance);
+    }
+
+    [HarmonyPatch(typeof(SpeedDiceUI), nameof(SpeedDiceUI.OnSubmit))]
+    public static class SpeedDiceUI_OnSubmit
+    {
+        [HarmonyPrefix]
+        public static bool Prefix(UnityEngine.EventSystems.BaseEventData data)
+        {
+            if (UIControlManager.GetInpuTypeOf(data) != InputType.RightClick) return true;
+            return !CustomCombatTargeting.HandleRightClick();
+        }
+    }
+
+    [HarmonyPatch(typeof(BattleUnitCardsInHandUI), nameof(BattleUnitCardsInHandUI.Deactivate))]
+    public static class BattleUnitCardsInHandUI_Deactivate
+    {
+        [HarmonyPostfix]
+        public static void Postfix(BattleUnitCardsInHandUI __instance) => CustomCombatTargeting.OnDeactivate(__instance);
+    }
+
+    [HarmonyPatch(typeof(BattleDiceCardUI), "ShowDetail")]
+    public static class BattleDiceCardUI_ShowDetail
+    {
+        [HarmonyPrefix]
+        public static bool Prefix(BattleDiceCardUI __instance) => !CustomCombatTargeting.Blocks(__instance);
+    }
+
+    [HarmonyPatch(typeof(BattleDiceCardUI), "OnClick")]
+    public static class BattleDiceCardUI_OnClick
+    {
+        [HarmonyPrefix]
+        public static bool Prefix(BattleDiceCardUI __instance) => !CustomCombatTargeting.Blocks(__instance);
+    }
+
+    [HarmonyPatch(typeof(BattleDiceCardUI), "OnPdSubmit")]
+    public static class BattleDiceCardUI_OnPdSubmit
+    {
+        [HarmonyPrefix]
+        public static bool Prefix(BattleDiceCardUI __instance) => !CustomCombatTargeting.Blocks(__instance);
     }
 
     #endregion

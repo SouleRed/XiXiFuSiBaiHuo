@@ -109,9 +109,9 @@ internal sealed class CustomCombatOneSideManager
         {
             if (_playingCard.currentBehavior.behaviourInCard.Type == BehaviourType.Atk)
             {
-                CustomCombatResolution.ResolveDie(_playingCard.currentBehavior, victim);
+                bool mainHit = CustomCombatResolution.ResolveDie(_playingCard.currentBehavior, victim);
                 victim.UpdateDirection(attacker.view.WorldPosition);
-                resultKnockbackEnergy += _playingCard.currentBehavior.behaviourInCard.KnockbackPower;
+                if (mainHit) resultKnockbackEnergy += _playingCard.currentBehavior.behaviourInCard.KnockbackPower;
                 _playingCard.AfterAction();
             }
             else if (_playingCard.currentBehavior.behaviourInCard.Type == BehaviourType.Def)

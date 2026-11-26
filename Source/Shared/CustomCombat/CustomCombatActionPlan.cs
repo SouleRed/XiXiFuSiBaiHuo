@@ -49,23 +49,24 @@ internal sealed class CustomCombatActionPlan
         Func<int, Vector3[]> initialPositions = null)
     {
         var manager = CustomCombatRuntime.Playback;
-        if (!manager || !manager.IsRunning || CustomCombatResolution.Find(self.behaviourResultData) == null || manager.SecondaryPlayback.HasPlan(self.behaviourResultData)) return;
+        var frame = CustomCombatResolution.Find(self.behaviourResultData);
+        if (!manager || !manager.IsRunning || frame == null || manager.SecondaryPlayback.HasPlan(self.behaviourResultData)) return;
         var actor = self.view;
-        var victim = opponent.view;
+        var anchorVictim = frame.Main?.view ? frame.Main.view : opponent.view;
         var plan = new CustomCombatActionPlan
         {
             AutoFocus = false,
-            InitialOffset = index => GetStaggeredOffset(actor, victim, index),
+            InitialOffset = index => GetStaggeredOffset(actor, anchorVictim, index),
             InitialPositions = initialPositions,
-            Sample = () => new TargetPose { Motion = victim.charAppearance.GetCurrentMotionDetail(), DamageTime = victim._remainDmgTime },
+            Sample = frame.RedirectedToSecondary ? null : () => new TargetPose { Motion = opponent.view.charAppearance.GetCurrentMotionDetail(), DamageTime = opponent.view._remainDmgTime },
             FormalStart = (owner, record) => owner.EnterSecondaryFocus(record),
             FormalEnd = (owner, record) => { if (!owner.CanContinueSecondaryFocus(record)) owner.LeaveSecondaryFocus(); },
         };
-        plan.SetActions(opponent.infoList);
+        if (!frame.RedirectedToSecondary) plan.SetActions(opponent.infoList);
         CustomCombatPlayback.BindFormal(ref self, plan);
     }
 
-    private static Vector3 GetStaggeredOffset(BattleUnitView actor, BattleUnitView victim, int index)
+    internal static Vector3 GetStaggeredOffset(BattleUnitView actor, BattleUnitView victim, int index)
     {
         float lane = index % 2 == 0 ? -1f : 1f;
         float side = victim.WorldPosition.x <= actor.WorldPosition.x ? -1f : 1f;

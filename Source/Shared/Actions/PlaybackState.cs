@@ -37,7 +37,8 @@ internal class PlaybackState
         Target = opponent.view;
         Result = self.behaviourResultData;
         Continues = allowContinuation && KingContinuation.TryGetContinuousNext(Actor, Target, Result, out _);
-        Continuity = RencounterEffects.Acquire(Actor, Target, Result.playingCard, skill);
+        var continuityTarget = CustomCombatResolution.Find(Result)?.Main?.view ?? Target;
+        Continuity = RencounterEffects.Acquire(Actor, continuityTarget, Result.playingCard, skill);
         bool actorYLock = false, targetYLock = false;
         coin = Continuity.PrepareCoin(Finish, pauses);
         self.startMoveRoutineEvent += Begin;

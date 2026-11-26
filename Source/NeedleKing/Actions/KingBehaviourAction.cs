@@ -44,8 +44,9 @@ public abstract class KingBehaviourAction : BehaviourActionBase
             return base.GetMovingAction(ref self, ref opponent);
 
         bool deflection = IsRangedAttackClash(result, opposingResult);
+        var anchor = CustomCombatResolution.Find(result)?.Main?.view ?? opponent.view;
         if ((deflection && result.diceBehaviourResult.actionType != ActionType.Atk)
-            || !RencounterEffects.EnsureOpen(self.view, opponent.view))
+            || !RencounterEffects.EnsureOpen(self.view, anchor))
             return base.GetMovingAction(ref self, ref opponent);
 
         return deflection ? BuildDeflection(ref self, ref opponent) : BuildAction(ref self, ref opponent);
@@ -65,8 +66,11 @@ internal static class KingContinuation
     {
         next = null;
         if (!actor || !target || current?.playingCard?.owner != actor.model || !KingBehaviourAction.IsNativeWinningAction(actor, current)) return false;
-        var own = actor.model.battleCardResultLog.BehaviourResultList;
-        var other = target.model.battleCardResultLog.BehaviourResultList;
+        var frame = CustomCombatResolution.Find(current);
+        var logTarget = frame?.Main != null ? frame.Main : target.model;
+        var own = actor.model.battleCardResultLog?.BehaviourResultList;
+        var other = logTarget?.battleCardResultLog?.BehaviourResultList;
+        if (own == null || other == null) return false;
         int index = own.IndexOf(current);
         if (index < 0 || index + 1 >= own.Count || index + 1 >= other.Count) return false;
 

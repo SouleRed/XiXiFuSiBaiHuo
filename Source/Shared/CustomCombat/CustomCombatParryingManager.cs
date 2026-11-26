@@ -425,10 +425,13 @@ internal sealed class CustomCombatParryingManager
         }
         else
         {
-            CustomCombatResolution.ResolveDie(_currentWinnerTeam.playingCard.currentBehavior, unit);
-            int knockbackPower = _currentWinnerTeam.playingCard.currentBehavior.behaviourInCard.KnockbackPower;
-            int num = 0;
-            _currentLoserTeam.resultKnockbackEnergy += knockbackPower - num;
+            bool mainHit = CustomCombatResolution.ResolveDie(_currentWinnerTeam.playingCard.currentBehavior, unit);
+            if (mainHit)
+            {
+                int knockbackPower = _currentWinnerTeam.playingCard.currentBehavior.behaviourInCard.KnockbackPower;
+                int num = 0;
+                _currentLoserTeam.resultKnockbackEnergy += knockbackPower - num;
+            }
             if (_currentLoserTeam.DiceExists())
             {
                 _currentWinnerTeam.playingCard.OnWinParryingAttack();
@@ -448,20 +451,24 @@ internal sealed class CustomCombatParryingManager
     {
         if (!_currentDefenderTeam.DiceExists())
         {
-            CustomCombatResolution.ResolveDie(_currentAttackerTeam.playingCard.currentBehavior, _currentDefenderTeam.unit);
-            int knockbackPower = _currentAttackerTeam.playingCard.currentBehavior.behaviourInCard.KnockbackPower;
-            int num = 0;
-            _currentDefenderTeam.resultKnockbackEnergy += knockbackPower - num;
+            if (CustomCombatResolution.ResolveDie(_currentAttackerTeam.playingCard.currentBehavior, _currentDefenderTeam.unit))
+            {
+                int knockbackPower = _currentAttackerTeam.playingCard.currentBehavior.behaviourInCard.KnockbackPower;
+                int num = 0;
+                _currentDefenderTeam.resultKnockbackEnergy += knockbackPower - num;
+            }
         }
         else if (_currentDefenderTeam.GetBehaviourDetail() == BehaviourDetail.Guard)
         {
             if (_currentDefenderTeam == _currentLoserTeam)
             {
                 _currentAttackerTeam.playingCard.currentBehavior.SetDamageRedution(_currentDefenderTeam.GetDiceValue());
-                CustomCombatResolution.ResolveDie(_currentAttackerTeam.playingCard.currentBehavior, _currentDefenderTeam.unit);
-                int knockbackPower2 = _currentAttackerTeam.playingCard.currentBehavior.behaviourInCard.KnockbackPower;
-                int num2 = 0;
-                _currentDefenderTeam.resultKnockbackEnergy += knockbackPower2 - num2;
+                if (CustomCombatResolution.ResolveDie(_currentAttackerTeam.playingCard.currentBehavior, _currentDefenderTeam.unit))
+                {
+                    int knockbackPower2 = _currentAttackerTeam.playingCard.currentBehavior.behaviourInCard.KnockbackPower;
+                    int num2 = 0;
+                    _currentDefenderTeam.resultKnockbackEnergy += knockbackPower2 - num2;
+                }
                 if (_currentLoserTeam.DiceExists())
                 {
                     _currentWinnerTeam.playingCard.OnWinParryingAttack();
@@ -483,10 +490,12 @@ internal sealed class CustomCombatParryingManager
             if (_currentDefenderTeam.GetBehaviourDetail() != BehaviourDetail.Evasion) return;
             if (_currentDefenderTeam == _currentLoserTeam)
             {
-                CustomCombatResolution.ResolveDie(_currentAttackerTeam.playingCard.currentBehavior, _currentDefenderTeam.unit);
-                int knockbackPower3 = _currentAttackerTeam.playingCard.currentBehavior.behaviourInCard.KnockbackPower;
-                int num3 = 0;
-                _currentDefenderTeam.resultKnockbackEnergy += knockbackPower3 - num3;
+                if (CustomCombatResolution.ResolveDie(_currentAttackerTeam.playingCard.currentBehavior, _currentDefenderTeam.unit))
+                {
+                    int knockbackPower3 = _currentAttackerTeam.playingCard.currentBehavior.behaviourInCard.KnockbackPower;
+                    int num3 = 0;
+                    _currentDefenderTeam.resultKnockbackEnergy += knockbackPower3 - num3;
+                }
                 if (_currentLoserTeam.DiceExists())
                 {
                     _currentWinnerTeam.playingCard.OnWinParryingAttack();

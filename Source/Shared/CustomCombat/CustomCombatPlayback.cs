@@ -45,6 +45,10 @@ public sealed class CustomCombatPlayback : MonoBehaviour
         public readonly Dictionary<SpriteRenderer, Color> Colors = new();
 
         public readonly Dictionary<Canvas, KeyValuePair<string, int>> Sorting = new();
+
+        public BattleCardTotalResult OriginalLog;
+
+        public bool OverrodeLog;
     }
 
     private readonly Dictionary<BattleUnitModel, Body> bodies = new();
@@ -96,7 +100,13 @@ public sealed class CustomCombatPlayback : MonoBehaviour
                         Translation = view.characterTranslationCenter.localPosition,
                         RotationTransform = view.characterRotationCenter.localRotation,
                         DamageTime = view._remainDmgTime,
+                        OriginalLog = unit.battleCardResultLog,
                     };
+                    if (unit.battleCardResultLog == null && frame.Page.SecondaryLogs.TryGetValue(unit, out var secondaryLog))
+                    {
+                        unit.battleCardResultLog = secondaryLog;
+                        body.OverrodeLog = true;
+                    }
                     foreach (var transform in view.GetComponentsInChildren<Transform>(true)) body.Layers.Add(transform, transform.gameObject.layer);
                     foreach (var canvas in view.unitBottomStatUI.GetComponentsInChildren<Canvas>(true)) body.Sorting.Add(canvas, new KeyValuePair<string, int>(canvas.sortingLayerName, canvas.sortingOrder));
                     bodies.Add(unit, body);
@@ -134,7 +144,9 @@ public sealed class CustomCombatPlayback : MonoBehaviour
     {
         if (focusedFrame == null) return;
         var next = CustomCombatResolution.Find(enemy) ?? CustomCombatResolution.Find(librarian);
-        if (next == null || next.Page != focusedFrame.Page || !KingContinuation.IsExpected(next.Record)) manager.LeaveSecondaryFocus();
+        if (next == null || next.Page != focusedFrame.Page || !KingContinuation.IsExpected(next.Record)
+            || ((focusedFrame.IsRandomBarrage || next.IsRandomBarrage) && focusedFrame.ActualTarget != next.ActualTarget))
+            manager.LeaveSecondaryFocus();
     }
 
     private CustomCombatResolution.Frame preparedFrame;
@@ -153,7 +165,21 @@ public sealed class CustomCombatPlayback : MonoBehaviour
     {
         var frame = CustomCombatResolution.Find(enemy) ?? CustomCombatResolution.Find(librarian);
         if (frame == null) return;
-        var actionPlan = preparedFrame == frame ? preparedPlan : new CustomCombatActionPlan();
+        CustomCombatActionPlan actionPlan;
+        if (preparedFrame == frame)
+        {
+            actionPlan = preparedPlan;
+        }
+        else
+        {
+            actionPlan = new CustomCombatActionPlan();
+            if (frame.RedirectedToSecondary && frame.Page?.Card?.owner?.view && frame.Main?.view)
+            {
+                var actorView = frame.Page.Card.owner.view;
+                var anchorView = frame.Main.view;
+                actionPlan.InitialOffset = index => CustomCombatActionPlan.GetStaggeredOffset(actorView, anchorView, index);
+            }
+        }
         Prepare(frame, actionPlan);
         if (actionPlan.AutoFocus)
         {
@@ -181,6 +207,8 @@ public sealed class CustomCombatPlayback : MonoBehaviour
         focusedFrame = frame;
         plan = focusPlan = actionPlan;
         mainAction = null;
+        if (frame.IsRandomBarrage)
+            ReleaseNonHitFocusedTargets(frame);
         foreach (var hit in frame.Hits)
         {
             if (!bodies.TryGetValue(hit.Unit, out Body body) || body.Dead || !body.View) continue;
@@ -190,9 +218,23 @@ public sealed class CustomCombatPlayback : MonoBehaviour
         ApplyPlan();
     }
 
+    private void ReleaseNonHitFocusedTargets(CustomCombatResolution.Frame frame)
+    {
+        foreach (var body in bodies.Values)
+        {
+            if (!body.Focused || !body.View) continue;
+            bool inHits = false;
+            for (int i = 0; i < frame.Hits.Count; i++)
+            {
+                if (frame.Hits[i].Unit == body.View.model) { inHits = true; break; }
+            }
+            if (!inHits) LeaveFocus(body);
+        }
+    }
+
     private void ApplyPlan()
     {
-        if (focusedFrame == null || !focusedFrame.Main.view || plan == null) return;
+        if (focusedFrame == null || focusedFrame.RedirectedToSecondary || !focusedFrame.Main.view || plan == null) return;
         var pose = plan.Sample?.Invoke() ?? default(CustomCombatActionPlan.TargetPose);
         foreach (var body in bodies.Values)
         {
@@ -211,7 +253,7 @@ public sealed class CustomCombatPlayback : MonoBehaviour
 
     internal void ForEachFocusedTarget(BattleCardBehaviourResult record, Action<BattleUnitView> apply)
     {
-        if (plan == null || focusedFrame.Record != record) return;
+        if (plan == null || focusedFrame == null || focusedFrame.Record != record || focusedFrame.RedirectedToSecondary) return;
         foreach (var hit in focusedFrame.Hits)
             if (bodies.TryGetValue(hit.Unit, out var body) && body.Focused && !body.Dead && body.View)
                 apply(body.View);
@@ -219,7 +261,7 @@ public sealed class CustomCombatPlayback : MonoBehaviour
 
     internal void BeginMainAction(BattleUnitView view, RencounterManager.MovingAction action)
     {
-        if (plan == null || focusedFrame?.Main.view != view || action == null || mainAction == action) return;
+        if (plan == null || focusedFrame == null || focusedFrame.RedirectedToSecondary || focusedFrame.Main.view != view || action == null || mainAction == action) return;
         if (!plan.Actions.TryGetValue(action, out var targetAction)) return;
         mainAction = action;
         foreach (var body in bodies.Values)
@@ -254,7 +296,16 @@ public sealed class CustomCombatPlayback : MonoBehaviour
             if (positions != null) body.View.WorldPosition = positions[i];
             else if (focusPlan.InitialOffset != null) body.View.WorldPosition = anchor + focusPlan.InitialOffset(body.Index);
         }
-        foreach (var body in entering) EnterFocus(body);
+        var actorView = focusedFrame.Page?.Card?.owner?.view;
+        foreach (var body in entering)
+        {
+            EnterFocus(body);
+            if (focusedFrame.RedirectedToSecondary && actorView && body.View)
+            {
+                actorView.model.UpdateDirection(body.View.WorldPosition);
+                body.View.model.UpdateDirection(actorView.WorldPosition);
+            }
+        }
     }
 
     private void EnterFocus(Body body)
@@ -401,6 +452,11 @@ public sealed class CustomCombatPlayback : MonoBehaviour
         }
         finally
         {
+            foreach (var body in bodies.Values)
+            {
+                if (body.OverrodeLog && body.View?.model != null)
+                    body.View.model.battleCardResultLog = body.OriginalLog;
+            }
             preparedFrame = null;
             preparedPlan = null;
             bodies.Clear();

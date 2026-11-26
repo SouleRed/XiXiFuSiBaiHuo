@@ -133,7 +133,10 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         if (!KingContinuation.TryGetContinuousNext(actor, target, record, out var next) || !KingContinuation.IsExpected(next)) return false;
         var current = CustomCombatResolution.Find(record);
         var following = CustomCombatResolution.Find(next);
-        return current != null && following != null && ReferenceEquals(current.Page, following.Page);
+        if (current == null || following == null || !ReferenceEquals(current.Page, following.Page)) return false;
+        if (current.IsRandomBarrage || following.IsRandomBarrage)
+            return current.ActualTarget == following.ActualTarget;
+        return true;
     }
 
     internal float MotionTime { get; private set; }
@@ -1584,6 +1587,16 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         }
         self.preventOverlap = true;
         opponent.preventOverlap = true;
+        // 广域乱射命中副目标时，拼点 UI 仍保持原主目标，执行动作组时将对手直接替换为实际命中目标（本质按打单执行）。
+        if (self.result == Result.Win)
+        {
+            var frame = CustomCombatResolution.Find(self.behaviourResultData);
+            if (frame != null && frame.RedirectedToSecondary && frame.Hits.Count > 0 && frame.Hits[0].Unit?.view)
+            {
+                opponent.view = frame.Hits[0].Unit.view;
+                opponent.behaviourResultData = frame.Hits[0].Receiver;
+            }
+        }
         self.infoList = GetBehaviourAction(ref self, ref opponent);
         {
             if (opponent.infoList.Count == 0) opponent.infoList = GetBehaviourAction(ref opponent, ref self);

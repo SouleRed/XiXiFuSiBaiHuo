@@ -28,6 +28,8 @@ internal static class CustomCombatResolution
         public readonly List<BattleUnitModel> Targets = new();
 
         public readonly Dictionary<BattleUnitModel, Snapshot> Initial = new();
+
+        public readonly Dictionary<BattleUnitModel, BattleCardTotalResult> SecondaryLogs = new();
     }
 
     internal sealed class Hit
@@ -45,9 +47,15 @@ internal static class CustomCombatResolution
 
         public BattleCardBehaviourResult Record;
 
+        public bool IsRandomBarrage;
+
+        public bool RedirectedToSecondary;
+
         public readonly List<Hit> Hits = new();
 
         public bool Printed;
+
+        public BattleUnitModel ActualTarget => RedirectedToSecondary && Hits.Count > 0 ? Hits[0].Unit : Main;
     }
 
     private static readonly Dictionary<BattlePlayingCardDataInUnitModel, Page> Pages = new();
@@ -59,13 +67,18 @@ internal static class CustomCombatResolution
     {
         if (Pages.TryGetValue(card, out Page existing)) return existing;
         var page = new Page { Card = card };
-        if (!CustomCombatTargeting.IsCapacityPage(card.card)) page.Targets.Add(card.target);
+        if (!CustomCombatTargeting.IsCapacityPage(card)) page.Targets.Add(card.target);
         else if (CustomCombatTargeting.NormalizeTargets(card))
         {
             page.Targets.Add(card.target);
             page.Targets.AddRange(card.subTargets.Select(sub => sub.target));
         }
-        foreach (var unit in page.Targets) page.Initial.Add(unit, Snapshot.Capture(unit));
+        foreach (var unit in page.Targets)
+        {
+            page.Initial.Add(unit, Snapshot.Capture(unit));
+            if (unit != card.target)
+                page.SecondaryLogs[unit] = new BattleCardTotalResult(null);
+        }
         Pages.Add(card, page);
         return page;
     }
@@ -79,52 +92,105 @@ internal static class CustomCombatResolution
         Frames.Clear();
     }
 
-    // 专用管理器逐目标分派，副目标复用本骰数值并分别记录结算。
-    public static void ResolveDie(BattleDiceBehavior dice, BattleUnitModel target)
+    // 专用管理器逐目标分派；返回值表示主目标是否实际受击（广域乱射命中副目标时返回 false）。
+    public static bool ResolveDie(BattleDiceBehavior dice, BattleUnitModel target)
     {
-        if (target == null || !CustomCombatTargeting.IsCapacityPage(dice.card?.card))
+        if (target == null || !CustomCombatTargeting.IsCapacityPage(dice.card))
         {
             dice.GiveDamage(target);
-            return;
+            return true;
         }
 
         var page = Prepare(dice.card);
         var actor = dice.owner;
         var mainLog = actor.battleCardResultLog;
         var record = mainLog.CurbehaviourResult;
+
+        if (CustomCombatTargeting.IsRandomBarragePage(dice.card))
+            return ResolveRandomBarrageDie(dice, page, target, actor, mainLog, record);
+
         dice.GiveDamage(target);
         // 主目标完全挡下此骰时，保留原版打平记录，跳过本骰的副目标结算与演出。
-        if (record.isBlockedDice) return;
+        if (record.isBlockedDice) return true;
 
-        var frame = Find(record);
-        if (frame == null)
-        {
-            frame = new Frame { Page = page, Main = target, Record = record };
-            Frames.Add(record, frame);
-        }
-
+        var frame = GetOrCreateFrame(record, page, target, isRandomBarrage: false, redirected: false);
         foreach (var unit in page.Targets)
         {
             if (actor.IsDead() || actor.IsExtinction()) break;
             if (unit == target || unit.IsDead() || unit.IsExtinction()) continue;
-            using (var scope = new SecondaryResolution(dice, unit))
-            {
-                dice.GiveDamage(unit);
-                // 副目标反伤、命中恢复等造成的自身变化并入本骰主日志。
-                var actorRecord = scope.Sender.CurbehaviourResult;
-                record.dmgListTaken.AddRange(actorRecord.dmgListTaken);
-                record.breakListTaken.AddRange(actorRecord.breakListTaken);
-                record.recoveredHpList.AddRange(actorRecord.recoveredHpList);
-                record.recoveredBpList.AddRange(actorRecord.recoveredBpList);
-                record.recoveredLight += actorRecord.recoveredLight;
-                foreach (var coin in actorRecord.GetAddedEmotionCoins()) mainLog.AddEmotionCoin(coin, 1);
-                scope.Receiver.SetCurrentHp(unit.hp);
-                scope.Receiver.SetCurrentBreakGauge(unit.breakDetail.breakGauge);
-                scope.Receiver.SetCurrentBuf(unit.bufListDetail.GetBufUIDataList());
-                scope.Receiver.SetDeathState(unit.IsDeadReal());
-                scope.Receiver.SetBreakState(unit.IsBreakLifeZero());
-                frame.Hits.Add(new Hit { Unit = unit, Sender = actorRecord, Receiver = scope.Receiver.CurbehaviourResult });
-            }
+            ResolveSecondaryHit(dice, unit, mainLog, record, frame);
+        }
+        return true;
+    }
+
+    private static Frame GetOrCreateFrame(BattleCardBehaviourResult record, Page page, BattleUnitModel mainTarget, bool isRandomBarrage, bool redirected)
+    {
+        if (!Frames.TryGetValue(record, out var frame))
+        {
+            frame = new Frame { Page = page, Main = mainTarget, Record = record };
+            Frames.Add(record, frame);
+        }
+        frame.IsRandomBarrage = isRandomBarrage;
+        frame.RedirectedToSecondary = redirected;
+        return frame;
+    }
+
+    private static bool ResolveRandomBarrageDie(
+        BattleDiceBehavior dice,
+        Page page,
+        BattleUnitModel mainTarget,
+        BattleUnitModel actor,
+        BattleCardTotalResult mainLog,
+        BattleCardBehaviourResult record)
+    {
+        var candidates = page.Targets
+            .Where(u => u != null && !u.IsDead() && !u.IsExtinction())
+            .ToList();
+        if (candidates.Count == 0 && mainTarget != null && !mainTarget.IsDead() && !mainTarget.IsExtinction())
+            candidates.Add(mainTarget);
+
+        var chosen = candidates.Count > 0 ? RandomUtil.SelectOne(candidates) : mainTarget;
+        if (chosen == null || chosen == mainTarget)
+        {
+            dice.GiveDamage(mainTarget);
+            if (!record.isBlockedDice)
+                GetOrCreateFrame(record, page, mainTarget, isRandomBarrage: true, redirected: false);
+            return true;
+        }
+
+        var frame = GetOrCreateFrame(record, page, mainTarget, isRandomBarrage: true, redirected: true);
+        if (!actor.IsDead() && !actor.IsExtinction())
+            ResolveSecondaryHit(dice, chosen, mainLog, record, frame);
+
+        return false;
+    }
+
+    private static void ResolveSecondaryHit(
+        BattleDiceBehavior dice,
+        BattleUnitModel unit,
+        BattleCardTotalResult mainLog,
+        BattleCardBehaviourResult record,
+        Frame frame)
+    {
+        using (var scope = new SecondaryResolution(dice, unit))
+        {
+            dice.GiveDamage(unit);
+            // 副目标反伤、命中恢复等造成的自身变化并入本骰主日志。
+            var actorRecord = scope.Sender.CurbehaviourResult;
+            record.dmgListTaken.AddRange(actorRecord.dmgListTaken);
+            record.breakListTaken.AddRange(actorRecord.breakListTaken);
+            record.recoveredHpList.AddRange(actorRecord.recoveredHpList);
+            record.recoveredBpList.AddRange(actorRecord.recoveredBpList);
+            record.recoveredLight += actorRecord.recoveredLight;
+            foreach (var coin in actorRecord.GetAddedEmotionCoins()) mainLog.AddEmotionCoin(coin, 1);
+            scope.Receiver.SetCurrentHp(unit.hp);
+            scope.Receiver.SetCurrentBreakGauge(unit.breakDetail.breakGauge);
+            scope.Receiver.SetCurrentBuf(unit.bufListDetail.GetBufUIDataList());
+            scope.Receiver.SetDeathState(unit.IsDeadReal());
+            scope.Receiver.SetBreakState(unit.IsBreakLifeZero());
+            if (frame.Page.SecondaryLogs.TryGetValue(unit, out var secondaryLog))
+                secondaryLog.BehaviourResultList.Add(scope.Receiver.CurbehaviourResult);
+            frame.Hits.Add(new Hit { Unit = unit, Sender = actorRecord, Receiver = scope.Receiver.CurbehaviourResult });
         }
     }
 
