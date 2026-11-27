@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<BattleEffectTextRoot>
+  <effectTextList>
+    <BattleEffectText ID="BF_ZhenDing">
+      <Name>針釘</Name>
+      <Desc>貫通ダメージを受けると出血回数が1増加し、この効果の数値が1減少
+ターン終了時、出血{0}を得てこの効果の数値が1減少</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_BiaoBenHua">
+      <Name>剥製状態</Name>
+      <Desc>行動不能
+被撃時、次のターンに出血3を獲得
+ターン終了時、最大体力の20%分のダメージを受け、この効果の数値が1減少
+この効果が解除されると自身の針釘を除去</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_BeiMing_1">
+      <Name>繭の泣き声 - 微弱</Name>
+      <Desc>時折、繭の泣き声が聞こえる。威力無効に免疫
+自身の全てのダイスの威力 +2</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_BeiMing_2">
+      <Name>繭の泣き声 - 悪性</Name>
+      <Desc>繭の泣き声は止まらない。威力無効に免疫
+自身の全てのダイスの威力 +3</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_CiSheZ">
+      <Name>舌に刺さった針</Name>
+      <Desc>1ターン持続
+このターン終了時、攻撃型ダイスを使用していないなら自身の針釘を半分に減少
+そうでなければ自身に針釘3を付与</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_YangGuang_CFK">
+      <Name>刺すように照りつける陽射し[裁縫の王]</Name>
+      <Desc>対象の針釘3につき、自身の全てのダイスの威力 +1</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_YangGuang_LRH">
+      <Name>刺すように照りつける陽射し[ル・ルージュ-裁縫の王]</Name>
+      <Desc>対象の針釘と卑しいものの数値の合計3につき、自身の全てのダイスの威力 +1 (最大 +3)</Desc>
+    </BattleEffectText>
+    <BattleEffectText ID="BF_CiSheZ_LRH">
+      <Name>舌に刺さった針</Name>
+      <Desc>自身が受けるダメージ +5%
+このターン終了時、自身に針釘2を付与し、その後この効果を解除</Desc>
+    </BattleEffectText>
+  </effectTextList>
+</BattleEffectTextRoot>

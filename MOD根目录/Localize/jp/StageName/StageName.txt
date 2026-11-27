@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<CharactersNameRoot>
+  <Name ID="1">裁縫の王</Name>
+</CharactersNameRoot>

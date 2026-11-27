@@ -42,5 +42,5 @@
       <Desc>자신이 받는 피해 +5%
 이 막 종료 시 자신에게 바늘못 2 부여 후 해제</Desc>
     </BattleEffectText>
-  </effectTextList>
+</effectTextList>
 </BattleEffectTextRoot>
