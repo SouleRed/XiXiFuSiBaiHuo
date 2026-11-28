@@ -44,16 +44,18 @@ MOD根目录\CardPreviewData\*.xml      ← 任意文件名，可放子文件夹
 
 `<Flavor>` 的内容是文本 ID，插件从 **`TextDataModel.textDic`** 读取，**自己不加载文本文件**。
 
-本项目的文本由 BaseMod 的 `Localize\cn\etc\*.xml` 提供（BaseMod 用 `localize/text` 节点写入 textDic）：
+本项目的文本由 **LS_PreviewUtil / LS_InvitationUtil** 的 `LocalizeModule` 提供：
 
-```xml
+```
+MOD根目录\Assemblies\Localize\<lang>\etc\FlavorTexts.xml
 <localize>
-  <text id="ui_cfk_flavor_3">缝纫最重要的就是针数啊,针数!</text>
+  <text id="ui_cfk_flavor_3">缝纫最重要的就是针数啊针数.</text>
 </localize>
 ```
 
-- 文件名任意，目录必须是 `MOD根目录\Localize\cn\etc\`
-- ID 不存在时该行显示为空（不会报错）
+- 插件用 `EtcXmlRoot`（`[XmlRoot("localize")]` + `[XmlElement("text")]` + `[XmlText]`）反序列化，
+  写入游戏自己的 `TextDataModel.textDic`
+- **不要再建根目录 `Localize\`**（那是 BaseMod 的 `.txt` 机制，两套并存会重复注册，风味文本反而加载不出来）
 
 ## 4. 排错
 

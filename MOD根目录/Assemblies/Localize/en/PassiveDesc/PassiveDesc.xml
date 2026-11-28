@@ -49,7 +49,7 @@ Upon entering the next phase
 (Tongue-pinning Needle: Lasts 1 Scene. At the end of this Scene, if this unit has not used an Attack die, halve its Naildle; otherwise, inflict 3 Naildle on self)</Desc>
   </PassiveDesc>
   <PassiveDesc ID="6">
-    <Name>Shower of Stinging Sunshine</Name>
+    <Name>Shower of Stinging Sunshine[King of Needleworks]</Name>
     <Desc>Increase the max HP and max Stagger Resist of all Librarians
 Influenced by the light of the Library, restore 20 Sanity at the start of each Scene
 At the start of the encounter, gain "Shower of Stinging Sunshine [King of Needleworks]"

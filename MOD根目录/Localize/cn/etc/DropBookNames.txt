@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="utf-8" standalone="yes"?>
-<localize>
-  <text id="dropbook_cfk_king">裁缝之王之书</text>
-</localize>
