@@ -30,6 +30,10 @@
 - **接待邀请函书籍**：`<Book>` 引用原版书页必须写 `Pid="@origin"`，否则会被当成本模组的书、退化成"棍木"占位；
   引用本模组的书写包名（`Pid="CaiFengKing"`）。详见 [docs/章节地图与接待图标.md](docs/章节地图与接待图标.md)。
 - **术语来源**：边狱巴士原生系统（攻击容量、广域乱射等）用边狱官方译名；其余用图书馆官方译名（幕=막、混乱=흐트러짐、强壮=힘）。详见 `LimbusUnpackingEffects\9.边狱巴士与图书馆本地化翻译\` 的术语对照表。
+- **框架插件**：`Assemblies\1FrameworkAssemblies\` 下四个 DLL 不可混淆：
+  `LS_InvitationUtil.dll` 约 12,982 KB（2.0.0.0）、`LS_PreviewUtil.dll` 约 **22 KB**（1.0.1.0，SHA256 前缀 `6D51A31AD5A5`）、
+  `LS_DisplayUtil.dll` 约 686 KB、`LS_BookSkinUtil.dll` 约 30 KB。
+  若 `LS_PreviewUtil.dll` 变成 12,982 KB，说明误复制成了 InvitationUtil，插件不会初始化（日志里没有 `LS_PreviewUtil : Start initialize.`）。
 - **多语言**：本地化源在 `Assemblies\Localize\{cn,en,kr,jp}\<category>\*.xml`，由 **LS_PreviewUtil / LS_InvitationUtil** 的
   `LocalizeModule` 直接读取并写入 `TextDataModel.textDic`。**不再维护根 `Localize\` 目录**（BaseMod 的 `.txt` 镜像机制已移除，
   两套并存会导致重复注册，风味文本会失效）。

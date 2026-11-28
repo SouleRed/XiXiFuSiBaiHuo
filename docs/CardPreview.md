@@ -3,7 +3,16 @@
 官方说明归档：[docs/LS_PreviewUtil使用说明.md](LS_PreviewUtil使用说明.md)
 作者示例：`docs/CardPreview.example.xml`（字段说明）、`docs/CardPreview.sample.xml`（Clock_Ren 实例）、`docs/CardPreview.sample.etc.xml`（文本 ID 写法）
 
-插件本体：`MOD根目录\Assemblies\1FrameworkAssemblies\LS_PreviewUtil.dll`（已装，不能再套子文件夹）
+插件本体：`MOD根目录\Assemblies\1FrameworkAssemblies\LS_PreviewUtil.dll`
+（约 **22 KB**，程序集 1.0.1.0；如果大小是 12,982 KB 说明拿错了文件，实为 LS_InvitationUtil，插件不会初始化）
+
+正常启动日志应出现：
+
+```
+LS_PreviewUtil : Start initialize.
+PreviewDataModule.LoadAllFiles: Load 8 preview datas from "CaiFengZhiKing".
+Version 2.0.0.0 initialize completed.
+```
 
 ## 1. 数据文件位置
 
