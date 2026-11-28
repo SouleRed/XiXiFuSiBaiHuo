@@ -1,91 +1,84 @@
 ﻿<#
 .SYNOPSIS
-    一键构建 + 上传/更新创意工坊。
+    构建 + 用协助者的 SteamworkUploader CLI 发布/更新创意工坊。
 
 .DESCRIPTION
-    1) 调用 BuildAndDeploy.ps1 构建并同步到创意工坊目录
-    2) 用 Tools\WorkshopUploader 通过 Steam 客户端上传 MOD根目录
-
-    需要 Steam 客户端已启动并登录（不需要账号密码）。
-    工坊物品 ID 首次填写后写入 workshop.config.json，后续直接 -Update 即可。
+    - 工具：C:\Users\MECHREVO\OneDrive\废墟图书馆mod工程文件\SteamworkUploader.exe
+    - 草稿：workshop.draft.json（5 语言 title/description/changeLog）
+    - 流程：BuildAndDeploy → configure → publish --confirm
 
 .EXAMPLE
-    .\Upload-Workshop.ps1 -ChangeNote "修复 BGM 爆音"
-    .\Upload-Workshop.ps1 -Check           # 只检查参数，不上传
-    .\Upload-Workshop.ps1 -New -ChangeNote "首次发布"
+    .\Upload-Workshop.ps1 -ChangeNote "修复预览插件"
+    .\Upload-Workshop.ps1 -DryRun                 # 只校验，不上传
+    .\Upload-Workshop.ps1 -PageOnly -IncludeDescription   # 只更新页面文案
+    .\Upload-Workshop.ps1 -SkipBuild -ChangeNote "仅资源"
 #>
 [CmdletBinding()]
 param(
+    [string]$Folder,
     [string]$ChangeNote,
-    [string]$Title,
-    [string]$Description,
-    [string]$ItemId,
-    [string]$Preview,
-    [string[]]$Tags,
-    [switch]$New,          # 创建新物品（忽略 config 里的 itemId）
-    [string]$Lang,         # 本次标题/简介的语言（english/japanese/schinese/koreana）
-    [switch]$PreserveMeta, # 只更新内容，标题/简介沿用服务器现有值
-    [switch]$Info,         # 只读取并打印物品信息
-    [switch]$UseConfigMeta, # 使用 config 里的标题/简介（首次发布或全量覆盖时用）
-    [switch]$SkipBuild,    # 跳过构建，直接上传现有 MOD根目录
-    [switch]$Check,        # 只做参数校验
-    [switch]$Public,
-    [switch]$Private
+    [switch]$SkipBuild,
+    [switch]$DryRun,
+    [switch]$PageOnly,
+    [switch]$IncludeDescription,
+    [ValidateSet('Keep','Private','FriendsOnly','Public')]
+    [string]$Visibility = 'Keep',
+    [switch]$Open,
+    [switch]$Fetch
 )
 
 $ErrorActionPreference = 'Stop'
 $repoRoot = $PSScriptRoot
-$configPath = Join-Path $repoRoot 'workshop.config.json'
-$uploader = Join-Path $repoRoot 'Tools\WorkshopUploader\bin\WorkshopUploader.exe'
+$exe = 'C:\Users\MECHREVO\OneDrive\废墟图书馆mod工程文件\SteamworkUploader.exe'
+$draftPath = Join-Path $repoRoot 'workshop.draft.json'
 
-if (!(Test-Path -LiteralPath $configPath)) { throw "找不到配置：$configPath" }
-$config = Get-Content -LiteralPath $configPath -Raw -Encoding UTF8 | ConvertFrom-Json
+if (!$Folder) { $Folder = Join-Path $repoRoot 'MOD根目录' }
+if (!(Test-Path -LiteralPath $folder)) { throw "MOD 目录不存在：$Folder" }
+if (!(Test-Path -LiteralPath $exe)) { throw "找不到上传工具：$exe" }
+if (!(Test-Path -LiteralPath $draftPath)) { throw "找不到草稿：$draftPath（可用 -Fetch 从工坊拉取）" }
 
-if (!$ItemId) { $ItemId = [string]$config.itemId }
-if ($UseConfigMeta -or $New) {
-    if (!$Title) { $Title = [string]$config.title }
-    if (!$Description) { $Description = [string]$config.description }
-}
-if (!$Preview) { $Preview = [string]$config.preview }
-if (!$Preview) { $Preview = 'MOD根目录\preview.jpg' }
-if (!$Tags -or $Tags.Count -eq 0) { $Tags = @($config.tags) }
-if (!$ChangeNote) { $ChangeNote = [string]$config.changeNote }
-if (!$Lang) { $Lang = [string]$config.language }
+[Console]::OutputEncoding = [System.Text.UTF8Encoding]::new($false)
 
-$Preview = Join-Path $repoRoot $Preview
-$content = Join-Path $repoRoot 'MOD根目录'
-
-if (!$Check -and !$SkipBuild) {
+if (!$SkipBuild -and !$DryRun) {
     Write-Host '== 构建并同步 ==' -ForegroundColor Cyan
     & powershell -NoProfile -ExecutionPolicy Bypass -File (Join-Path $repoRoot 'BuildAndDeploy.ps1')
     if ($LASTEXITCODE -ne 0) { throw '构建失败，已中止上传。' }
 }
 
-if (!(Test-Path -LiteralPath $uploader)) {
-    Write-Host '== 编译上传器 ==' -ForegroundColor Cyan
-    & dotnet msbuild (Join-Path $repoRoot 'Tools\WorkshopUploader\WorkshopUploader.csproj') /p:Configuration=Release /v:minimal
-    if ($LASTEXITCODE -ne 0) { throw '上传器编译失败。' }
+$draft = Get-Content -LiteralPath $draftPath -Raw -Encoding UTF8 | ConvertFrom-Json
+
+if ($Fetch) {
+    Write-Host '== 从工坊拉取现有 5 语言文案 ==' -ForegroundColor Cyan
+    $fetched = & $exe fetch --id $draft.workshopId --out $draftPath
+    if ($LASTEXITCODE -ne 0) { throw 'fetch 失败' }
 }
 
-$args = @('--content', $content)
-if ($Preview) { $args += @('--preview', $Preview) }
-if ($Title) { $args += @('--title', $Title) }
-if ($Description) { $args += @('--desc', $Description) }
-if ($ChangeNote) { $args += @('--changenote', $ChangeNote) }
-foreach ($t in $Tags) { if ($t) { $args += @('--tag', [string]$t) } }
-if (!$New -and $ItemId) { $args += @('--id', $ItemId) }
-if ($Public) { $args += '--public' }
-if ($Private) { $args += '--private' }
-if ($Check) { $args += '--check' }
-if ($Info) { $args += '--info' }
-if ($PreserveMeta -or (!$Title -and !$Description -and !$Info)) { $args += '--preserve-meta' }
-if ($Lang) { $args += @('--lang', $Lang) }
+if ($ChangeNote) {
+    foreach ($c in $draft.copies) { $c.changeLog = $ChangeNote }
+    $draft | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $draftPath -Encoding UTF8
+    Write-Host "== 更新说明：$ChangeNote（已写入 5 语言）" -ForegroundColor Cyan
+}
 
-Write-Host ('== 上传参数 ==' + "`n  content : $content`n  preview : $Preview`n  itemId  : " + $(if (!$New -and $ItemId) { $ItemId } else { '(新建)' })) -ForegroundColor Cyan
-& $uploader @args
+Write-Host '== configure ==' -ForegroundColor Cyan
+& $exe configure --folder $Folder --json $draftPath | Out-Null
+if ($LASTEXITCODE -ne 0) { throw 'configure 失败' }
+
+Write-Host '== inspect ==' -ForegroundColor Cyan
+& $exe inspect --folder $Folder | Out-Null
+if ($LASTEXITCODE -ne 0) { throw 'inspect 失败' }
+
+$args = @('publish', '--folder', $Folder)
+if ($DryRun) {
+    $args += '--dry-run'
+} else {
+    $args += @('--confirm', '--visibility', $Visibility)
+    if ($PageOnly) { $args += '--page-only' }
+    if ($IncludeDescription) { $args += '--include-description' }
+}
+if ($Open) { & $exe open --folder $Folder | Out-Null }
+
+Write-Host '== publish ==' -ForegroundColor Cyan
+& $exe @args
 $code = $LASTEXITCODE
-if ($code -ne 0) { throw "上传失败（退出码 $code）" }
-
-if (!$Check -and !$ItemId -and !$New) {
-    Write-Host '提示：首次上传后，把工坊物品 ID 填进 workshop.config.json 的 itemId，后续即可直接更新。' -ForegroundColor Yellow
-}
+if ($code -ne 0) { throw "publish 失败（退出码 $code）" }
+Write-Host '完成。' -ForegroundColor Green
