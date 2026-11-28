@@ -54,9 +54,13 @@ if ($Fetch) {
 }
 
 if ($ChangeNote) {
-    foreach ($c in $draft.copies) { $c.changeLog = $ChangeNote }
+    # 更新说明只写中文一份（多语言 change log 实际不会分别生效）
+    foreach ($c in $draft.copies) {
+        if ($c.language -eq 'schinese') { $c.changeLog = $ChangeNote }
+        else { $c.changeLog = '' }
+    }
     $draft | ConvertTo-Json -Depth 8 | Set-Content -LiteralPath $draftPath -Encoding UTF8
-    Write-Host "== 更新说明：$ChangeNote（已写入 5 语言）" -ForegroundColor Cyan
+    Write-Host "== 更新说明（仅中文）：$ChangeNote" -ForegroundColor Cyan
 }
 
 Write-Host '== configure ==' -ForegroundColor Cyan
