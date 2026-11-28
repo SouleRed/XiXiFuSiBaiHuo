@@ -1,40 +1,66 @@
 using System;
-using System.Linq;
-using UnityEngine;
 using System.Collections.Generic;
+using System.Linq;
 using UI;
-
 
 namespace 裁缝之王.Presentation.CustomCombat;
 
 // 专用结算分支共用的容量上下文；生命周期覆盖一次逻辑结算与对应演出。
 internal static class CustomCombatResolution
 {
-    internal sealed class Snapshot
+    // 同一次行动中，两张书页可以指定同一个角色的不同速度骰。
+    internal sealed class Participant
     {
+        public BattleUnitModel Unit;
         public float Hp;
-
         public int Break;
-
         public BattleBufUIDataList Buffs;
+    }
 
-        public static Snapshot Capture(BattleUnitModel unit) => new() { Hp = unit.hp, Break = unit.breakDetail.breakGauge, Buffs = unit.bufListDetail.GetBufUIDataList() };
+    internal sealed class Target
+    {
+        public Participant Participant;
+        public BattleUnitModel Unit => Participant.Unit;
+        public int Slot, Index;
+    }
+
+    internal readonly struct TargetScope : IDisposable
+    {
+        private readonly BattlePlayingCardDataInUnitModel card;
+        private readonly BattleUnitModel previous;
+        private readonly int slot;
+
+        public TargetScope(BattlePlayingCardDataInUnitModel card, Target target)
+        {
+            this.card = card;
+            previous = card.target;
+            slot = card.targetSlotOrder;
+            card.target = target.Unit;
+            card.targetSlotOrder = target.Slot;
+        }
+
+        public void Dispose()
+        {
+            card.target = previous;
+            card.targetSlotOrder = slot;
+        }
     }
 
     internal sealed class Page
     {
         public BattlePlayingCardDataInUnitModel Card;
 
-        public readonly List<BattleUnitModel> Targets = new();
+        public BattleDiceBehavior FirstDie;
 
-        public readonly Dictionary<BattleUnitModel, Snapshot> Initial = new();
+        public Target BarrageTarget;
 
-        public readonly Dictionary<BattleUnitModel, BattleCardTotalResult> SecondaryLogs = new();
+        public readonly List<Target> Targets = new();
     }
 
     internal sealed class Hit
     {
-        public BattleUnitModel Unit;
+        public Target Target;
+        public BattleUnitModel Unit => Target.Unit;
 
         public BattleCardBehaviourResult Sender, Receiver;
     }
@@ -49,47 +75,105 @@ internal static class CustomCombatResolution
 
         public bool IsRandomBarrage;
 
-        public bool RedirectedToSecondary;
+        public bool IsContinuation;
 
-        public readonly List<Hit> Hits = new();
+        public Hit Formal;
+
+        // 正式目标和副轨道分别消费各自的命中日志。
+        public readonly List<Hit> ExternalHits = new();
 
         public bool Printed;
 
-        public BattleUnitModel ActualTarget => RedirectedToSecondary && Hits.Count > 0 ? Hits[0].Unit : Main;
+        public bool HasDifferentTarget => Formal.Unit != Main;
+
+        public BattleUnitModel ActualTarget => Formal.Unit;
     }
+
+    private static readonly Dictionary<BattleUnitModel, Participant> Participants = new();
 
     private static readonly Dictionary<BattlePlayingCardDataInUnitModel, Page> Pages = new();
 
     private static readonly Dictionary<BattleCardBehaviourResult, Frame> Frames = new();
 
+    public static bool ResolvingSecondary { get; private set; }
+
+    private static Target GetTarget(BattleUnitModel unit, int slot, int index)
+    {
+        if (!Participants.TryGetValue(unit, out var participant))
+        {
+            participant = new Participant
+            {
+                Unit = unit,
+                Hp = unit.hp,
+                Break = unit.breakDetail.breakGauge,
+                Buffs = unit.bufListDetail.GetBufUIDataList(),
+            };
+            Participants.Add(unit, participant);
+        }
+        return new Target { Participant = participant, Slot = slot, Index = index };
+    }
 
     public static Page Prepare(BattlePlayingCardDataInUnitModel card)
     {
         if (Pages.TryGetValue(card, out Page existing)) return existing;
         var page = new Page { Card = card };
-        if (!CustomCombatTargeting.IsCapacityPage(card)) page.Targets.Add(card.target);
+        if (CustomCombatTargeting.IsRandomBarragePage(card))
+            page.FirstDie = card.GetDiceBehaviorList().Find(die => die.Index == 0);
+        if (!CustomCombatTargeting.IsCapacityPage(card))
+        {
+            page.Targets.Add(GetTarget(card.target, card.targetSlotOrder, -1));
+        }
         else if (CustomCombatTargeting.NormalizeTargets(card))
         {
-            page.Targets.Add(card.target);
-            page.Targets.AddRange(card.subTargets.Select(sub => sub.target));
-        }
-        foreach (var unit in page.Targets)
-        {
-            page.Initial.Add(unit, Snapshot.Capture(unit));
-            if (unit != card.target)
-                page.SecondaryLogs[unit] = new BattleCardTotalResult(null);
+            page.Targets.Add(GetTarget(card.target, card.targetSlotOrder, -1));
+            foreach (var sub in card.subTargets)
+                page.Targets.Add(GetTarget(sub.target, sub.targetSlotOrder, page.Targets.Count - 1));
         }
         Pages.Add(card, page);
         return page;
     }
 
     public static Frame Find(BattleCardBehaviourResult record)
-        => record != null && !record.isBlockedDice && Frames.TryGetValue(record, out Frame frame) ? frame : null;
+        => record != null && Frames.TryGetValue(record, out Frame frame) && (!record.isBlockedDice || frame.HasDifferentTarget) ? frame : null;
+
+    internal static void PrepareCapacity(BattlePlayingCardDataInUnitModel card)
+    {
+        if (CustomCombatTargeting.IsCapacityPage(card) && card.subTargets != null && card.subTargets.Count > 0)
+            Prepare(card);
+    }
+
+    internal static Target GetSurvivingSecondary(BattlePlayingCardDataInUnitModel card, Target previous)
+    {
+        if (!Pages.TryGetValue(card, out var page) || page.Targets.Count < 2) return null;
+        if (CustomCombatTargeting.IsRandomBarragePage(card))
+            return SelectBarrageTarget(page, excludeMain: true);
+        if (previous != null && IsAlive(previous)) return previous;
+        return page.Targets.Find(target => target.Index >= 0 && IsAlive(target));
+    }
+
+    private static bool IsAlive(Target target) => !target.Unit.IsDead() && !target.Unit.IsExtinction();
+
+    private static Target SelectBarrageTarget(Page page, bool excludeMain)
+    {
+        var candidates = page.Targets.Where(target => (!excludeMain || target.Index >= 0) && IsAlive(target)).ToList();
+        return candidates.Count > 0 ? RandomUtil.SelectOne(candidates) : null;
+    }
+
+    internal static void PrepareBarrageRoll(BattleDiceBehavior die)
+    {
+        if (die == null || !CustomCombatTargeting.IsRandomBarragePage(die.card)) return;
+        var page = Prepare(die.card);
+        page.BarrageTarget = die == page.FirstDie
+            ? page.Targets.Find(target => target.Index < 0)
+            : SelectBarrageTarget(page, excludeMain: false);
+    }
 
     public static void Clear()
     {
+        Participants.Clear();
         Pages.Clear();
         Frames.Clear();
+        ResolvingSecondary = false;
     }
 
     // 专用管理器逐目标分派；返回值表示主目标是否实际受击（广域乱射命中副目标时返回 false）。
@@ -102,96 +186,106 @@ internal static class CustomCombatResolution
         }
 
         var page = Prepare(dice.card);
-        var actor = dice.owner;
-        var mainLog = actor.battleCardResultLog;
+        var mainLog = dice.owner.battleCardResultLog;
         var record = mainLog.CurbehaviourResult;
-
-        if (CustomCombatTargeting.IsRandomBarragePage(dice.card))
-            return ResolveRandomBarrageDie(dice, page, target, actor, mainLog, record);
-
-        dice.GiveDamage(target);
-        // 主目标完全挡下此骰时，保留原版打平记录，跳过本骰的副目标结算与演出。
-        if (record.isBlockedDice) return true;
-
-        var frame = GetOrCreateFrame(record, page, target, isRandomBarrage: false, redirected: false);
-        foreach (var unit in page.Targets)
+        var main = page.Targets.Find(entry => entry.Unit == target) ?? GetTarget(target, dice.card.targetSlotOrder, -1);
+        bool barrage = CustomCombatTargeting.IsRandomBarragePage(dice.card);
+        var selected = main;
+        if (barrage)
         {
-            if (actor.IsDead() || actor.IsExtinction()) break;
-            if (unit == target || unit.IsDead() || unit.IsExtinction()) continue;
-            ResolveSecondaryHit(dice, unit, mainLog, record, frame);
+            selected = page.BarrageTarget;
+            if (selected == null || !IsAlive(selected)) return false;
         }
+
+        var frame = new Frame { Page = page, Main = target, Record = record, IsRandomBarrage = barrage };
+        if (selected != main)
+        {
+            frame.Formal = ResolveExternal(dice, selected, mainLog, frame, additionalHit: false);
+            Frames[record] = frame;
+            return false;
+        }
+
+        ResolveFormal(dice, main, mainLog, frame);
+        if (barrage) return !record.isBlockedDice;
         return true;
     }
 
-    private static Frame GetOrCreateFrame(BattleCardBehaviourResult record, Page page, BattleUnitModel mainTarget, bool isRandomBarrage, bool redirected)
+    internal static void ResolveContinuationDie(BattleDiceBehavior dice, Target target, BattleUnitModel originalTarget)
     {
-        if (!Frames.TryGetValue(record, out var frame))
+        var log = dice.owner.battleCardResultLog;
+        var frame = new Frame
         {
-            frame = new Frame { Page = page, Main = mainTarget, Record = record };
-            Frames.Add(record, frame);
-        }
-        frame.IsRandomBarrage = isRandomBarrage;
-        frame.RedirectedToSecondary = redirected;
-        return frame;
+            Page = Pages[dice.card],
+            Main = originalTarget,
+            Record = log.CurbehaviourResult,
+            IsContinuation = true,
+            IsRandomBarrage = CustomCombatTargeting.IsRandomBarragePage(dice.card),
+        };
+        ResolveFormal(dice, target, log, frame);
     }
 
-    private static bool ResolveRandomBarrageDie(
-        BattleDiceBehavior dice,
-        Page page,
-        BattleUnitModel mainTarget,
-        BattleUnitModel actor,
-        BattleCardTotalResult mainLog,
-        BattleCardBehaviourResult record)
+    private static void ResolveFormal(BattleDiceBehavior dice, Target target, BattleCardTotalResult log, Frame frame)
     {
-        var candidates = page.Targets
-            .Where(u => u != null && !u.IsDead() && !u.IsExtinction())
-            .ToList();
-        if (candidates.Count == 0 && mainTarget != null && !mainTarget.IsDead() && !mainTarget.IsExtinction())
-            candidates.Add(mainTarget);
-
-        var chosen = candidates.Count > 0 ? RandomUtil.SelectOne(candidates) : mainTarget;
-        if (chosen == null || chosen == mainTarget)
+        frame.Formal = ResolveTarget(dice, target);
+        Frames[frame.Record] = frame;
+        if (frame.Record.isBlockedDice || frame.IsRandomBarrage) return;
+        foreach (var entry in frame.Page.Targets)
         {
-            dice.GiveDamage(mainTarget);
-            if (!record.isBlockedDice)
-                GetOrCreateFrame(record, page, mainTarget, isRandomBarrage: true, redirected: false);
-            return true;
+            if (dice.owner.IsDead() || dice.owner.IsExtinction()) break;
+            if (entry == target || (frame.IsContinuation && entry.Unit == frame.Main) || !IsAlive(entry)) continue;
+            ResolveExternal(dice, entry, log, frame, additionalHit: true);
         }
-
-        var frame = GetOrCreateFrame(record, page, mainTarget, isRandomBarrage: true, redirected: true);
-        if (!actor.IsDead() && !actor.IsExtinction())
-            ResolveSecondaryHit(dice, chosen, mainLog, record, frame);
-
-        return false;
     }
 
-    private static void ResolveSecondaryHit(
-        BattleDiceBehavior dice,
-        BattleUnitModel unit,
-        BattleCardTotalResult mainLog,
-        BattleCardBehaviourResult record,
-        Frame frame)
+    private static Hit ResolveExternal(BattleDiceBehavior dice, Target entry, BattleCardTotalResult mainLog, Frame frame, bool additionalHit)
     {
-        using (var scope = new SecondaryResolution(dice, unit))
+        var unit = entry.Unit;
+        using var scope = new SecondaryResolution(dice, entry, additionalHit);
+        var hit = ResolveTarget(dice, entry);
+        var sender = scope.Sender.CurbehaviourResult;
+        var record = frame.Record;
+        record.dmgListTaken.AddRange(sender.dmgListTaken);
+        record.breakListTaken.AddRange(sender.breakListTaken);
+        record.recoveredHpList.AddRange(sender.recoveredHpList);
+        record.recoveredBpList.AddRange(sender.recoveredBpList);
+        record.recoveredLight += sender.recoveredLight;
+        if (additionalHit) frame.ExternalHits.Add(hit);
+        else
         {
-            dice.GiveDamage(unit);
-            // 副目标反伤、命中恢复等造成的自身变化并入本骰主日志。
-            var actorRecord = scope.Sender.CurbehaviourResult;
-            record.dmgListTaken.AddRange(actorRecord.dmgListTaken);
-            record.breakListTaken.AddRange(actorRecord.breakListTaken);
-            record.recoveredHpList.AddRange(actorRecord.recoveredHpList);
-            record.recoveredBpList.AddRange(actorRecord.recoveredBpList);
-            record.recoveredLight += actorRecord.recoveredLight;
-            foreach (var coin in actorRecord.GetAddedEmotionCoins()) mainLog.AddEmotionCoin(coin, 1);
-            scope.Receiver.SetCurrentHp(unit.hp);
-            scope.Receiver.SetCurrentBreakGauge(unit.breakDetail.breakGauge);
-            scope.Receiver.SetCurrentBuf(unit.bufListDetail.GetBufUIDataList());
-            scope.Receiver.SetDeathState(unit.IsDeadReal());
-            scope.Receiver.SetBreakState(unit.IsBreakLifeZero());
-            if (frame.Page.SecondaryLogs.TryGetValue(unit, out var secondaryLog))
-                secondaryLog.BehaviourResultList.Add(scope.Receiver.CurbehaviourResult);
-            frame.Hits.Add(new Hit { Unit = unit, Sender = actorRecord, Receiver = scope.Receiver.CurbehaviourResult });
+            record.dmgListGiven.AddRange(sender.dmgListGiven);
+            record.breakListGiven.AddRange(sender.breakListGiven);
+            record.addedAttackFilterList.AddRange(sender.addedAttackFilterList);
+            record.isBlockedDice = sender.isBlockedDice;
+            if (!sender.isBlockedDice) record.printAtkEffectEvent += sender.printAtkEffectEvent;
+            record.afterActionEvent += sender.afterActionEvent;
+            record.succeedAtkEvent += sender.succeedAtkEvent;
+            record.takeDamageEvent += sender.takeDamageEvent;
+            scope.Receiver.SetBehaviourResult(new DiceBehaviourResultData
+            {
+                result = Result.Lose,
+                actionDetail = sender.isBlockedDice ? ActionDetail.Default : ActionDetail.Damaged,
+            });
         }
+        foreach (var coin in sender.GetAddedEmotionCoins()) mainLog.AddEmotionCoin(coin, 1);
+        scope.Receiver.SetCurrentHp(unit.hp);
+        scope.Receiver.SetCurrentBreakGauge(unit.breakDetail.breakGauge);
+        scope.Receiver.SetCurrentBuf(unit.bufListDetail.GetBufUIDataList());
+        scope.Receiver.SetDeathState(unit.IsDeadReal());
+        scope.Receiver.SetBreakState(unit.IsBreakLifeZero());
+        return hit;
+    }
+
+    private static Hit ResolveTarget(BattleDiceBehavior dice, Target entry)
+    {
+        var unit = entry.Unit;
+        var hit = new Hit
+        {
+            Target = entry,
+            Sender = dice.owner.battleCardResultLog.CurbehaviourResult,
+            Receiver = unit.battleCardResultLog.CurbehaviourResult,
+        };
+        dice.GiveDamage(unit);
+        return hit;
     }
 
     private sealed class SecondaryResolution : IDisposable
@@ -200,13 +294,14 @@ internal static class CustomCombatResolution
 
         private readonly BattleDiceBehavior dice, targetDice;
 
-        private readonly BattleUnitModel target, originalTarget;
+        private readonly BattleUnitModel target;
+        private readonly TargetScope targetScope;
 
         private readonly BattleCardTotalResult actorLog, targetLog;
 
         private readonly int guard, damage;
 
-        private readonly bool parrying, blocked;
+        private readonly bool parrying, blocked, previousSecondary;
 
         private readonly DiceStatBonus stats;
 
@@ -214,11 +309,10 @@ internal static class CustomCombatResolution
 
         private readonly LOR_DiceSystem.DiceBehaviour mainBehaviour;
 
-        internal SecondaryResolution(BattleDiceBehavior dice, BattleUnitModel target)
+        internal SecondaryResolution(BattleDiceBehavior dice, Target entry, bool additionalHit)
         {
             this.dice = dice;
-            this.target = target;
-            originalTarget = dice.card.target;
+            target = entry.Unit;
             targetDice = dice._targetDice;
             actorLog = dice.owner.battleCardResultLog;
             targetLog = target.battleCardResultLog;
@@ -226,6 +320,7 @@ internal static class CustomCombatResolution
             damage = dice._diceResultDamage;
             parrying = dice._isParrying;
             blocked = dice._isBlocked;
+            previousSecondary = ResolvingSecondary;
             stats = dice._statBonus;
             flags = dice._flags;
             mainBehaviour = dice.behaviourInCard;
@@ -237,7 +332,7 @@ internal static class CustomCombatResolution
             var targetBehaviour = mainBehaviour.Copy();
             dice.owner.battleCardResultLog = Sender;
             target.battleCardResultLog = Receiver;
-            dice.card.target = target;
+            targetScope = new TargetScope(dice.card, entry);
             dice._targetDice = null;
             dice._isParrying = false;
             dice._isBlocked = false;
@@ -245,13 +340,14 @@ internal static class CustomCombatResolution
             dice._statBonus = targetStats;
             dice._flags = targetFlags;
             dice.behaviourInCard = targetBehaviour;
+            ResolvingSecondary = previousSecondary || additionalHit;
         }
 
         public void Dispose()
         {
             target.battleCardResultLog = targetLog;
             dice.owner.battleCardResultLog = actorLog;
-            dice.card.target = originalTarget;
+            targetScope.Dispose();
             dice._targetDice = targetDice;
             dice._damageReductionByGuard = guard;
             dice._diceResultDamage = damage;
@@ -260,6 +356,7 @@ internal static class CustomCombatResolution
             dice._statBonus = stats;
             dice._flags = flags;
             dice.behaviourInCard = mainBehaviour;
+            ResolvingSecondary = previousSecondary;
             // isBonusAttack、骰子销毁和能力内部状态属于整次攻击，保留实际产生的结果。
         }
     }

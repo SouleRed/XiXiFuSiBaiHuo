@@ -15,7 +15,7 @@ public abstract class KingBehaviourAction : BehaviourActionBase
             && result.diceBehaviourResult.result == Result.Win && !result.diceBehaviourResult.skip
             && !result.isBlockedDice && !result.isDestroyed;
 
-    private static bool IsRangedAttackClash(BattleCardBehaviourResult self, BattleCardBehaviourResult opponent)
+    internal static bool IsRangedAttackClash(BattleCardBehaviourResult self, BattleCardBehaviourResult opponent)
         => self.diceBehaviourResult.range == CardRange.Near && opponent?.hasBehaviour == true
             && opponent.diceBehaviourResult.range == CardRange.Far && opponent.diceBehaviourResult.actionType == ActionType.Atk;
 
@@ -75,7 +75,10 @@ internal static class KingContinuation
         if (index < 0 || index + 1 >= own.Count || index + 1 >= other.Count) return false;
 
         var candidate = own[index + 1];
-        if (!KingBehaviourAction.IsFormal(current, other[index]) || !KingBehaviourAction.IsFormal(candidate, other[index + 1])
+        var nextFrame = CustomCombatResolution.Find(candidate);
+        var currentOther = frame?.HasDifferentTarget == true ? frame.Formal.Receiver : other[index];
+        var nextOther = nextFrame?.HasDifferentTarget == true ? nextFrame.Formal.Receiver : other[index + 1];
+        if (!KingBehaviourAction.IsFormal(current, currentOther) || !KingBehaviourAction.IsFormal(candidate, nextOther)
             || !ReferenceEquals(current.playingCard, candidate.playingCard)
             || (candidate.behaviourIdx != current.behaviourIdx + 1 && !NeedleClanBehaviourAction.IsRepeat(current, candidate)))
             return false;

@@ -341,7 +341,7 @@ public sealed class RencounterEffects : MonoBehaviour
 
     private readonly Dictionary<BattleUnitView, DamageMotion> damageMotions = new();
 
-    private readonly Dictionary<Tuple<int, int, BattlePlayingCardDataInUnitModel, string>, State> states = new();
+    private readonly Dictionary<(BattleUnitView Actor, BattlePlayingCardDataInUnitModel Card, string Skill), State> states = new();
 
     private StageController stage;
     private bool opening;
@@ -366,6 +366,8 @@ public sealed class RencounterEffects : MonoBehaviour
 
         var manager = SingletonBehavior<RencounterManager>.Instance;
         if (!manager) return false;
+        if (CustomCombatRuntime.Playback is { IsRunning: true } custom)
+            (actor, target) = custom.OriginalParticipants;
         var effects = manager.GetComponent<RencounterEffects>();
         var logs = (Actor: actor.model.battleCardResultLog, Target: target.model.battleCardResultLog);
         if (effects && effects.stage == stage
@@ -388,7 +390,7 @@ public sealed class RencounterEffects : MonoBehaviour
         var effects = manager ? manager.GetComponent<RencounterEffects>() : null;
         if (!effects || !effects.IsOpen) throw new InvalidOperationException("动作组只能在已开启的对抗演出中取得共享状态。");
 
-        var key = Tuple.Create(actor.GetInstanceID(), target.GetInstanceID(), card, skill);
+        var key = (actor, card, skill);
         if (!effects.states.TryGetValue(key, out var state)) effects.states.Add(key, state = new State(effects));
         return state;
     }

@@ -186,8 +186,11 @@ internal sealed class CustomCombatParryingManager
 
     private BattleCardTotalResult _librarianCardBehavioursResult;
 
+    internal BattleUnitModel ContinuingAttacker { get; private set; }
+
     public BattleUnitModel GetCurrentWinner()
     {
+        if (ContinuingAttacker != null) return null;
         if (_decisionResult == ParryingDecisionResult.WinEnemy) return _teamEnemy.unit;
         if (_decisionResult == ParryingDecisionResult.WinLibrarian) return _teamLibrarian.unit;
         return null;
@@ -208,6 +211,8 @@ internal sealed class CustomCombatParryingManager
         SyncToRedDiceTeam(_teamLibrarian, _redDiceLibrarian);
         _redDiceEnemy.SetOpponent(_redDiceLibrarian);
         _redDiceLibrarian.SetOpponent(_redDiceEnemy);
+        CustomCombatResolution.PrepareCapacity(cardEnemy);
+        CustomCombatResolution.PrepareCapacity(cardLibrarian);
         cardEnemy.owner.cardHistory.AddCardHistory(cardEnemy, Singleton<StageController>.Instance.RoundTurn);
         cardLibrarian.owner.cardHistory.AddCardHistory(cardLibrarian, Singleton<StageController>.Instance.RoundTurn);
         cardEnemy.OnUseCard_before();
@@ -227,7 +232,8 @@ internal sealed class CustomCombatParryingManager
         _teamLibrarian.NextDice();
         _librarianCardBehavioursResult.SetBehaviourDiceResultUI(CompareBehaviourUIType.Start);
         _enemyCardBehavioursResult.SetBehaviourDiceResultUI(CompareBehaviourUIType.Start);
-        if (_teamEnemy.unit.IsDead() || _teamLibrarian.unit.IsDead() || (!_teamEnemy.DiceExists() && !_teamLibrarian.DiceExists()) || _teamEnemy.unit.IsExtinction() || _teamLibrarian.unit.IsExtinction()) EndParrying();
+        if (TryEndAfterDefeat(append: false)) return;
+        if (!_teamEnemy.DiceExists() && !_teamLibrarian.DiceExists()) EndParrying();
         else FirstApproachPhase();
     }
 
@@ -606,7 +612,8 @@ internal sealed class CustomCombatParryingManager
     private void CheckParryingEnd()
     {
         TryRequeueRedDice();
-        if (_teamEnemy.unit.IsDead() || _teamLibrarian.unit.IsDead() || (!_teamEnemy.DiceExists() && !_teamLibrarian.DiceExists()) || _teamEnemy.unit.IsExtinction() || _teamLibrarian.unit.IsExtinction()) EndParrying();
+        if (TryEndAfterDefeat(append: true)) return;
+        if (!_teamEnemy.DiceExists() && !_teamLibrarian.DiceExists()) EndParrying();
         else if (_teamEnemy.playingCard.isKeepedCard && _teamEnemy.DiceExists() && !_teamLibrarian.DiceExists())
         {
             if (_teamEnemy.playingCard.currentBehavior != null && _teamEnemy.playingCard.currentBehavior.isUsed) _teamEnemy.playingCard.currentBehavior = null;
@@ -627,6 +634,35 @@ internal sealed class CustomCombatParryingManager
         }
     }
 
+    private bool TryEndAfterDefeat(bool append)
+    {
+        bool enemyDefeated = _teamEnemy.unit.IsDead() || _teamEnemy.unit.IsExtinction();
+        bool librarianDefeated = _teamLibrarian.unit.IsDead() || _teamLibrarian.unit.IsExtinction();
+        if (!enemyDefeated && !librarianDefeated) return false;
+
+        if (enemyDefeated != librarianDefeated)
+        {
+            var survivor = enemyDefeated ? _teamLibrarian : _teamEnemy;
+            var defeated = enemyDefeated ? _teamEnemy : _teamLibrarian;
+            if (!survivor.isKeepedCard && survivor.playingCard.target == defeated.unit)
+            {
+                ContinuingAttacker = survivor.unit;
+                try
+                {
+                    CustomCombatOneSideManager.ResolveRemainingDice(survivor.playingCard, defeated.unit,
+                        survivor.unit.battleCardResultLog, defeated.unit.battleCardResultLog, append);
+                }
+                finally
+                {
+                    ContinuingAttacker = null;
+                }
+            }
+        }
+
+        EndParrying();
+        return true;
+    }
+
     private void EndParrying()
     {
         CheckStandyDiceBeforeEndParrying(_teamLibrarian);
@@ -643,6 +679,8 @@ internal sealed class CustomCombatParryingManager
 
     private void RollDice()
     {
+        CustomCombatResolution.PrepareBarrageRoll(_teamEnemy.playingCard.currentBehavior);
+        CustomCombatResolution.PrepareBarrageRoll(_teamLibrarian.playingCard.currentBehavior);
         BeforeRollDice();
         _teamEnemy.BeforeRollDice(_teamLibrarian.playingCard.currentBehavior);
         _teamLibrarian.BeforeRollDice(_teamEnemy.playingCard.currentBehavior);

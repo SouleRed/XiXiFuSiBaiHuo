@@ -96,13 +96,14 @@ internal static class CustomCombatRuntime
 
     internal static BattleUnitModel CurrentWinner => Phase == CombatActionPhase.Resolving ? parrying?.GetCurrentWinner() : null;
 
-    internal static BattleUnitModel CurrentAttacker => Phase == CombatActionPhase.Resolving ? oneSide?.GetCurrentAttacker() : null;
+    internal static BattleUnitModel CurrentAttacker => Phase == CombatActionPhase.Resolving ? oneSide?.GetCurrentAttacker() ?? parrying?.ContinuingAttacker : null;
 
     internal static BattleCardBehaviourResult CurrentResult(BattleUnitView view)
     {
         if (!IsRunning) return null;
         if (Playback._librarian == view) return Playback._currentLibrarianBehaviourResult;
-        return Playback._enemy == view ? Playback._currentEnemyBehaviourResult : null;
+        if (Playback._enemy == view) return Playback._currentEnemyBehaviourResult;
+        return Playback.CurrentFrame?.ExternalHits.Find(hit => hit.Unit.view == view)?.Receiver;
     }
 
     internal static void Complete(CombatActionSession session)

@@ -15,10 +15,9 @@ using RencounterState = RencounterManager.RencounterState;
 
 namespace 裁缝之王.Presentation.CustomCombat;
 
-// 复用原版单方面行动时序，支持多目标攻击和二元性支援。
+// 复用原版单方面行动时序，支持攻击容量多目标与主目标退场后续打。
 internal sealed class CustomCombatOneSideManager
 {
-
     public BattleUnitModel attacker;
 
     public BattleUnitModel victim;
@@ -26,7 +25,6 @@ internal sealed class CustomCombatOneSideManager
     private BattlePlayingCardDataInUnitModel _playingCard;
 
     private int resultKnockbackEnergy;
-
 
     private BattleCardTotalResult _attackerCardBehavioursResult;
 
@@ -39,6 +37,7 @@ internal sealed class CustomCombatOneSideManager
         _playingCard = card;
         attacker = card.owner;
         victim = card.target;
+        CustomCombatResolution.PrepareCapacity(card);
         attacker.currentDiceAction = card;
         _attackerCardBehavioursResult = new BattleCardTotalResult(card);
         _victimCardBehavioursResult = new BattleCardTotalResult(null);
@@ -58,7 +57,8 @@ internal sealed class CustomCombatOneSideManager
         _ = card.GetDiceBehaviorList().Count;
         _ = 0;
         NextDice();
-        if (victim.IsDead() || attacker.IsDead() || _playingCard.currentBehavior == null || victim.IsExtinction() || attacker.IsExtinction()) EndCardAction();
+        if (victim.IsDead() || victim.IsExtinction()) FinishAgainstDefeatedTarget(append: false);
+        else if (attacker.IsDead() || _playingCard.currentBehavior == null || attacker.IsExtinction()) EndCardAction();
         else PreDecision();
     }
 
@@ -86,11 +86,8 @@ internal sealed class CustomCombatOneSideManager
             _attackerCardBehavioursResult.SetSkip();
             if (_playingCard.currentBehavior.Type == BehaviourType.Atk)
             {
-                BeforeRollDice();
-                _playingCard.currentBehavior.BeforeRollDice(null);
-                _playingCard.currentBehavior.RollDice();
-                _playingCard.currentBehavior.UpdateDiceFinalValue();
-                AfterRollDice();
+                CustomCombatResolution.PrepareBarrageRoll(_playingCard.currentBehavior);
+                RollAttack(_playingCard.currentBehavior, victim, _attackerCardBehavioursResult, _victimCardBehavioursResult);
             }
             Action();
         }
@@ -109,9 +106,12 @@ internal sealed class CustomCombatOneSideManager
         {
             if (_playingCard.currentBehavior.behaviourInCard.Type == BehaviourType.Atk)
             {
-                bool mainHit = CustomCombatResolution.ResolveDie(_playingCard.currentBehavior, victim);
-                victim.UpdateDirection(attacker.view.WorldPosition);
-                if (mainHit) resultKnockbackEnergy += _playingCard.currentBehavior.behaviourInCard.KnockbackPower;
+                bool hitVictim = CustomCombatResolution.ResolveDie(_playingCard.currentBehavior, victim);
+                if (hitVictim)
+                {
+                    victim.UpdateDirection(attacker.view.WorldPosition);
+                    resultKnockbackEnergy += _playingCard.currentBehavior.behaviourInCard.KnockbackPower;
+                }
                 _playingCard.AfterAction();
             }
             else if (_playingCard.currentBehavior.behaviourInCard.Type == BehaviourType.Def)
@@ -147,7 +147,12 @@ internal sealed class CustomCombatOneSideManager
 
     private void CheckEndAction()
     {
-        if (victim.IsDead() || attacker.IsDead() || victim.IsExtinction() || attacker.IsExtinction() || _playingCard.currentBehavior == null)
+        if (victim.IsDead() || victim.IsExtinction())
+        {
+            FinishAgainstDefeatedTarget(append: true);
+            return;
+        }
+        if (attacker.IsDead() || attacker.IsExtinction() || _playingCard.currentBehavior == null)
         {
             EndCardAction();
             return;
@@ -160,6 +165,86 @@ internal sealed class CustomCombatOneSideManager
         _attackerCardBehavioursResult.InitNextBehaviour();
         _victimCardBehavioursResult.InitNextBehaviour();
         PreDecision();
+    }
+
+    private void FinishAgainstDefeatedTarget(bool append)
+    {
+        ResolveRemainingDice(_playingCard, victim, _attackerCardBehavioursResult, _victimCardBehavioursResult, append);
+        EndCardAction();
+    }
+
+    internal static void ResolveRemainingDice(BattlePlayingCardDataInUnitModel card, BattleUnitModel originalTarget,
+        BattleCardTotalResult actorLog, BattleCardTotalResult originalTargetLog, bool append)
+    {
+        var actor = card.owner;
+        CustomCombatResolution.Target target = null;
+        while (card.currentBehavior is { } die && !actor.IsDead() && !actor.IsExtinction() && !actor.IsBreakLifeZero() && !actor.IsKnockout())
+        {
+            target = CustomCombatResolution.GetSurvivingSecondary(card, target);
+            if (target == null) return;
+            if (die.Type == BehaviourType.Def)
+            {
+                actor.cardSlotDetail.keepCard.AddBehaviour(card.card, die);
+                card.NextDice();
+                continue;
+            }
+            if (die.Type != BehaviourType.Atk)
+            {
+                card.NextDice();
+                continue;
+            }
+
+            if (append)
+            {
+                actorLog.InitNextBehaviour();
+                originalTargetLog.InitNextBehaviour();
+            }
+            append = true;
+            _ = originalTargetLog.CurbehaviourResult;
+            ResolveRemainingAttack(card, die, originalTarget, target, actorLog);
+            if (die.isBonusAttack && !die.forbiddenBonusDice) die.isBonusAttack = false;
+            else card.NextDice();
+        }
+    }
+
+    private static void ResolveRemainingAttack(BattlePlayingCardDataInUnitModel card, BattleDiceBehavior die, BattleUnitModel originalTarget,
+        CustomCombatResolution.Target target, BattleCardTotalResult actorLog)
+    {
+        using var scope = new CustomCombatResolution.TargetScope(card, target);
+        var unit = target.Unit;
+        var previousLog = unit.battleCardResultLog;
+        var receiverLog = new BattleCardTotalResult(null);
+        unit.battleCardResultLog = receiverLog;
+        try
+        {
+            actorLog.SetBehaviourDiceResultUI(CompareBehaviourUIType.Start);
+            actorLog.SetSkip();
+            die._isParrying = false;
+            die.SetBlocked(false);
+            die._damageReductionByGuard = 0;
+            RollAttack(die, unit, actorLog, receiverLog);
+            CustomCombatResolution.ResolveContinuationDie(die, target, originalTarget);
+            card.AfterAction();
+            SetUnitResult(card.owner, actorLog);
+            SetUnitResult(unit, receiverLog);
+            SetBehaviourResultData(die, null, actorLog, card.currentBehaviorUI);
+            SetBehaviourResultData(null, die, receiverLog);
+            actorLog.SetBehaviourDiceResultUI(CompareBehaviourUIType.Start);
+            actorLog.SetSkip();
+        }
+        finally
+        {
+            unit.battleCardResultLog = previousLog;
+        }
+    }
+
+    private static void SetUnitResult(BattleUnitModel unit, BattleCardTotalResult log)
+    {
+        log.SetCurrentHp(unit.hp);
+        log.SetCurrentBreakGauge(unit.breakDetail.breakGauge);
+        log.SetCurrentBuf(unit.bufListDetail.GetBufUIDataList());
+        log.SetDeathState(unit.IsDeadReal());
+        log.SetBreakState(unit.IsBreakLifeZero());
     }
 
     private void EndCardAction()
@@ -180,24 +265,22 @@ internal sealed class CustomCombatOneSideManager
         goto IL_0122;
         IL_0122:
         attacker.OnEndOneSideAction_Before(_playingCard);
-        var stage = Singleton<StageController>.Instance;
         victim.OnEndOnSideActionVictim_Before(_playingCard);
-        stage.OnEndOneSideAction(attacker, victim, resultKnockbackEnergy);
+        Singleton<StageController>.Instance.OnEndOneSideAction(attacker, victim, resultKnockbackEnergy);
     }
 
-    private void BeforeRollDice()
+    private static void RollAttack(BattleDiceBehavior die, BattleUnitModel target, BattleCardTotalResult actorLog, BattleCardTotalResult receiverLog)
     {
-        SetAbilityDataBeforeRoll(attacker, _attackerCardBehavioursResult);
-        SetAbilityDataBeforeRoll(victim, _victimCardBehavioursResult);
+        SetAbilityDataBeforeRoll(die.owner, actorLog);
+        SetAbilityDataBeforeRoll(target, receiverLog);
+        die.BeforeRollDice(null);
+        die.RollDice();
+        die.UpdateDiceFinalValue();
+        SetAbilityDataAfterRoll(die.owner, actorLog);
+        SetAbilityDataAfterRoll(target, receiverLog);
     }
 
-    private void AfterRollDice()
-    {
-        SetAbilityDataAfterRoll(attacker, _attackerCardBehavioursResult);
-        SetAbilityDataAfterRoll(victim, _victimCardBehavioursResult);
-    }
-
-    private void SetAbilityDataBeforeRoll(BattleUnitModel model, BattleCardTotalResult result)
+    private static void SetAbilityDataBeforeRoll(BattleUnitModel model, BattleCardTotalResult result)
     {
         foreach (BattleUnitBuf activatedBuf in model.bufListDetail.GetActivatedBufList())
         {
@@ -213,7 +296,7 @@ internal sealed class CustomCombatOneSideManager
         }
     }
 
-    private void SetAbilityDataAfterRoll(BattleUnitModel model, BattleCardTotalResult result)
+    private static void SetAbilityDataAfterRoll(BattleUnitModel model, BattleCardTotalResult result)
     {
         foreach (BattleUnitBuf activatedBuf in model.bufListDetail.GetActivatedBufList())
         {
@@ -229,7 +312,8 @@ internal sealed class CustomCombatOneSideManager
         }
     }
 
-    private void SetBehaviourResultData(BattleDiceBehavior behaviour, BattleDiceBehavior opponentBehaviour, BattleCardTotalResult result, BattleDiceBehavior behaviorForDiceUI = null)
+    private static void SetBehaviourResultData(BattleDiceBehavior behaviour, BattleDiceBehavior opponentBehaviour, BattleCardTotalResult result,
+        BattleDiceBehavior behaviorForDiceUI = null)
     {
         DiceBehaviourResultData behaviourResult = new()
         {
@@ -265,7 +349,7 @@ internal sealed class CustomCombatOneSideManager
         SetDiceResultData(behaviour, result, behaviorForDiceUI);
     }
 
-    private void SetDiceResultData(BattleDiceBehavior diceBehavior, BattleCardTotalResult result, BattleDiceBehavior diceBehaviorforUI = null)
+    private static void SetDiceResultData(BattleDiceBehavior diceBehavior, BattleCardTotalResult result, BattleDiceBehavior diceBehaviorforUI = null)
     {
         result.SetBehaviour((diceBehavior != null) ? diceBehavior : diceBehaviorforUI);
         if (diceBehavior == null)

@@ -1,4 +1,5 @@
 using 裁缝之王.Presentation.Camera;
+using 裁缝之王.Presentation.CustomCombat;
 using UnityEngine;
 using System.Collections.Generic;
 
@@ -24,6 +25,7 @@ public sealed class BehaviourAction_CFK_S9_Coin1 : KingBehaviourAction
         var ready = opponent.data.actionDetail;
         timeline.Section(feedback, ActionDetail.Default, ready, new[]
         {
+            play.MoveAt(new KingMove(0f, 0f, 1, true, true, true, 4, false, Vector3.zero, 6f, false, false)),
             CoinTimeline.PlayVoice(0f, "10SV-097"),
             CoinTimeline.PlaySound(0f, "scenetrans_short_4c693dda", 1f),
             play.EffectAt(new KingEffect(0.71666664f, "assets/裁缝之王敌方1496还原/特效/prefabs/动作/023_fx_weapon_shine_ready_2.prefab", -1, 2f, 1f, false, false, Vector3.zero, Vector3.zero, Vector3.one)),
@@ -44,6 +46,29 @@ public sealed class BehaviourAction_CFK_S9_Coin1 : KingBehaviourAction
         });
         timeline.Section(end, ActionDetail.S4, ActionDetail.Damaged, feedback: true);
         var camera = TimelineActionCamera.Clips.Get(KingPlayback.BundleKey, "NeedleKingEnemy1496_S9_Coin1");
-        return play.BindAction(timeline, camera, ref self, ref opponent);
+        return play.BindAction(timeline, camera, ref self, ref opponent,
+            secondaryPositions: count => SurroundMainTarget(play.Actor, play.Target, count));
+    }
+
+    private static Vector3[] SurroundMainTarget(BattleUnitView actor, BattleUnitView mainTarget, int count)
+    {
+        float sign = mainTarget.WorldPosition.x >= actor.WorldPosition.x ? -1f : 1f;
+        float arriveScale = Mathf.Max(ActionMotion.Scale(mainTarget), ActionMotion.Scale(actor, capTargetHeight: true));
+        var mainPos = new Vector3(actor.WorldPosition.x - sign * 6f * arriveScale, 0f, actor.WorldPosition.z);
+        var map = SingletonBehavior<HexagonalMapManager>.Instance;
+        float left = map.GetCurrentBorderPos(HexagonalMapManager.WallDirection.LEFT);
+        float right = map.GetCurrentBorderPos(HexagonalMapManager.WallDirection.RIGHT);
+        float back = map.GetCurrentBorderPos(HexagonalMapManager.WallDirection.DOWN);
+        float front = map.GetCurrentBorderPos(HexagonalMapManager.WallDirection.UP);
+
+        var positions = new Vector3[count];
+        for (int i = 0; i < count; i++)
+        {
+            var pos = mainPos + CustomCombatActionPlan.GetStaggeredOffset(actor, mainTarget, i);
+            pos.x = Mathf.Clamp(pos.x, left, right);
+            pos.z = Mathf.Clamp(pos.z, back, front);
+            positions[i] = pos;
+        }
+        return positions;
     }
 }

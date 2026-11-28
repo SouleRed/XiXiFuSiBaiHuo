@@ -72,9 +72,15 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
 
     private bool _bPause;
 
-    internal BattleUnitView _librarian;
+    private BattleUnitView originalLibrarian, originalEnemy;
 
-    internal BattleUnitView _enemy;
+    internal (BattleUnitView Enemy, BattleUnitView Librarian) OriginalParticipants => (originalEnemy, originalLibrarian);
+
+    private BattleUnitView frameLibrarian, frameEnemy;
+
+    internal BattleUnitView _librarian => frameLibrarian ?? originalLibrarian;
+
+    internal BattleUnitView _enemy => frameEnemy ?? originalEnemy;
 
     private BattleUnitView.SkinInfo _originalLibrarianSkin;
 
@@ -83,6 +89,18 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
     private Queue<BattleCardBehaviourResult> _librarianBehaviourResultQueue;
 
     private Queue<BattleCardBehaviourResult> _enemyBehaviourResultQueue;
+
+    private BattleCardBehaviourResult ClashEnemy => _enemyBehaviourResultQueue.Peek();
+
+    private BattleCardBehaviourResult ClashLibrarian => _librarianBehaviourResultQueue.Peek();
+
+    internal bool HasDifferentFrameTarget => frameEnemy != null || frameLibrarian != null;
+
+    internal BattleUnitView GetClashOpponent(BattleUnitView actor)
+        => actor == originalEnemy ? originalLibrarian : actor == originalLibrarian ? originalEnemy : null;
+
+    internal BattleCardBehaviourResult GetClashOpponentResult(BattleUnitView actor)
+        => actor == originalEnemy ? ClashLibrarian : actor == originalLibrarian ? ClashEnemy : null;
 
     internal BattleCardBehaviourResult _currentLibrarianBehaviourResult;
 
@@ -118,25 +136,23 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
 
     public bool IsRunning => action?.Phase == CombatActionPhase.Playing;
 
+    internal bool NoDelay => _bNoDelay;
+
     internal bool Paused => _bPause || SingletonBehavior<BattleCamManager>.Instance.stopFocusByRencounter;
 
     internal CustomCombatPlayback SecondaryPlayback { get; private set; }
 
-    internal void EnterSecondaryFocus(BattleCardBehaviourResult record) => SecondaryPlayback?.EnterFocus(record);
+    internal CustomCombatResolution.Frame CurrentFrame => CustomCombatResolution.Find(_currentEnemyBehaviourResult) ?? CustomCombatResolution.Find(_currentLibrarianBehaviourResult);
 
-    internal void LeaveSecondaryFocus() => SecondaryPlayback?.EndFocus();
-
-    internal bool CanContinueSecondaryFocus(BattleCardBehaviourResult record)
+    internal bool CanContinueSecondaryFocus(BattleCardBehaviourResult record, bool retainFormationOnRetarget)
     {
         var actor = record?.playingCard?.owner?.view;
         var target = actor == _enemy ? _librarian : _enemy;
         if (!KingContinuation.TryGetContinuousNext(actor, target, record, out var next) || !KingContinuation.IsExpected(next)) return false;
         var current = CustomCombatResolution.Find(record);
         var following = CustomCombatResolution.Find(next);
-        if (current == null || following == null || !ReferenceEquals(current.Page, following.Page)) return false;
-        if (current.IsRandomBarrage || following.IsRandomBarrage)
-            return current.ActualTarget == following.ActualTarget;
-        return true;
+        return current != null && following != null && ReferenceEquals(current.Page, following.Page)
+            && (retainFormationOnRetarget || current.ActualTarget == following.ActualTarget);
     }
 
     internal float MotionTime { get; private set; }
@@ -202,8 +218,10 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         session.PlaybackStarted();
         _curRencounterState = RencounterState.EnableUI;
         _elapsedStartFocus = 0f;
-        _librarian = librarian;
-        _enemy = enemy;
+        originalLibrarian = librarian;
+        originalEnemy = enemy;
+        frameLibrarian = frameEnemy = null;
+        _currentLibrarianBehaviourResult = _currentEnemyBehaviourResult = null;
         _originalLibrarianSkin = null;
         _originalEnemySkin = null;
         if (librarian.model.battleCardResultLog.usedCard != null)
@@ -256,10 +274,12 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         _librarian.keepUI.Init(b: false);
         _enemy.keepUI.Init(b: false);
         _bPause = false;
+        RencounterEffects.EnsureOpen(enemy, librarian);
     }
 
     public void EndRencounter()
     {
+        frameLibrarian = frameEnemy = null;
         forbidAutoPlay = false;
         if (_elapsedEndRencounter <= Mathf.Epsilon)
         {
@@ -279,6 +299,7 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         _elapsedEndRencounter += Time.deltaTime;
         SingletonBehavior<BattleCamManager>.Instance.BlurCharacterCam(active: false, 10f);
         if (_elapsedEndRencounter < 0.2f || _librarian.IsRunningDeadEffect || _enemy.IsRunningDeadEffect || SecondaryPlayback.HasRunningDeath) return;
+        SecondaryPlayback.Clear();
         foreach (BattleUnitModel alive in BattleObjectManager.instance.GetAliveList())
         {
             if (!alive.IsExtinction())
@@ -356,10 +377,12 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
             return;
         }
 
+        frameLibrarian = frameEnemy = null;
         try
         {
             if (_originalLibrarianSkin != null && _librarian) _librarian.ChangeSkinBySkinInfo(_originalLibrarianSkin);
             if (_originalEnemySkin != null && _enemy) _enemy.ChangeSkinBySkinInfo(_originalEnemySkin);
+            SecondaryPlayback.Clear(restorePositions: true);
             foreach (var unit in BattleObjectManager.instance.GetList())
             {
                 if (!unit.view) continue;
@@ -393,7 +416,6 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
                     item.Value.Reset();
                 }
             }
-            LeaveSecondaryFocus();
             SingletonBehavior<BattleCamManager>.Instance.FollowOneUnit(null, b: false);
             SingletonBehavior<BattleCamManager>.Instance.FollowUnits(isAction: false, BattleObjectManager.instance.GetAliveList());
             SingletonBehavior<BattleCamManager>.Instance.VignetteCharacterCam(active: false);
@@ -512,8 +534,8 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
             rencounterStateTimer.Tick(Time.deltaTime);
             if (_bMoveSlow && Vector3.Distance(_librarian.WorldPosition, _enemy.WorldPosition) > SingletonBehavior<HexagonalMapManager>.Instance.tileSize * 2.5f)
             {
-                _librarian.WorldPosition += Time.deltaTime * (_enemy.WorldPosition - _librarian.WorldPosition).normalized * 0.1f;
-                _enemy.WorldPosition += Time.deltaTime * (_librarian.WorldPosition - _enemy.WorldPosition).normalized * 0.1f;
+                if (frameLibrarian == null) _librarian.WorldPosition += Time.deltaTime * (_enemy.WorldPosition - _librarian.WorldPosition).normalized * 0.1f;
+                if (frameEnemy == null) _enemy.WorldPosition += Time.deltaTime * (_librarian.WorldPosition - _enemy.WorldPosition).normalized * 0.1f;
             }
         }
     }
@@ -588,11 +610,12 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         if (timer.IsStart)
         {
             if (!timer.IsEnd && !_bNoDelay) return;
-            if (_librarian.model.moveDetail.isArrived && _enemy.model.moveDetail.isArrived)
+            bool barrageContinuation = CurrentFrame is { IsRandomBarrage: true, IsContinuation: true };
+            if (barrageContinuation || ((frameLibrarian != null || _librarian.model.moveDetail.isArrived) && (frameEnemy != null || _enemy.model.moveDetail.isArrived)))
             {
                 _curRencounterState = RencounterState.PrintEnemyVanillaDice;
                 timer.Reset();
-                _bMoveSlow = true;
+                _bMoveSlow = CurrentFrame?.IsRandomBarrage != true;
             }
             else
             {
@@ -628,8 +651,8 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
             ChangeTimerDelayByRatio(timer, _curDelayRatio);
             return;
         }
-        _currentLibrarianBehaviourResult = _librarianBehaviourResultQueue.Peek();
-        _currentEnemyBehaviourResult = _enemyBehaviourResultQueue.Peek();
+        _currentLibrarianBehaviourResult = ClashLibrarian;
+        _currentEnemyBehaviourResult = ClashEnemy;
         _curMovingSmoothTime = _afterMovingSmoothTime * _curDelayRatio;
         if (_curMovingSmoothTime < 0.035f) _curMovingSmoothTime = 0.035f;
         _enemy.diceActionUI.currentDice = null;
@@ -641,18 +664,45 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         }
         if (_librarian.model.battleCardResultLog.usedCard != null || _currentLibrarianBehaviourResult?.cardModel != null) _librarian.diceActionUI.SetFirstDiceNew();
         if (_enemy.model.battleCardResultLog.usedCard != null || _currentEnemyBehaviourResult?.cardModel != null) _enemy.diceActionUI.SetFirstDiceNew();
+        if (CurrentFrame?.IsRandomBarrage != true) BindFrameTarget();
         CheckMovingStateBeforeRoll();
         PlaySound(Dice_Move);
         timer.Start();
 
     }
 
+    private void BindFrameTarget()
+    {
+        var frame = CurrentFrame;
+        if (frame?.HasDifferentTarget != true) return;
+        var clashOpponent = frame.Record == ClashEnemy ? ClashLibrarian : ClashEnemy;
+        if (KingBehaviourAction.IsRangedAttackClash(frame.Record, clashOpponent)) return;
+        if (frame.Record == _currentEnemyBehaviourResult)
+        {
+            frameLibrarian = frame.ActualTarget.view;
+            _currentLibrarianBehaviourResult = frame.Formal.Receiver;
+        }
+        else
+        {
+            frameEnemy = frame.ActualTarget.view;
+            _currentEnemyBehaviourResult = frame.Formal.Receiver;
+        }
+    }
+
+    private CustomCombatResolution.TargetScope? ScopeFrameTarget()
+    {
+        var frame = CurrentFrame;
+        return HasDifferentFrameTarget ? new CustomCombatResolution.TargetScope(frame.Page.Card, frame.Formal.Target) : null;
+    }
+
     private void CheckMovingStateBeforeRoll()
     {
         KingContinuation.RestoreDelay();
+        using var scope = ScopeFrameTarget();
         SecondaryPlayback.BeforeRoll(_currentEnemyBehaviourResult, _currentLibrarianBehaviourResult);
         if (KingContinuation.Prepare(_enemy, _librarian, _currentEnemyBehaviourResult, _currentLibrarianBehaviourResult,
             playAuto && !forbidAutoPlay, _bNoDelay, SetNodelay)) return;
+        if (CurrentFrame is { IsRandomBarrage: true, IsContinuation: true }) return;
         bool flag = false;
         float num = 50f * (0.5f * _countForNodelay + 1f);
         if (num > 100f) num = 100f;
@@ -720,7 +770,7 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
 
     private void PrintEnemyVanillaDice(RencounterStateTimer timer)
     {
-        if ((_enemy.model.battleCardResultLog.usedCard == null && _currentEnemyBehaviourResult?.cardModel == null) || !_currentEnemyBehaviourResult.hasBehaviour)
+        if ((originalEnemy.model.battleCardResultLog.usedCard == null && ClashEnemy?.cardModel == null) || !ClashEnemy.hasBehaviour)
         {
             if (_bNoDelay)
             {
@@ -738,17 +788,17 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         {
             if (timer.IsEnd)
             {
-                List<int> vanillaDiceValueList = _currentEnemyBehaviourResult.vanillaDiceValueList;
+                List<int> vanillaDiceValueList = ClashEnemy.vanillaDiceValueList;
                 if (vanillaDiceValueList != null && vanillaDiceValueList.Count > 1)
                 {
-                    _currentEnemyBehaviourResult.vanillaDiceValueList.RemoveAt(0);
+                    ClashEnemy.vanillaDiceValueList.RemoveAt(0);
                     timer.Reset();
                     timer.ResetWaitTime();
                     ChangeTimerDelayByRatio(timer, _curDelayRatio);
                 }
                 else
                 {
-                    _curRencounterState = ((_currentEnemyBehaviourResult.vanillaDiceValue != _currentEnemyBehaviourResult.resultDiceValue) ? RencounterState.PrintEnemyResultDice : RencounterState.WaitLibrarian);
+                    _curRencounterState = ((ClashEnemy.vanillaDiceValue != ClashEnemy.resultDiceValue) ? RencounterState.PrintEnemyResultDice : RencounterState.WaitLibrarian);
                     timer.Reset();
                     timer.ResetWaitTime();
                     ChangeTimerDelayByRatio(timer, _curDelayRatio);
@@ -757,14 +807,14 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         }
         else
         {
-            List<int> vanillaDiceValueList2 = _currentEnemyBehaviourResult.vanillaDiceValueList;
+            List<int> vanillaDiceValueList2 = ClashEnemy.vanillaDiceValueList;
             if (vanillaDiceValueList2 != null && vanillaDiceValueList2.Count > 1)
             {
-                int num = _currentEnemyBehaviourResult.vanillaDiceValueList[0];
-                _enemy.diceActionUI.SetDiceNew(_currentEnemyBehaviourResult.resultDiceMax, num, num == _currentEnemyBehaviourResult.resultDiceValue);
+                int num = ClashEnemy.vanillaDiceValueList[0];
+                originalEnemy.diceActionUI.SetDiceNew(ClashEnemy.resultDiceMax, num, num == ClashEnemy.resultDiceValue);
                 timer.ChangeWaitTime(0.3f);
             }
-            else _enemy.diceActionUI.SetDiceNew(_currentEnemyBehaviourResult.resultDiceMax, _currentEnemyBehaviourResult.vanillaDiceValue, _currentEnemyBehaviourResult.vanillaDiceValue == _currentEnemyBehaviourResult.resultDiceValue);
+            else originalEnemy.diceActionUI.SetDiceNew(ClashEnemy.resultDiceMax, ClashEnemy.vanillaDiceValue, ClashEnemy.vanillaDiceValue == ClashEnemy.resultDiceValue);
             timer.Start();
 
         }
@@ -774,26 +824,26 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
     {
         if (_bNoDelay)
         {
-            if (_enemy.model.battleCardResultLog?.usedCard == null || !_currentEnemyBehaviourResult.hasBehaviour)
+            if (originalEnemy.model.battleCardResultLog?.usedCard == null || !ClashEnemy.hasBehaviour)
             {
                 _curRencounterState = RencounterState.WaitLibrarian;
                 WaitLibrarian(_stateTimerDic[_curRencounterState]);
                 return;
             }
-            int resultDiceValue = _currentEnemyBehaviourResult.resultDiceValue;
-            int vanillaDiceValue = _currentEnemyBehaviourResult.vanillaDiceValue;
+            int resultDiceValue = ClashEnemy.resultDiceValue;
+            int vanillaDiceValue = ClashEnemy.vanillaDiceValue;
             BattleDiceValueColor colorstate = BattleDiceValueColor.Normal;
             if (resultDiceValue > vanillaDiceValue) colorstate = BattleDiceValueColor.Increase;
             else if (resultDiceValue < vanillaDiceValue)
             {
                 colorstate = BattleDiceValueColor.Decrease;
             }
-            _enemy.diceActionUI.SetDiceNew(_currentEnemyBehaviourResult.resultDiceMax, _currentEnemyBehaviourResult.resultDiceValue, isResultDice: true, colorstate);
-            _enemy.diceActionUI.ActivateEmotionCards(_currentEnemyBehaviourResult.GetActivatedEmotionCards());
+            originalEnemy.diceActionUI.SetDiceNew(ClashEnemy.resultDiceMax, ClashEnemy.resultDiceValue, isResultDice: true, colorstate);
+            originalEnemy.diceActionUI.ActivateEmotionCards(ClashEnemy.GetActivatedEmotionCards());
             _curRencounterState = RencounterState.WaitLibrarian;
             WaitLibrarian(_stateTimerDic[_curRencounterState]);
         }
-        else if ((_enemy.model.battleCardResultLog.usedCard == null && _currentEnemyBehaviourResult?.cardModel == null) || !_currentEnemyBehaviourResult.hasBehaviour)
+        else if ((originalEnemy.model.battleCardResultLog.usedCard == null && ClashEnemy?.cardModel == null) || !ClashEnemy.hasBehaviour)
         {
             _curRencounterState = RencounterState.WaitLibrarian;
         }
@@ -808,16 +858,16 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         }
         else
         {
-            int resultDiceValue2 = _currentEnemyBehaviourResult.resultDiceValue;
-            int vanillaDiceValue2 = _currentEnemyBehaviourResult.vanillaDiceValue;
+            int resultDiceValue2 = ClashEnemy.resultDiceValue;
+            int vanillaDiceValue2 = ClashEnemy.vanillaDiceValue;
             BattleDiceValueColor colorstate2 = BattleDiceValueColor.Normal;
             if (resultDiceValue2 > vanillaDiceValue2) colorstate2 = BattleDiceValueColor.Increase;
             else if (resultDiceValue2 < vanillaDiceValue2)
             {
                 colorstate2 = BattleDiceValueColor.Decrease;
             }
-            _enemy.diceActionUI.SetDiceNew(_currentEnemyBehaviourResult.resultDiceMax, _currentEnemyBehaviourResult.resultDiceValue, isResultDice: true, colorstate2);
-            _enemy.diceActionUI.ActivateEmotionCards(_currentEnemyBehaviourResult.GetActivatedEmotionCards());
+            originalEnemy.diceActionUI.SetDiceNew(ClashEnemy.resultDiceMax, ClashEnemy.resultDiceValue, isResultDice: true, colorstate2);
+            originalEnemy.diceActionUI.ActivateEmotionCards(ClashEnemy.GetActivatedEmotionCards());
             timer.Start();
 
         }
@@ -825,7 +875,7 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
 
     private void WaitLibrarian(RencounterStateTimer timer)
     {
-        if ((_librarian.model.battleCardResultLog.usedCard != null || _currentLibrarianBehaviourResult?.cardModel != null) && _currentLibrarianBehaviourResult != null && _currentLibrarianBehaviourResult.hasBehaviour)
+        if ((originalLibrarian.model.battleCardResultLog.usedCard != null || ClashLibrarian?.cardModel != null) && ClashLibrarian != null && ClashLibrarian.hasBehaviour)
         {
             if (_bNoDelay)
             {
@@ -838,16 +888,16 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
                     else
                     {
                         timer.Start();
-                        _librarian.diceActionUI.RollRoulette(_currentLibrarianBehaviourResult.GetActivatedEmotionCards());
+                        originalLibrarian.diceActionUI.RollRoulette(ClashLibrarian.GetActivatedEmotionCards());
 
-                        StartCoroutine(PotentialEffect(_currentLibrarianBehaviourResult.GetAllAbilityStrings(), _librarian));
-                        StartCoroutine(PotentialEffect(_currentEnemyBehaviourResult.GetAllAbilityStrings(), _enemy));
+                        StartCoroutine(PotentialEffect(ClashLibrarian.GetAllAbilityStrings(), originalLibrarian));
+                        StartCoroutine(PotentialEffect(ClashEnemy.GetAllAbilityStrings(), originalEnemy));
 
                     }
                     if (!UIManualPanel.instance.IsOpened() && BattleUIInputController.Instance.CheckInputRencounter())
                     {
                         PlaySound(Dice_Rolled);
-                        _librarian.diceActionUI.StopRoulette();
+                        originalLibrarian.diceActionUI.StopRoulette();
 
                         timer.Reset();
                         OnRollDiceInRecounter();
@@ -857,11 +907,11 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
                 }
                 else
                 {
-                    _librarian.diceActionUI.RollRoulette(_currentLibrarianBehaviourResult.GetActivatedEmotionCards());
+                    originalLibrarian.diceActionUI.RollRoulette(ClashLibrarian.GetActivatedEmotionCards());
 
-                    StartCoroutine(PotentialEffect(_currentLibrarianBehaviourResult.GetAllAbilityStrings(), _librarian));
-                    StartCoroutine(PotentialEffect(_currentEnemyBehaviourResult.GetAllAbilityStrings(), _enemy));
-                    _librarian.diceActionUI.StopRoulette();
+                    StartCoroutine(PotentialEffect(ClashLibrarian.GetAllAbilityStrings(), originalLibrarian));
+                    StartCoroutine(PotentialEffect(ClashEnemy.GetAllAbilityStrings(), originalEnemy));
+                    originalLibrarian.diceActionUI.StopRoulette();
 
                     OnRollDiceInRecounter();
                     _curRencounterState = RencounterState.PrintLibrarianResultDice;
@@ -877,17 +927,17 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
                 else
                 {
                     timer.Start();
-                    _librarian.diceActionUI.RollRoulette(_currentLibrarianBehaviourResult.GetActivatedEmotionCards());
+                    originalLibrarian.diceActionUI.RollRoulette(ClashLibrarian.GetActivatedEmotionCards());
 
-                    StartCoroutine(PotentialEffect(_currentLibrarianBehaviourResult.GetAllAbilityStrings(), _librarian));
-                    StartCoroutine(PotentialEffect(_currentEnemyBehaviourResult.GetAllAbilityStrings(), _enemy));
+                    StartCoroutine(PotentialEffect(ClashLibrarian.GetAllAbilityStrings(), originalLibrarian));
+                    StartCoroutine(PotentialEffect(ClashEnemy.GetAllAbilityStrings(), originalEnemy));
 
                 }
                 if (!UIManualPanel.instance.IsOpened() && BattleUIInputController.Instance.CheckInputRencounter())
                 {
                     PlaySound(Dice_Rolled);
                     _curRencounterState = RencounterState.PrintLibrarianVanillaDice;
-                    _librarian.diceActionUI.StopRoulette();
+                    originalLibrarian.diceActionUI.StopRoulette();
 
                     timer.Reset();
                     OnRollDiceInRecounter();
@@ -898,9 +948,9 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
             {
                 if (timer.IsEnd)
                 {
-                    if (_librarian.diceActionUI.rootCanvas.enabled) PlaySound(Dice_Rolled);
+                    if (originalLibrarian.diceActionUI.rootCanvas.enabled) PlaySound(Dice_Rolled);
                     _curRencounterState = RencounterState.PrintLibrarianVanillaDice;
-                    _librarian.diceActionUI.StopRoulette();
+                    originalLibrarian.diceActionUI.StopRoulette();
 
                     timer.Reset();
                     OnRollDiceInRecounter();
@@ -910,10 +960,10 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
             else
             {
                 timer.Start();
-                _librarian.diceActionUI.RollRoulette(_currentLibrarianBehaviourResult.GetActivatedEmotionCards());
+                originalLibrarian.diceActionUI.RollRoulette(ClashLibrarian.GetActivatedEmotionCards());
 
-                StartCoroutine(PotentialEffect(_currentLibrarianBehaviourResult.GetAllAbilityStrings(), _librarian));
-                StartCoroutine(PotentialEffect(_currentEnemyBehaviourResult.GetAllAbilityStrings(), _enemy));
+                StartCoroutine(PotentialEffect(ClashLibrarian.GetAllAbilityStrings(), originalLibrarian));
+                StartCoroutine(PotentialEffect(ClashEnemy.GetAllAbilityStrings(), originalEnemy));
 
             }
         }
@@ -926,7 +976,7 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
 
     private void OnRollDiceInRecounter()
     {
-        _librarian.model.OnRollDiceInRecounter();
+        originalLibrarian.model.OnRollDiceInRecounter();
     }
 
     private IEnumerator PotentialEffect(List<string> strList, BattleUnitView view)
@@ -938,7 +988,7 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
     {
         if (_bNoDelay)
         {
-            if ((_librarian.model.battleCardResultLog.usedCard == null && _currentLibrarianBehaviourResult?.cardModel == null) || !_currentLibrarianBehaviourResult.hasBehaviour)
+            if ((originalLibrarian.model.battleCardResultLog.usedCard == null && ClashLibrarian?.cardModel == null) || !ClashLibrarian.hasBehaviour)
             {
                 _curRencounterState = RencounterState.PrintActivatedAbility;
                 PrintActivatedAbility(_stateTimerDic[_curRencounterState]);
@@ -949,7 +999,7 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
                 PrintLibrarianResultDice(_stateTimerDic[_curRencounterState]);
             }
         }
-        else if ((_librarian.model.battleCardResultLog.usedCard == null && _currentLibrarianBehaviourResult?.cardModel == null) || !_currentLibrarianBehaviourResult.hasBehaviour)
+        else if ((originalLibrarian.model.battleCardResultLog.usedCard == null && ClashLibrarian?.cardModel == null) || !ClashLibrarian.hasBehaviour)
         {
             _curRencounterState = RencounterState.PrintActivatedAbility;
         }
@@ -957,17 +1007,17 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         {
             if (timer.IsEnd)
             {
-                List<int> vanillaDiceValueList = _currentLibrarianBehaviourResult.vanillaDiceValueList;
+                List<int> vanillaDiceValueList = ClashLibrarian.vanillaDiceValueList;
                 if (vanillaDiceValueList != null && vanillaDiceValueList.Count > 1)
                 {
-                    _currentLibrarianBehaviourResult.vanillaDiceValueList.RemoveAt(0);
+                    ClashLibrarian.vanillaDiceValueList.RemoveAt(0);
                     timer.Reset();
                     timer.ResetWaitTime();
                     ChangeTimerDelayByRatio(timer, _curDelayRatio);
                 }
                 else
                 {
-                    _curRencounterState = ((_currentLibrarianBehaviourResult.resultDiceValue != _currentLibrarianBehaviourResult.vanillaDiceValue) ? RencounterState.PrintLibrarianResultDice : RencounterState.PrintActivatedAbility);
+                    _curRencounterState = ((ClashLibrarian.resultDiceValue != ClashLibrarian.vanillaDiceValue) ? RencounterState.PrintLibrarianResultDice : RencounterState.PrintActivatedAbility);
                     timer.Reset();
                     timer.ResetWaitTime();
                     ChangeTimerDelayByRatio(timer, _curDelayRatio);
@@ -976,17 +1026,17 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         }
         else
         {
-            List<int> vanillaDiceValueList2 = _currentLibrarianBehaviourResult.vanillaDiceValueList;
+            List<int> vanillaDiceValueList2 = ClashLibrarian.vanillaDiceValueList;
             if (vanillaDiceValueList2 != null && vanillaDiceValueList2.Count > 1)
             {
-                int num = _currentLibrarianBehaviourResult.vanillaDiceValueList[0];
-                _librarian.diceActionUI.SetDiceNew(_currentLibrarianBehaviourResult.resultDiceMax, num, num == _currentLibrarianBehaviourResult.resultDiceValue);
+                int num = ClashLibrarian.vanillaDiceValueList[0];
+                originalLibrarian.diceActionUI.SetDiceNew(ClashLibrarian.resultDiceMax, num, num == ClashLibrarian.resultDiceValue);
                 timer.ChangeWaitTime(0.3f);
             }
-            else if (_currentLibrarianBehaviourResult.vanillaDiceValue >= 0)
+            else if (ClashLibrarian.vanillaDiceValue >= 0)
             {
-                _currentLibrarianBehaviourResult.rolldiceEvent?.Invoke();
-                _librarian.diceActionUI.SetDiceNew(_currentLibrarianBehaviourResult.resultDiceMax, _currentLibrarianBehaviourResult.vanillaDiceValue, _currentLibrarianBehaviourResult.resultDiceValue == _currentLibrarianBehaviourResult.vanillaDiceValue);
+                ClashLibrarian.rolldiceEvent?.Invoke();
+                originalLibrarian.diceActionUI.SetDiceNew(ClashLibrarian.resultDiceMax, ClashLibrarian.vanillaDiceValue, ClashLibrarian.resultDiceValue == ClashLibrarian.vanillaDiceValue);
             }
             timer.Start();
 
@@ -997,15 +1047,15 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
     {
         if (_bNoDelay)
         {
-            int resultDiceValue = _currentLibrarianBehaviourResult.resultDiceValue;
-            int vanillaDiceValue = _currentLibrarianBehaviourResult.vanillaDiceValue;
+            int resultDiceValue = ClashLibrarian.resultDiceValue;
+            int vanillaDiceValue = ClashLibrarian.vanillaDiceValue;
             BattleDiceValueColor colorstate = BattleDiceValueColor.Normal;
             if (resultDiceValue > vanillaDiceValue) colorstate = BattleDiceValueColor.Increase;
             else if (resultDiceValue < vanillaDiceValue)
             {
                 colorstate = BattleDiceValueColor.Decrease;
             }
-            _librarian.diceActionUI.SetDiceNew(_currentLibrarianBehaviourResult.resultDiceMax, _currentLibrarianBehaviourResult.resultDiceValue, isResultDice: true, colorstate);
+            originalLibrarian.diceActionUI.SetDiceNew(ClashLibrarian.resultDiceMax, ClashLibrarian.resultDiceValue, isResultDice: true, colorstate);
             _curRencounterState = RencounterState.PrintActivatedAbility;
             PrintActivatedAbility(_stateTimerDic[_curRencounterState]);
         }
@@ -1020,15 +1070,15 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         }
         else
         {
-            int resultDiceValue2 = _currentLibrarianBehaviourResult.resultDiceValue;
-            int vanillaDiceValue2 = _currentLibrarianBehaviourResult.vanillaDiceValue;
+            int resultDiceValue2 = ClashLibrarian.resultDiceValue;
+            int vanillaDiceValue2 = ClashLibrarian.vanillaDiceValue;
             BattleDiceValueColor colorstate2 = BattleDiceValueColor.Normal;
             if (resultDiceValue2 > vanillaDiceValue2) colorstate2 = BattleDiceValueColor.Increase;
             else if (resultDiceValue2 < vanillaDiceValue2)
             {
                 colorstate2 = BattleDiceValueColor.Decrease;
             }
-            _librarian.diceActionUI.SetDiceNew(_currentLibrarianBehaviourResult.resultDiceMax, _currentLibrarianBehaviourResult.resultDiceValue, isResultDice: true, colorstate2);
+            originalLibrarian.diceActionUI.SetDiceNew(ClashLibrarian.resultDiceMax, ClashLibrarian.resultDiceValue, isResultDice: true, colorstate2);
             timer.Start();
 
         }
@@ -1039,17 +1089,17 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         if (_bNoDelay)
         {
             _bMoveSlow = false;
-            if (_currentLibrarianBehaviourResult != null && _currentLibrarianBehaviourResult.hasBehaviour) _librarian.diceActionUI.SetTypo(_currentLibrarianBehaviourResult.GetAbilityDataAfterRoll());
-            if (_currentEnemyBehaviourResult != null && _currentEnemyBehaviourResult.hasBehaviour) _enemy.diceActionUI.SetTypo(_currentEnemyBehaviourResult.GetAbilityDataAfterRoll());
+            if (ClashLibrarian != null && ClashLibrarian.hasBehaviour) originalLibrarian.diceActionUI.SetTypo(ClashLibrarian.GetAbilityDataAfterRoll());
+            if (ClashEnemy != null && ClashEnemy.hasBehaviour) originalEnemy.diceActionUI.SetTypo(ClashEnemy.GetAbilityDataAfterRoll());
             if (isMotionStartPrev)
             {
-                switch (_currentEnemyBehaviourResult.diceBehaviourResult.result)
+                switch (ClashEnemy.diceBehaviourResult.result)
                 {
                 case Result.Win:
-                    _librarian.diceActionUI.StartActionResultDestroyedDice();
+                    originalLibrarian.diceActionUI.StartActionResultDestroyedDice();
                     break;
                 case Result.Lose:
-                    _enemy.diceActionUI.StartActionResultDestroyedDice();
+                    originalEnemy.diceActionUI.StartActionResultDestroyedDice();
                     break;
                 }
             }
@@ -1071,17 +1121,17 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
             return;
         }
         _bMoveSlow = false;
-        if (_currentLibrarianBehaviourResult != null && _currentLibrarianBehaviourResult.hasBehaviour) _librarian.diceActionUI.SetTypo(_currentLibrarianBehaviourResult.GetAbilityDataAfterRoll());
-        if (_currentEnemyBehaviourResult != null && _currentEnemyBehaviourResult.hasBehaviour) _enemy.diceActionUI.SetTypo(_currentEnemyBehaviourResult.GetAbilityDataAfterRoll());
+        if (ClashLibrarian != null && ClashLibrarian.hasBehaviour) originalLibrarian.diceActionUI.SetTypo(ClashLibrarian.GetAbilityDataAfterRoll());
+        if (ClashEnemy != null && ClashEnemy.hasBehaviour) originalEnemy.diceActionUI.SetTypo(ClashEnemy.GetAbilityDataAfterRoll());
         if (isMotionStartPrev)
         {
-            switch (_currentEnemyBehaviourResult.diceBehaviourResult.result)
+            switch (ClashEnemy.diceBehaviourResult.result)
             {
             case Result.Win:
-                _librarian.diceActionUI.StartActionResultDestroyedDice();
+                originalLibrarian.diceActionUI.StartActionResultDestroyedDice();
                 break;
             case Result.Lose:
-                _enemy.diceActionUI.StartActionResultDestroyedDice();
+                originalEnemy.diceActionUI.StartActionResultDestroyedDice();
                 break;
             }
         }
@@ -1095,10 +1145,10 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         {
             if (timer.IsEnd && !_actionAfterBehaviourIsRunning)
             {
-                if (_librarian.model.moveDetail.isArrived && _currentLibrarianBehaviourResult.isDead)
+                if ((frameLibrarian != null || _librarian.model.moveDetail.isArrived) && _currentLibrarianBehaviourResult.isDead)
                 {
                     _librarian.StartDeadEffect();
-                    List<BattleUnitModel> aliveList = BattleObjectManager.instance.GetAliveList(Faction.Player);
+                    List<BattleUnitModel> aliveList = BattleObjectManager.instance.GetAliveList(_librarian.model.faction);
                     aliveList.Remove(_librarian.model);
                     List<BattleUnitModel> list = new();
                     list.Add(_librarian.model);
@@ -1106,16 +1156,18 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
                     DisplayDialogues(_enemy, DialogType.KILLS_OPPONENT, list);
                     _librarian.diceActionUI.EndAction();
                 }
-                if (_enemy.model.moveDetail.isArrived && _currentEnemyBehaviourResult.isDead)
+                if ((frameEnemy != null || _enemy.model.moveDetail.isArrived) && _currentEnemyBehaviourResult.isDead)
                 {
                     _enemy.StartDeadEffect();
-                    BattleObjectManager.instance.GetAliveList(Faction.Enemy).Remove(_enemy.model);
+                    List<BattleUnitModel> aliveList = BattleObjectManager.instance.GetAliveList(_enemy.model.faction);
+                    aliveList.Remove(_enemy.model);
                     List<BattleUnitModel> list2 = new();
                     list2.Add(_enemy.model);
-                    DisplayDialogues(BattleObjectManager.instance.GetAliveList(Faction.Enemy), DialogType.COLLEAGUE_DEATH, list2);
+                    DisplayDialogues(aliveList, DialogType.COLLEAGUE_DEATH, list2);
                     DisplayDialogues(_librarian, DialogType.KILLS_OPPONENT, list2);
                     _enemy.diceActionUI.EndAction();
                 }
+                SecondaryPlayback.EndFrame(CurrentFrame);
                 EndBehaviourResult();
                 timer.Reset();
                 ChangeTimerDelayByRatio(timer, _curDelayRatio);
@@ -1187,10 +1239,10 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
             switch (_currentEnemyBehaviourResult.diceBehaviourResult.result)
             {
             case Result.Win:
-                _librarian.diceActionUI.StartActionResultDestroyedDice();
+                originalLibrarian.diceActionUI.StartActionResultDestroyedDice();
                 break;
             case Result.Lose:
-                _enemy.diceActionUI.StartActionResultDestroyedDice();
+                originalEnemy.diceActionUI.StartActionResultDestroyedDice();
                 break;
             }
         }
@@ -1210,94 +1262,8 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         }
         if (librarianAtkEffectEvent) _currentLibrarianBehaviourResult.printAtkEffectEvent?.Invoke();
         if (enemyAtkEffectEvent) _currentEnemyBehaviourResult.printAtkEffectEvent?.Invoke();
-        if (_currentLibrarianBehaviourResult.hasBehaviour)
-        {
-            string resource = (string.IsNullOrEmpty(liCustomRes) ? _currentLibrarianBehaviourResult.behaviourRawData.EffectRes : liCustomRes);
-            float num = _currentLibrarianBehaviourResult.resultDiceValue / (float)_currentLibrarianBehaviourResult.vanillaDiceFace;
-            if (num > 2f) num = 2f;
-            if (_currentLibrarianBehaviourResult.diceBehaviourResult.result != Result.Lose || _currentEnemyBehaviourResult.behaviourRawData.Type != BehaviourType.Atk || librarianPrintEffectForcely)
-            {
-                if (_currentLibrarianBehaviourResult.behaviourRawData.Type != BehaviourType.Def)
-                {
-                    if ((_currentLibrarianBehaviourResult.diceBehaviourResult.result != Result.Draw || librarianPrintEffectForcely) && printLibrarian)
-                    {
-                        DiceAttackEffect diceAttackEffect = SingletonBehavior<DiceEffectManager>.Instance.CreateBehaviourEffect(resource, num, _librarian, _enemy);
-                        if (diceAttackEffect != null)
-                        {
-                            diceAttackEffect.SetLayer("Effect");
-                            if (_currentLibrarianBehaviourResult.behaviourRawData.Type == BehaviourType.Atk)
-                            {
-                                foreach (Type addedAttackFilter in _currentLibrarianBehaviourResult.addedAttackFilterList)
-                                {
-                                    diceAttackEffect.AddFilter(addedAttackFilter);
-                                }
-                            }
-                        }
-                        if (_currentLibrarianBehaviourResult.diceBehaviourResult.result == Result.Win)
-                        {
-                            BehaviourDetail detail = _currentLibrarianBehaviourResult.behaviourRawData.Detail;
-                            bool flag = true;
-                            if (diceAttackEffect != null && diceAttackEffect.HasDamagedEffect) flag = false;
-                            if (flag) SingletonBehavior<DiceEffectManager>.Instance.CreateDamagedEffectByBehaviour(detail, num, _enemy);
-                        }
-                    }
-                }
-                else if (_currentLibrarianBehaviourResult.diceBehaviourResult.result == Result.Win && _currentLibrarianBehaviourResult.behaviourRawData.Detail == BehaviourDetail.Guard && _currentEnemyBehaviourResult.hasBehaviour)
-                {
-                    if (printLibrarian)
-                    {
-                        DiceAttackEffect diceAttackEffect2 = SingletonBehavior<DiceEffectManager>.Instance.CreateBehaviourEffect(resource, num, _librarian, _enemy);
-                        if (diceAttackEffect2 != null) diceAttackEffect2.SetLayer("Effect");
-                    }
-                    SingletonBehavior<DiceEffectManager>.Instance.CreateDefSuccess(_librarian.charAppearance.GetAtkEffectPivot(ActionDetail.Guard).position);
-                    if (_currentEnemyBehaviourResult.diceBehaviourResult.range == CardRange.Near) _enemy.criticalUI.SetRebounded();
-                }
-            }
-        }
-        if (_currentEnemyBehaviourResult.hasBehaviour)
-        {
-            string resource2 = (string.IsNullOrEmpty(enCustomRes) ? _currentEnemyBehaviourResult.behaviourRawData.EffectRes : enCustomRes);
-            float num2 = _currentEnemyBehaviourResult.resultDiceValue / (float)_currentEnemyBehaviourResult.vanillaDiceFace;
-            if (num2 > 2f) num2 = 2f;
-            if (_currentEnemyBehaviourResult.diceBehaviourResult.result != Result.Lose || _currentLibrarianBehaviourResult.behaviourRawData.Type != BehaviourType.Atk || enemyPrintEffectForcely)
-            {
-                if (_currentEnemyBehaviourResult.behaviourRawData.Type != BehaviourType.Def)
-                {
-                    if ((_currentEnemyBehaviourResult.diceBehaviourResult.result != Result.Draw || enemyPrintEffectForcely) && printEnemy)
-                    {
-                        DiceAttackEffect diceAttackEffect3 = SingletonBehavior<DiceEffectManager>.Instance.CreateBehaviourEffect(resource2, num2, _enemy, _librarian);
-                        if (diceAttackEffect3 != null)
-                        {
-                            diceAttackEffect3.SetLayer("Effect");
-                            if (_currentEnemyBehaviourResult.behaviourRawData.Type == BehaviourType.Atk)
-                            {
-                                foreach (Type addedAttackFilter2 in _currentEnemyBehaviourResult.addedAttackFilterList)
-                                {
-                                    diceAttackEffect3.AddFilter(addedAttackFilter2);
-                                }
-                            }
-                        }
-                        if (_currentEnemyBehaviourResult.diceBehaviourResult.result == Result.Win)
-                        {
-                            BehaviourDetail detail2 = _currentEnemyBehaviourResult.behaviourRawData.Detail;
-                            bool flag2 = true;
-                            if (diceAttackEffect3 != null && diceAttackEffect3.HasDamagedEffect) flag2 = false;
-                            if (flag2) SingletonBehavior<DiceEffectManager>.Instance.CreateDamagedEffectByBehaviour(detail2, num2, _librarian);
-                        }
-                    }
-                }
-                else if (_currentEnemyBehaviourResult.diceBehaviourResult.result == Result.Win && _currentEnemyBehaviourResult.behaviourRawData.Detail == BehaviourDetail.Guard && _currentLibrarianBehaviourResult.hasBehaviour)
-                {
-                    if (printEnemy)
-                    {
-                        DiceAttackEffect diceAttackEffect4 = SingletonBehavior<DiceEffectManager>.Instance.CreateBehaviourEffect(resource2, num2, _enemy, _librarian);
-                        if (diceAttackEffect4 != null) diceAttackEffect4.SetLayer("Effect");
-                    }
-                    SingletonBehavior<DiceEffectManager>.Instance.CreateDefSuccess(_enemy.charAppearance.GetAtkEffectPivot(ActionDetail.Guard).position);
-                    if (_currentLibrarianBehaviourResult.diceBehaviourResult.range == CardRange.Near) _librarian.criticalUI.SetRebounded();
-                }
-            }
-        }
+        PrintBehaviourEffect(_librarian, _enemy, _currentLibrarianBehaviourResult, _currentEnemyBehaviourResult, liCustomRes, printLibrarian, librarianPrintEffectForcely);
+        PrintBehaviourEffect(_enemy, _librarian, _currentEnemyBehaviourResult, _currentLibrarianBehaviourResult, enCustomRes, printEnemy, enemyPrintEffectForcely);
         if (_currentLibrarianBehaviourResult.hasBehaviour && _currentEnemyBehaviourResult.hasBehaviour && _currentLibrarianBehaviourResult.behaviourRawData.Type == BehaviourType.Atk && _currentEnemyBehaviourResult.behaviourRawData.Type == BehaviourType.Atk)
         {
             if (_currentLibrarianBehaviourResult.diceBehaviourResult.result == Result.Draw)
@@ -1372,6 +1338,39 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         }
     }
 
+    private static void PrintBehaviourEffect(BattleUnitView actor, BattleUnitView opponent, BattleCardBehaviourResult self, BattleCardBehaviourResult other, string customResource, bool print, bool force)
+    {
+        if (!self.hasBehaviour) return;
+        var result = self.diceBehaviourResult.result;
+        if (result == Result.Lose && other.behaviourRawData.Type == BehaviourType.Atk && !force) return;
+
+        var effects = SingletonBehavior<DiceEffectManager>.Instance;
+        var behaviour = self.behaviourRawData;
+        string resource = string.IsNullOrEmpty(customResource) ? behaviour.EffectRes : customResource;
+        float scale = Mathf.Min(2f, self.resultDiceValue / (float)self.vanillaDiceFace);
+        if (behaviour.Type == BehaviourType.Def)
+        {
+            if (result != Result.Win || behaviour.Detail != BehaviourDetail.Guard || !other.hasBehaviour) return;
+            if (print) effects.CreateBehaviourEffect(resource, scale, actor, opponent)?.SetLayer("Effect");
+            effects.CreateDefSuccess(actor.charAppearance.GetAtkEffectPivot(ActionDetail.Guard).position);
+            if (other.diceBehaviourResult.range == CardRange.Near) opponent.criticalUI.SetRebounded();
+            return;
+        }
+
+        var formal = CustomCombatResolution.Find(self)?.Formal;
+        if (!print || (result == Result.Draw && !force) || formal?.Sender.isBlockedDice == true) return;
+        var target = opponent;
+        var effect = effects.CreateBehaviourEffect(resource, scale, actor, target);
+        if (effect != null)
+        {
+            effect.SetLayer("Effect");
+            if (behaviour.Type == BehaviourType.Atk)
+                foreach (Type filter in self.addedAttackFilterList) effect.AddFilter(filter);
+        }
+        if (result == Result.Win && (effect == null || !effect.HasDamagedEffect))
+            effects.CreateDamagedEffectByBehaviour(behaviour.Detail, scale, target);
+    }
+
     private void PrintRecovery()
     {
         foreach (int recoveredHp in _currentLibrarianBehaviourResult.recoveredHpList) _librarian.RecoverHp(recoveredHp);
@@ -1382,6 +1381,7 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
 
     private void PrintDamageWithoutText(BattleUnitView loser)
     {
+        if (HasDifferentFrameTarget && CurrentFrame.Record.isBlockedDice) return;
         loser.DamagedWithoutText();
     }
 
@@ -1399,36 +1399,18 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
             switch (_currentEnemyBehaviourResult.diceBehaviourResult.result)
             {
             case Result.Win:
-                _librarian.diceActionUI.StartActionResultDestroyedDice();
+                originalLibrarian.diceActionUI.StartActionResultDestroyedDice();
                 break;
             case Result.Lose:
-                _enemy.diceActionUI.StartActionResultDestroyedDice();
+                originalEnemy.diceActionUI.StartActionResultDestroyedDice();
                 break;
             }
-        }
-        if (showLibrarianDamage)
-        {
-            foreach (DmgTakenData item in _currentLibrarianBehaviourResult.dmgListTaken)
-            {
-                _librarian.Damaged(item.dmg, item.damagedType, _currentEnemyBehaviourResult.resultDiceMax, _enemy.model, item.atkResist);
-                if (item.dmg > num) num = item.dmg;
-                if (!flag && _currentEnemyBehaviourResult.vanillaDiceFace > _currentEnemyBehaviourResult.vanillaDiceMin + 2 && _currentEnemyBehaviourResult.vanillaDiceValue >= _currentEnemyBehaviourResult.vanillaDiceFace && _currentEnemyBehaviourResult.diceBehaviourResult.actionType == ActionType.Atk) flag = true;
-            }
-            _librarian.PrintBloodSprites(num, curHp);
         }
         int num2 = 0;
         float curHp2 = _currentEnemyBehaviourResult.curHp;
         bool flag2 = false;
-        if (showEnemyDamage)
-        {
-            foreach (DmgTakenData item2 in _currentEnemyBehaviourResult.dmgListTaken)
-            {
-                _enemy.Damaged(item2.dmg, item2.damagedType, _currentLibrarianBehaviourResult.resultDiceMax, _librarian.model, item2.atkResist);
-                if (item2.dmg > num2) num2 = item2.dmg;
-                if (!flag2 && _currentLibrarianBehaviourResult.vanillaDiceFace > _currentLibrarianBehaviourResult.vanillaDiceMin + 2 && _currentLibrarianBehaviourResult.vanillaDiceValue >= _currentLibrarianBehaviourResult.vanillaDiceFace && _currentLibrarianBehaviourResult.diceBehaviourResult.actionType == ActionType.Atk) flag2 = true;
-            }
-            _enemy.PrintBloodSprites(num2, curHp2);
-        }
+        if (showLibrarianDamage) num = PrintUnitDamage(_librarian, _enemy, _currentLibrarianBehaviourResult, _currentEnemyBehaviourResult, out flag);
+        if (showEnemyDamage) num2 = PrintUnitDamage(_enemy, _librarian, _currentEnemyBehaviourResult, _currentLibrarianBehaviourResult, out flag2);
         int curBreakGauge = _currentLibrarianBehaviourResult.curBreakGauge;
         if (_currentLibrarianBehaviourResult.breakListTaken.Count > 0)
         {
@@ -1477,7 +1459,29 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         }
         _librarian.SetCriticals(breaked2, flag);
         _enemy.SetCriticals(breaked, flag2);
-        SecondaryPlayback.PrintCurrent(_currentEnemyBehaviourResult, _currentLibrarianBehaviourResult);
+        var frame = CurrentFrame;
+        if (frame is { IsContinuation: false, Printed: false } && HasDifferentFrameTarget)
+        {
+            var originalReceiver = frameEnemy != null ? ClashEnemy : ClashLibrarian;
+            CustomCombatPlayback.PrintReceiver(frame, frame.Main, originalReceiver, printEffect: true);
+            originalReceiver.afterActionEvent?.Invoke();
+            originalReceiver.takeDamageEvent?.Invoke();
+            if (originalReceiver.isDead) frame.Main.view.StartDeadEffect();
+        }
+        SecondaryPlayback.Print(frame);
+    }
+
+    private static int PrintUnitDamage(BattleUnitView victim, BattleUnitView actor, BattleCardBehaviourResult receiver, BattleCardBehaviourResult sender, out bool critical)
+    {
+        int largest = 0;
+        foreach (var damage in receiver.dmgListTaken)
+        {
+            victim.Damaged(damage.dmg, damage.damagedType, sender.resultDiceMax, actor.model, damage.atkResist);
+            if (damage.dmg > largest) largest = damage.dmg;
+        }
+        victim.PrintBloodSprites(largest, receiver.curHp);
+        critical = sender.vanillaDiceFace > sender.vanillaDiceMin + 2 && sender.vanillaDiceValue >= sender.vanillaDiceFace && sender.diceBehaviourResult.actionType == ActionType.Atk;
+        return largest;
     }
 
     private void PrintSound(BattleUnitView view, BattleCardBehaviourResult selfResult, BattleCardBehaviourResult opponentResult, ActionDetail actionDetail)
@@ -1533,6 +1537,8 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
 
     private void SetMovingStateByActionResult()
     {
+        if (CurrentFrame?.IsRandomBarrage == true) BindFrameTarget();
+        using var scope = ScopeFrameTarget();
         DiceBehaviourResultData diceBehaviourResult = _currentEnemyBehaviourResult.diceBehaviourResult;
         DiceBehaviourResultData diceBehaviourResult2 = _currentLibrarianBehaviourResult.diceBehaviourResult;
         Result result = diceBehaviourResult.result;
@@ -1577,7 +1583,7 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
             opponent.result = Result.Draw;
             self.behaviourResultData.diceBehaviourResult.result = Result.Draw;
             opponent.behaviourResultData.diceBehaviourResult.result = Result.Draw;
-            if (opponent.data.actionType == ActionType.None)
+            if (!HasDifferentFrameTarget && opponent.data.actionType == ActionType.None)
             {
                 opponent.data.actionType = ActionType.Atk;
                 opponent.data.actionDetail = ActionDetail.Hit;
@@ -1587,20 +1593,8 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         }
         self.preventOverlap = true;
         opponent.preventOverlap = true;
-        // 广域乱射命中副目标时，拼点 UI 仍保持原主目标，执行动作组时将对手直接替换为实际命中目标（本质按打单执行）。
-        if (self.result == Result.Win)
-        {
-            var frame = CustomCombatResolution.Find(self.behaviourResultData);
-            if (frame != null && frame.RedirectedToSecondary && frame.Hits.Count > 0 && frame.Hits[0].Unit?.view)
-            {
-                opponent.view = frame.Hits[0].Unit.view;
-                opponent.behaviourResultData = frame.Hits[0].Receiver;
-            }
-        }
         self.infoList = GetBehaviourAction(ref self, ref opponent);
-        {
-            if (opponent.infoList.Count == 0) opponent.infoList = GetBehaviourAction(ref opponent, ref self);
-        }
+        if (opponent.infoList.Count == 0) opponent.infoList = GetBehaviourAction(ref opponent, ref self);
         StartCoroutine(RunMotion(self, opponent));
     }
 
@@ -1649,6 +1643,7 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
             bool next;
             try
             {
+                using var scope = ScopeFrameTarget();
                 next = routine.MoveNext();
             }
             catch (Exception exception)
@@ -1665,10 +1660,10 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
     private IEnumerator MoveRoutine(ActionAfterBehaviour winner, ActionAfterBehaviour loser)
     {
         _actionAfterBehaviourIsRunning = true;
+        SecondaryPlayback.BeginMotion(CurrentFrame);
         winner.view.model.UpdateDirection(loser.view.WorldPosition);
         loser.view.model.UpdateDirection(winner.view.WorldPosition);
         yield return YieldCache.waitFrame;
-        SecondaryPlayback.BeginMotion(_currentEnemyBehaviourResult, _currentLibrarianBehaviourResult);
         winner.startMoveRoutineEvent?.Invoke();
         loser.startMoveRoutineEvent?.Invoke();
         if (!winner.infoList.Exists((MovingAction x) => x.IsExistEffectTiming()) && !loser.infoList.Exists((MovingAction x) => x.IsExistEffectTiming()))
@@ -1690,15 +1685,19 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
         _currentLibrarianBehaviourResult.takeDamageEvent?.Invoke();
         _currentEnemyBehaviourResult.takeDamageEvent?.Invoke();
         int sign = 0;
-        if (_currentLibrarianBehaviourResult.diceBehaviourResult.actionDetail == ActionDetail.Damaged) sign = ((!(_librarian.WorldPosition.x > _enemy.WorldPosition.x)) ? 1 : (-1));
+        if (loser.view != _enemy && loser.view != _librarian)
+        {
+            if (loser.data.actionDetail == ActionDetail.Damaged) sign = loser.view.WorldPosition.x > winner.view.WorldPosition.x ? -1 : 1;
+        }
+        else if (_currentLibrarianBehaviourResult.diceBehaviourResult.actionDetail == ActionDetail.Damaged) sign = ((!(_librarian.WorldPosition.x > _enemy.WorldPosition.x)) ? 1 : (-1));
         else if (_currentEnemyBehaviourResult.diceBehaviourResult.actionDetail == ActionDetail.Damaged)
         {
             sign = ((_librarian.WorldPosition.x > _enemy.WorldPosition.x) ? 1 : (-1));
         }
         SingletonBehavior<BattleCamManager>.Instance.TiltCam(sign);
         yield return YieldCache.waitFrame;
-        _librarian.diceActionUI.UpdateDiceAnimation(CompareBehaviourUIType.Start, DiceUITiming.AttackAfter);
-        _enemy.diceActionUI.UpdateDiceAnimation(CompareBehaviourUIType.Start, DiceUITiming.AttackAfter);
+        originalLibrarian.diceActionUI.UpdateDiceAnimation(CompareBehaviourUIType.Start, DiceUITiming.AttackAfter);
+        originalEnemy.diceActionUI.UpdateDiceAnimation(CompareBehaviourUIType.Start, DiceUITiming.AttackAfter);
         while (winner.infoList.Count > 0 || loser.infoList.Count > 0)
         {
             SecondaryPlayback.BeginMainAction(winner.view, winner.infoList.Count > 0 ? winner.infoList[0] : null);
@@ -1733,10 +1732,10 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
                     switch (_currentEnemyBehaviourResult.diceBehaviourResult.result)
                     {
                     case Result.Win:
-                        _librarian.diceActionUI.StartActionResultDestroyedDice();
+                        originalLibrarian.diceActionUI.StartActionResultDestroyedDice();
                         break;
                     case Result.Lose:
-                        _enemy.diceActionUI.StartActionResultDestroyedDice();
+                        originalEnemy.diceActionUI.StartActionResultDestroyedDice();
                         break;
                     }
                 }
@@ -2089,6 +2088,7 @@ public sealed class CustomCombatRencounterManager : MonoBehaviour
 
         _currentEnemyBehaviourResult = null;
         _currentLibrarianBehaviourResult = null;
+        frameEnemy = frameLibrarian = null;
         _curDelayRatio -= _delayRatio * 0.5f;
         if (_curDelayRatio < 0f) _curDelayRatio = 0f;
         _countForNodelay++;
