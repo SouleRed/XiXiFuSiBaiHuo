@@ -236,6 +236,14 @@ public static class ModPatches
             => CustomCombatTargeting.FillAutomatic(__instance, card);
     }
 
+    [HarmonyPatch(typeof(BattleAllyCardDetail), nameof(BattleAllyCardDetail.PlayTurnAutoForPlayer))]
+    public static class BattleAllyCardDetail_PlayTurnAutoForPlayer
+    {
+        [HarmonyPostfix]
+        public static void Postfix(BattleUnitModel ____self, int idx)
+            => CustomCombatTargeting.FillPlayerAuto(____self, idx);
+    }
+
     [HarmonyPatch(typeof(BattleUnitCardsInHandUI), nameof(BattleUnitCardsInHandUI.ApplySelectedCard))]
     public static class BattleUnitCardsInHandUI_ApplySelectedCard
     {

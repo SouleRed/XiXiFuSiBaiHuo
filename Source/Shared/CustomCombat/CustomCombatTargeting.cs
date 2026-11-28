@@ -65,9 +65,19 @@ internal static class CustomCombatTargeting
         AssignTargets(page);
     }
 
-    internal static void AssignTargets(BattlePlayingCardDataInUnitModel page)
+    internal static void FillPlayerAuto(BattleUnitModel owner, int slotOrder)
     {
-        if (page?.owner == null || page.owner.faction == Faction.Player) return;
+        var cards = owner?.cardSlotDetail?.cardAry;
+        if (cards == null || slotOrder < 0 || slotOrder >= cards.Count) return;
+        var page = cards[slotOrder];
+        if (!IsCapacityPage(page)) return;
+        AssignTargets(page, allowPlayer: true);
+        SingletonBehavior<BattleManagerUI>.Instance?.ui_TargetArrow?.UpdateTargetList();
+    }
+
+    internal static void AssignTargets(BattlePlayingCardDataInUnitModel page, bool allowPlayer = false)
+    {
+        if (page?.owner == null || (!allowPlayer && page.owner.faction == Faction.Player)) return;
         int limit = Capacity(page) - 1;
         if (limit <= 0 || page.target == null) return;
 

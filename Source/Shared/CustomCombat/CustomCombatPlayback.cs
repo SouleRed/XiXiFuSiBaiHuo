@@ -172,6 +172,16 @@ public sealed class CustomCombatPlayback : MonoBehaviour
     internal void EndFrame(CustomCombatResolution.Frame frame)
     {
         if (frame?.Formal.Receiver.isDead != true) return;
+        if (frame.IsRandomBarrage)
+        {
+            if (bodies.TryGetValue(frame.ActualTarget, out var body))
+            {
+                body.Dead = true;
+                RemoveCameraTarget(body);
+                SingletonBehavior<BattleCamManager>.Instance._focusTargetList.Remove(body.View);
+            }
+            return;
+        }
         if (manager.HasDifferentFrameTarget)
         {
             if (formalTarget != null)
@@ -180,12 +190,6 @@ public sealed class CustomCombatPlayback : MonoBehaviour
                 RemoveCameraTarget(formalTarget);
             }
             RestoreReplacedFocusTarget();
-        }
-        else if (frame.IsRandomBarrage && bodies.TryGetValue(frame.ActualTarget, out var body))
-        {
-            body.Dead = true;
-            body.AddedToCamera = false;
-            SingletonBehavior<BattleCamManager>.Instance._focusTargetList.Remove(body.View);
         }
     }
 
@@ -236,8 +240,9 @@ public sealed class CustomCombatPlayback : MonoBehaviour
         actorStep = opponentStep = null;
         if (frame.IsRandomBarrage)
         {
-            if (actionPlan.InitialPositions != null || actionPlan.InitialOffset != null) BeginBarrageFormation(frame, actionPlan);
-            SwitchBarrageFocus(frame, actionPlan.SoloFocus);
+            BeginBarrageGroup(frame, actionPlan);
+            if (frame.IsContinuation && frame.Main?.view && frame.Main.view.IsReadyDeadScene)
+                frame.Main.view.StartDeadEffect();
             if (manager.HasDifferentFrameTarget)
             {
                 var actor = frame.Page.Card.owner?.view;
@@ -303,7 +308,8 @@ public sealed class CustomCombatPlayback : MonoBehaviour
         ApplyPlan();
     }
 
-    private void BeginBarrageFormation(CustomCombatResolution.Frame frame, CustomCombatActionPlan actionPlan)
+    // 广域乱射采用群攻式全员聚焦排位，但仅实际受击目标执行受击与扣血。
+    private void BeginBarrageGroup(CustomCombatResolution.Frame frame, CustomCombatActionPlan actionPlan)
     {
         if (barrageFormation != null) return;
         barrageFormation = frame;
@@ -313,23 +319,29 @@ public sealed class CustomCombatPlayback : MonoBehaviour
         var others = new List<Body>();
         foreach (var target in frame.Page.Targets)
         {
-            if (frame.IsContinuation && target.Unit == frame.Main) continue;
-            if (target.Unit == anchor) continue;
+            if (target.Unit == frame.Main) continue;
             if (!bodies.TryGetValue(target.Unit, out var body) || !body.View || body.Dead) continue;
             others.Add(body);
         }
-        if (others.Count == 0 || !actionPlan.DefaultPosition) return;
-        Vector3[] positions = actionPlan.InitialPositions?.Invoke(others.Count);
+        if (others.Count == 0) return;
+
+        bool canPosition = actionPlan.DefaultPosition && (actionPlan.InitialPositions != null || actionPlan.InitialOffset != null);
+        Vector3[] positions = canPosition ? actionPlan.InitialPositions?.Invoke(others.Count) : null;
+        int offsetIndex = 0;
         for (int i = 0; i < others.Count; i++)
         {
             var body = others[i];
-            if (!body.PositionControlled) body.Position = body.View.WorldPosition;
-            body.PositionControlled = true;
-            body.View.model.moveDetail.Stop();
-            body.View.WorldPosition = positions != null && i < positions.Length
-                ? positions[i]
-                : origin + actionPlan.InitialOffset(i);
-            body.View.model.UpdateDirection(attackerPos);
+            if (canPosition && body.View.model != anchor)
+            {
+                if (!body.PositionControlled) body.Position = body.View.WorldPosition;
+                body.PositionControlled = true;
+                body.View.model.moveDetail.Stop();
+                body.View.WorldPosition = positions != null && i < positions.Length
+                    ? positions[i]
+                    : origin + actionPlan.InitialOffset(offsetIndex++);
+                body.View.model.UpdateDirection(attackerPos);
+            }
+            if (actionPlan.DefaultFocus && !body.Focused) EnterFocus(body, null);
         }
     }
 
@@ -650,7 +662,11 @@ public sealed class CustomCombatPlayback : MonoBehaviour
     {
         try
         {
-            foreach (var body in bodies.Values) LeaveTrack(body, interrupted);
+            foreach (var body in bodies.Values)
+            {
+                LeaveTrack(body, interrupted);
+                if (barrageFormation != null && body.Focused) LeaveFocus(body);
+            }
         }
         finally
         {

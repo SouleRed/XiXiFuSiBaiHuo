@@ -3,34 +3,42 @@
   <Version>1.1</Version>
 
   <Card ID="3">
+    <Battle>false</Battle>
     <Flavor Color="#D2A679">ui_cfk_flavor_3</Flavor>
   </Card>
 
   <Card ID="4">
+    <Battle>false</Battle>
     <Flavor Color="#D2A679">ui_cfk_flavor_4</Flavor>
   </Card>
 
   <Card ID="5">
+    <Battle>false</Battle>
     <Flavor Color="#D2A679">ui_cfk_flavor_5</Flavor>
   </Card>
 
   <Card ID="6">
+    <Battle>false</Battle>
     <Flavor Color="#FFD700">ui_cfk_flavor_6</Flavor>
   </Card>
 
   <Card ID="7">
+    <Battle>false</Battle>
     <Flavor Color="#D2A679">ui_cfk_flavor_7</Flavor>
   </Card>
 
   <Card ID="8">
+    <Battle>false</Battle>
     <Flavor Color="#D2A679">ui_cfk_flavor_8</Flavor>
   </Card>
 
   <Card ID="9">
+    <Battle>false</Battle>
     <Flavor Color="#FFD700">ui_cfk_flavor_9</Flavor>
   </Card>
 
   <Card ID="10">
+    <Battle>false</Battle>
     <Flavor Color="#D2A679">ui_cfk_flavor_10</Flavor>
   </Card>
 </CardPreviewXmlRoot>
